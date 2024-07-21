@@ -20,7 +20,9 @@ firebaseConfig = "22.0.0"
 firebaseDatabase = "21.0.0"
 hiltnav = "1.2.0"
 hiltcompiler = "2.48"
-hiltPlugin = "2.44"
+hiltPlugin = "2.48"
+retrofit = "2.9.0"
+okhttp3 = "4.10.0"
 
 
 
@@ -43,6 +45,9 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-hilt-navigation = { group = "androidx.hilt:hilt-navigation-compose", name = "navigation", version.ref = "hiltnav" }
 hilt-compiler = { group = "com.google.dagger:hilt-android", name = "hiltcompiler", version.ref = "hiltcompiler" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp3" }
 
 
 

@@ -1,9 +1,6 @@
 package kk.domoRolls.ru
 
-import android.content.ContentValues
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,9 +11,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfig
-import kk.domoRolls.ru.registration.RegistrationScreen
-import kk.domoRolls.ru.ui.theme.DomoTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kk.domoRolls.ru.navigation.NavMain
+import kk.domoRolls.ru.ui.theme.DomoTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -25,7 +22,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DomoTheme {
-               RegistrationScreen()
+               NavMain()
             }
         }
         val remoteConfig: FirebaseRemoteConfig = Firebase.remoteConfig
@@ -37,18 +34,18 @@ class MainActivity : ComponentActivity() {
                     val updated = task.result
                     var test: String = FirebaseRemoteConfig.getInstance().getString("otpMessage")
 
-                    Log.e(ContentValues.TAG, "Config params updated: $updated")
-                    Toast.makeText(
-                        this,
-                        "Fetch and activate succeeded $test",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+//                    Log.e(ContentValues.TAG, "Config params updated: $updated")
+//                    Toast.makeText(
+//                        this,
+//                        "Fetch and activate succeeded $test",
+//                        Toast.LENGTH_SHORT,
+//                    ).show()
                 } else {
-                    Toast.makeText(
-                        this,
-                        "Fetch failed",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+//                    Toast.makeText(
+//                        this,
+//                        "Fetch failed",
+//                        Toast.LENGTH_SHORT,
+//                    ).show()
                 }
             }
     }

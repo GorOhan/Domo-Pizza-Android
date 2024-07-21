@@ -120,7 +120,7 @@ fun NotifyPermissionScreen() {
             buttonTitle = "Не нужно",
             backgroundColor = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
-                .padding(horizontal = 22.dp)
+                .padding(horizontal = 22.dp, vertical = 10.dp)
                 .fillMaxWidth()
         )
     }

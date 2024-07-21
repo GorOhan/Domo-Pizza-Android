@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
+
 android {
     namespace = "kk.domoRolls.ru"
     compileSdk = 34
@@ -75,9 +76,16 @@ dependencies {
     //implementation(libs.androidx.hilt.navigation)
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("com.google.dagger:hilt-android:2.48")
-    kapt("com.google.dagger:hilt-android-compiler:2.44")
+    kapt("com.google.dagger:hilt-android-compiler:2.48")
+    implementation("com.airbnb.android:lottie-compose:4.0.0")
+
+    // Retrofit for network requests
+    implementation(libs.retrofit.gson)
+    implementation(libs.retrofit)
+    implementation(libs.logging.interceptor)
 
 }
+
 kapt {
     correctErrorTypes = true
 }

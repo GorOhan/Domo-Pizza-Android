@@ -1,9 +1,6 @@
 package kk.domoRolls.ru
 
 import android.app.Application
-import android.content.ContentValues.TAG
-import android.util.Log
-import android.widget.Toast
 import com.google.firebase.FirebaseApp
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig

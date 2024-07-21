@@ -27,20 +27,29 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import kk.domoRolls.ru.components.BaseButton
+import kk.domoRolls.ru.navigation.Screen
 import kk.domoRolls.ru.ui.theme.DomoGray
 import kk.domoRolls.ru.ui.theme.DomoTheme
 import kk.domoRolls.ru.ui.theme.InterFont
 
 @Composable
 fun RegistrationScreen(
+    navController: NavHostController,
     viewModel: RegistrationViewModel = hiltViewModel(),
 ) {
-    RegistrationScreenUI()
+    RegistrationScreenUI(
+        onNavigateClick = {
+            navController.navigate(Screen.OTPScreen.route)
+        }
+    )
 }
 
 @Composable
-fun RegistrationScreenUI(){
+fun RegistrationScreenUI(
+    onNavigateClick:() -> Unit = {}
+){
     Column(
         modifier = Modifier
             .background(color = Color.White)
@@ -139,7 +148,11 @@ fun RegistrationScreenUI(){
             backgroundColor = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
                 .padding(horizontal = 22.dp, vertical = 10.dp)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            onClick = {
+                onNavigateClick.invoke()
+            },
+            enable = true
         )
 
         Text(

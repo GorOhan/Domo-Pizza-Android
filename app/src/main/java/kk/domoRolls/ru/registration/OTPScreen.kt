@@ -20,13 +20,28 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import kk.domoRolls.ru.components.BaseButton
 import kk.domoRolls.ru.components.RegistrationCodeInput
+import kk.domoRolls.ru.navigation.Screen
 import kk.domoRolls.ru.ui.theme.DomoTheme
 import kk.domoRolls.ru.ui.theme.InterFont
 
 @Composable
-fun OTPScreen() {
+fun OTPScreen(
+    navController: NavController,
+) {
+    OTPScreenUI(
+        onNavigationClick = {
+            navController.navigate(Screen.NotifyPermissionScreen.route)
+        }
+    )
+}
+
+@Composable
+fun OTPScreenUI(
+    onNavigationClick: () -> Unit = {}
+) {
 
     Column(
         modifier = Modifier
@@ -131,7 +146,10 @@ fun OTPScreen() {
             backgroundColor = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
                 .padding(horizontal = 22.dp, vertical = 20.dp)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            onClick = {
+                onNavigationClick.invoke()
+            }
         )
     }
 }
@@ -140,7 +158,7 @@ fun OTPScreen() {
 @Composable
 fun OTPScreenPreview() {
     DomoTheme {
-        OTPScreen()
+        OTPScreenUI()
     }
 }
 

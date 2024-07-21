@@ -104,7 +104,11 @@ private fun CodeEntry(text: String, isError: Boolean = false) {
 @Composable
 private fun CodeInputDecoration(code: String, length: Int, isError: Boolean = false) {
     Box(modifier = Modifier) {
-        Row(horizontalArrangement = Arrangement.Center) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween) {
             for (i in 0 until length) {
                 val text = if (i < code.length) code[i].toString() else ""
                 val isFinalError = isError && code.length == length
