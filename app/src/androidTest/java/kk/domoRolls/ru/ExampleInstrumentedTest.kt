@@ -1,4 +1,4 @@
-package com.domorolls.domo
+package kk.domoRolls.ru
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

@@ -1,4 +1,4 @@
-package com.domorolls.domo.components
+package kk.domoRolls.ru.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.border
@@ -28,13 +28,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.domorolls.domo.ui.theme.DomoBlue
-import com.domorolls.domo.ui.theme.DomoGray
+import kk.domoRolls.ru.ui.theme.DomoBlue
+import kk.domoRolls.ru.ui.theme.DomoGray
 import kotlinx.coroutines.delay
 
 

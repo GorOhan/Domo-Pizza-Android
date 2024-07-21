@@ -1,4 +1,4 @@
-package com.domorolls.domo.ui.theme
+package kk.domoRolls.ru.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

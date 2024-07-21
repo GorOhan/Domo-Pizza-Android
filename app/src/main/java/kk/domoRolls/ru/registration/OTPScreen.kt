@@ -1,4 +1,4 @@
-package com.domorolls.domo.registration
+package kk.domoRolls.ru.registration
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,10 +20,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.domorolls.domo.components.BaseButton
-import com.domorolls.domo.components.RegistrationCodeInput
-import com.domorolls.domo.ui.theme.DomoTheme
-import com.domorolls.domo.ui.theme.InterFont
+import kk.domoRolls.ru.components.BaseButton
+import kk.domoRolls.ru.components.RegistrationCodeInput
+import kk.domoRolls.ru.ui.theme.DomoTheme
+import kk.domoRolls.ru.ui.theme.InterFont
 
 @Composable
 fun OTPScreen() {

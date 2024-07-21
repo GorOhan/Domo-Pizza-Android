@@ -1,4 +1,4 @@
-package com.domorolls.domo.ui.theme
+package kk.domoRolls.ru.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.domorolls.domo.R
+import kk.domoRolls.ru.R
 
 // Set of Material typography styles to start with
 val Typography = Typography(

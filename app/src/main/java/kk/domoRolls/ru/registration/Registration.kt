@@ -1,4 +1,4 @@
-package com.domorolls.domo.registration
+package kk.domoRolls.ru.registration
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,14 +26,21 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.domorolls.domo.components.BaseButton
-import com.domorolls.domo.ui.theme.DomoGray
-import com.domorolls.domo.ui.theme.DomoTheme
-import com.domorolls.domo.ui.theme.InterFont
+import androidx.hilt.navigation.compose.hiltViewModel
+import kk.domoRolls.ru.components.BaseButton
+import kk.domoRolls.ru.ui.theme.DomoGray
+import kk.domoRolls.ru.ui.theme.DomoTheme
+import kk.domoRolls.ru.ui.theme.InterFont
 
 @Composable
-fun RegistrationScreen() {
+fun RegistrationScreen(
+    viewModel: RegistrationViewModel = hiltViewModel(),
+) {
+    RegistrationScreenUI()
+}
 
+@Composable
+fun RegistrationScreenUI(){
     Column(
         modifier = Modifier
             .background(color = Color.White)
@@ -161,9 +168,9 @@ fun RegistrationScreen() {
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun RegistrationPreview() {
     DomoTheme {
-        RegistrationScreen()
+        RegistrationScreenUI()
     }
 }
 

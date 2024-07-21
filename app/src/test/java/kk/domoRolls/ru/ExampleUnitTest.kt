@@ -1,4 +1,4 @@
-package com.domorolls.domo
+package kk.domoRolls.ru
 
 import org.junit.Test
 

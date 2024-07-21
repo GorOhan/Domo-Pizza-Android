@@ -3,14 +3,16 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     id("kotlin-parcelize")
+    alias(libs.plugins.googleServices)
+    alias(libs.plugins.hilt)
 }
 
 android {
-    namespace = "com.domorolls.domo"
+    namespace = "kk.domoRolls.ru"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.domorolls.domo"
+        applicationId = "kk.domoRolls.ru"
         minSdk = 29
         targetSdk = 34
         versionCode = 1
@@ -61,6 +63,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.config)
+    implementation(libs.firebase.database)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -68,7 +72,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    //implementation(libs.androidx.hilt.navigation)
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("com.google.dagger:hilt-android:2.48")
+    kapt("com.google.dagger:hilt-android-compiler:2.44")
 
 }
 kapt {
