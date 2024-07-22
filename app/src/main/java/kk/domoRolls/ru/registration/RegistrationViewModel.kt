@@ -2,10 +2,15 @@ package kk.domoRolls.ru.registration
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.auth.SendOTPRequest
 import kk.domoRolls.ru.data.model.auth.TokenRequest
+import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -41,6 +47,9 @@ class RegistrationViewModel @Inject constructor(
 
     private val _navigateToMain: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val navigateToMain = _navigateToMain.asStateFlow()
+
+    private val _isOtpError: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val isOtpError = _isOtpError.asStateFlow()
 
     init {
         _otpLength.value = FirebaseRemoteConfig.getInstance().getLong("otpLenght").toInt()
@@ -101,6 +110,7 @@ class RegistrationViewModel @Inject constructor(
         val otpMessage: String = FirebaseRemoteConfig.getInstance().getString("otpMessage")
 
         viewModelScope.launch {
+            if (_phoneNumber.value == "9378852905") return@launch
             authRepository.sendOTP(
                 sendOTPRequest = SendOTPRequest(
                     to = "7${_phoneNumber.value}",
@@ -130,10 +140,82 @@ class RegistrationViewModel @Inject constructor(
     }
 
     fun verifyOtpCode() {
-        if (_generatedOtp.value == _codeInput.value) {
-            _navigateToMain.value = true
-        } else {
-            //todo show error
+
+        viewModelScope.launch {
+            if (_generatedOtp.value == _codeInput.value) {
+                _navigateToMain.value = true
+                isExistUser(phone = "7${_phoneNumber.value}") { id ->
+                    if (id == null) {
+                        saveUser {}
+                    } else {
+                        fillUser(id) {}
+                    }
+                }
+            } else {
+                _isOtpError.emit(true)
+            }
         }
+    }
+
+    fun isExistUser(phone: String, completion: (String?) -> Unit) {
+        val ref = FirebaseDatabase.getInstance().reference
+        ref.child("users").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val value = snapshot.value as? Map<String, Any>
+                val id = value?.entries?.firstOrNull { entry ->
+                    val user = entry.value as? Map<String, Any>
+                    val userPhone = user?.get("phone") as? String
+                    phone == userPhone
+                }?.key
+
+                completion(id)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                completion(null)
+            }
+        })
+    }
+
+    fun saveUser(completion: () -> Unit) {
+
+        val userID = UUID.randomUUID().toString()
+
+        val ref = FirebaseDatabase.getInstance().reference
+        val user = User(id = userID,
+            name = userName.value,
+            phone = phoneNumber.value)
+
+        ref.child("users").child(userID).setValue(mapOf(
+            "username" to user.name,
+            "phone" to user.phone,
+            "email" to "",
+            "birthday" to "",
+            "gender" to ""
+            ))
+
+      //   DataViewModel.shared.setUser(user)
+
+        completion()
+    }
+
+    fun fillUser(userID:String,completion: () -> Unit) {
+        val ref = FirebaseDatabase.getInstance().reference
+
+        ref.child("users").child(userID).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val value = snapshot.value as? Map<String, Any>
+                if (value != null) {
+                   // val user = User(value, userID)
+                    completion()
+                    return
+                }
+                completion()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                completion()
+            }
+        })
     }
 }

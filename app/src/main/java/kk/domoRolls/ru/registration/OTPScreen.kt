@@ -17,6 +17,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -53,6 +55,7 @@ fun OTPScreen(
         phoneState = registrationViewModel.phoneNumber,
         otpLengthState = registrationViewModel.otpLength,
         loginButtonEnableState = registrationViewModel.isReadyToLogin,
+        isOtpErrorState = registrationViewModel.isOtpError
     )
 }
 
@@ -65,12 +68,22 @@ fun OTPScreenUI(
     codeState: StateFlow<String> = MutableStateFlow(""),
     phoneState: StateFlow<String> = MutableStateFlow(""),
     otpLengthState: StateFlow<Int> = MutableStateFlow(0),
-    loginButtonEnableState: StateFlow<Boolean> = MutableStateFlow(false)
-    ) {
+    loginButtonEnableState: StateFlow<Boolean> = MutableStateFlow(false),
+    isOtpErrorState: StateFlow<Boolean> = MutableStateFlow(false)
+
+) {
+    val haptic = LocalHapticFeedback.current
     val code by codeState.collectAsState()
     val phone by phoneState.collectAsState()
     val otpLength by otpLengthState.collectAsState()
+    val isOtpError by isOtpErrorState.collectAsState()
     val loginButtonEnable by loginButtonEnableState.collectAsState()
+
+    LaunchedEffect(isOtpError) {
+        if (isOtpError) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -135,7 +148,6 @@ fun OTPScreenUI(
             initialCode = code,
             onTextChanged = {
                 if (it.length == otpLength) {
-
                     //  viewModel.loginUser(otp = it, phone = phoneNumber)
                 }
                 if (it.length <= otpLength) {
@@ -144,9 +156,8 @@ fun OTPScreenUI(
 //                if (otp.length != 6) {
 //                    viewModel.setOtpError()
 //                }
-
             },
-            isError = false
+            isError = isOtpError,
         )
 
         Row(

@@ -50,7 +50,7 @@ fun RegistrationScreen(
 
     RegistrationScreenUI(
         onGetSmsClick = {
-            //viewModel.sendOTP()
+            viewModel.sendOTP()
             navController.navigate(Screen.OTPScreen.route)
         },
         getSmsEnableState = viewModel.isReadyToSendOtp,
@@ -75,7 +75,6 @@ fun RegistrationScreenUI(
     val userName by userNameState.collectAsState()
     val phone by userPhoneState.collectAsState()
     val getSmsEnable by getSmsEnableState.collectAsState()
-
 
     Column(
         modifier = Modifier

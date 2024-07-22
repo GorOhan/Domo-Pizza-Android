@@ -52,7 +52,7 @@ fun RegistrationCodeInput(
     }
 
     LaunchedEffect(isError) {
-        delay(1000)
+        delay(1500)
         code = TextFieldValue("", TextRange(initialCode.length))
     }
 
@@ -74,7 +74,8 @@ fun RegistrationCodeInput(
 private fun CodeEntry(
     modifier: Modifier = Modifier,
     text: String,
-    isError: Boolean = false) {
+    isError: Boolean = false
+) {
 
     val color = animateColorAsState(
         targetValue = if (isError) Color.Red
@@ -89,7 +90,7 @@ private fun CodeEntry(
             .border(
                 width = 1.dp,
                 shape = RoundedCornerShape(24.dp),
-                color = if (text.isEmpty()) DomoGray else DomoBlue
+                color = if (isError) Color.Red else if (text.isEmpty()) DomoGray else DomoBlue
             ),
 
         contentAlignment = Alignment.Center
@@ -97,7 +98,8 @@ private fun CodeEntry(
         Text(
             modifier = Modifier.align(Alignment.Center),
             text = text,
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            color = if (isError) Color.Red else Color.Black
         )
     }
 }
@@ -109,12 +111,13 @@ private fun CodeInputDecoration(code: String, length: Int, isError: Boolean = fa
             modifier = Modifier
                 .padding(horizontal = 10.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween) {
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             for (i in 0 until length) {
                 val text = if (i < code.length) code[i].toString() else ""
                 val isFinalError = isError && code.length == length
                 CodeEntry(
-                    modifier = Modifier.weight(1/length.toFloat()),
+                    modifier = Modifier.weight(1 / length.toFloat()),
                     text,
                     isFinalError
                 )
