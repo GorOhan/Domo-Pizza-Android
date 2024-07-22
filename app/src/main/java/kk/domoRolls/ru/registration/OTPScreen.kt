@@ -55,7 +55,8 @@ fun OTPScreen(
         phoneState = registrationViewModel.phoneNumber,
         otpLengthState = registrationViewModel.otpLength,
         loginButtonEnableState = registrationViewModel.isReadyToLogin,
-        isOtpErrorState = registrationViewModel.isOtpError
+        isOtpErrorState = registrationViewModel.isOtpError,
+        setOtpError = { registrationViewModel.setOTPError(it) }
     )
 }
 
@@ -69,7 +70,8 @@ fun OTPScreenUI(
     phoneState: StateFlow<String> = MutableStateFlow(""),
     otpLengthState: StateFlow<Int> = MutableStateFlow(0),
     loginButtonEnableState: StateFlow<Boolean> = MutableStateFlow(false),
-    isOtpErrorState: StateFlow<Boolean> = MutableStateFlow(false)
+    isOtpErrorState: StateFlow<Boolean> = MutableStateFlow(false),
+    setOtpError: (Boolean) ->Unit = {},
 
 ) {
     val haptic = LocalHapticFeedback.current
@@ -82,6 +84,8 @@ fun OTPScreenUI(
     LaunchedEffect(isOtpError) {
         if (isOtpError) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        } else {
+            setOtpError.invoke(false)
         }
     }
 
@@ -153,9 +157,8 @@ fun OTPScreenUI(
                 if (it.length <= otpLength) {
                     onOTPInput(it)
                 }
-//                if (otp.length != 6) {
-//                    viewModel.setOtpError()
-//                }
+
+                setOtpError(false)
             },
             isError = isOtpError,
         )

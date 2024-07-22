@@ -15,6 +15,7 @@ import kk.domoRolls.ru.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
@@ -217,5 +218,9 @@ class RegistrationViewModel @Inject constructor(
                 completion()
             }
         })
+    }
+
+    fun setOTPError(isError:Boolean){
+        _isOtpError.value = isError
     }
 }
