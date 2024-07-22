@@ -1,4 +1,4 @@
-package kk.domoRolls.ru.registration
+package kk.domoRolls.ru.presentation.registration
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,12 +10,12 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.auth.SendOTPRequest
 import kk.domoRolls.ru.data.model.auth.TokenRequest
+import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
@@ -29,6 +29,7 @@ import kotlin.random.Random
 @HiltViewModel
 class RegistrationViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val dataStoreService: DataStoreService,
 ) : ViewModel() {
 
     private val _userName: MutableStateFlow<String> = MutableStateFlow("")
@@ -145,11 +146,11 @@ class RegistrationViewModel @Inject constructor(
         viewModelScope.launch {
             if (_generatedOtp.value == _codeInput.value) {
                 _navigateToMain.value = true
-                isExistUser(phone = "7${_phoneNumber.value}") { id ->
+                isExistUser(phone = _phoneNumber.value) { id ->
                     if (id == null) {
-                        saveUser {}
+                        saveUser()
                     } else {
-                        fillUser(id) {}
+                        fillUser(id)
                     }
                 }
             } else {
@@ -158,7 +159,7 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 
-    fun isExistUser(phone: String, completion: (String?) -> Unit) {
+    private fun isExistUser(phone: String, completion: (String?) -> Unit) {
         val ref = FirebaseDatabase.getInstance().reference
         ref.child("users").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -178,7 +179,7 @@ class RegistrationViewModel @Inject constructor(
         })
     }
 
-    fun saveUser(completion: () -> Unit) {
+    private fun saveUser() {
 
         val userID = UUID.randomUUID().toString()
 
@@ -195,27 +196,24 @@ class RegistrationViewModel @Inject constructor(
             "gender" to ""
             ))
 
-      //   DataViewModel.shared.setUser(user)
-
-        completion()
+        dataStoreService.setUserData(user)
     }
 
-    fun fillUser(userID:String,completion: () -> Unit) {
+    private fun fillUser(userID:String) {
         val ref = FirebaseDatabase.getInstance().reference
 
         ref.child("users").child(userID).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val value = snapshot.value as? Map<String, Any>
-                if (value != null) {
-                   // val user = User(value, userID)
-                    completion()
-                    return
-                }
-                completion()
+                val value = snapshot.value
+                val mapData = value as HashMap<String,String>
+                dataStoreService.setUserData(User(
+                    id = userID,
+                    name = mapData["username"] ?:"",
+                    phone = mapData["phone"] ?:""
+                ))
             }
 
             override fun onCancelled(error: DatabaseError) {
-                completion()
             }
         })
     }

@@ -1,16 +1,16 @@
-package kk.domoRolls.ru.navigation
+package kk.domoRolls.ru.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import kk.domoRolls.ru.html.HtmlScreen
-import kk.domoRolls.ru.onboarding.NotifyPermissionScreen
-import kk.domoRolls.ru.registration.OTPScreen
-import kk.domoRolls.ru.registration.RegistrationScreen
-import kk.domoRolls.ru.registration.RegistrationViewModel
-import kk.domoRolls.ru.splash.SplashScreen
+import kk.domoRolls.ru.presentation.html.HtmlScreen
+import kk.domoRolls.ru.presentation.onboarding.NotifyPermissionScreen
+import kk.domoRolls.ru.presentation.registration.OTPScreen
+import kk.domoRolls.ru.presentation.registration.RegistrationScreen
+import kk.domoRolls.ru.presentation.registration.RegistrationViewModel
+import kk.domoRolls.ru.presentation.splash.SplashScreen
 
 sealed class Screen(val route: String) {
     data object SplashScreen : Screen("splashScreen")

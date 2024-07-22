@@ -12,8 +12,8 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import dagger.hilt.android.AndroidEntryPoint
-import kk.domoRolls.ru.navigation.NavMain
-import kk.domoRolls.ru.ui.theme.DomoTheme
+import kk.domoRolls.ru.presentation.navigation.NavMain
+import kk.domoRolls.ru.presentation.theme.DomoTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

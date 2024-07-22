@@ -1,4 +1,4 @@
-package kk.domoRolls.ru.ui.theme
+package kk.domoRolls.ru.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

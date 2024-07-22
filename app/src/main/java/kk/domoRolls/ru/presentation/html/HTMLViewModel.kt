@@ -1,4 +1,4 @@
-package kk.domoRolls.ru.html
+package kk.domoRolls.ru.presentation.html
 
 import androidx.lifecycle.ViewModel
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig

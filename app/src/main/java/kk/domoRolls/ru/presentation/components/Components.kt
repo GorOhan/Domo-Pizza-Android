@@ -1,4 +1,4 @@
-package kk.domoRolls.ru.components
+package kk.domoRolls.ru.presentation.components
 
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape

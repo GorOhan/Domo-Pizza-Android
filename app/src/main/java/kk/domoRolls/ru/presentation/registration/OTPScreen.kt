@@ -1,4 +1,4 @@
-package kk.domoRolls.ru.registration
+package kk.domoRolls.ru.presentation.registration
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,11 +27,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import kk.domoRolls.ru.components.BaseButton
-import kk.domoRolls.ru.components.RegistrationCodeInput
-import kk.domoRolls.ru.navigation.Screen
-import kk.domoRolls.ru.ui.theme.DomoTheme
-import kk.domoRolls.ru.ui.theme.InterFont
+import kk.domoRolls.ru.presentation.components.BaseButton
+import kk.domoRolls.ru.presentation.components.RegistrationCodeInput
+import kk.domoRolls.ru.presentation.navigation.Screen
+import kk.domoRolls.ru.presentation.theme.DomoTheme
+import kk.domoRolls.ru.presentation.theme.InterFont
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
