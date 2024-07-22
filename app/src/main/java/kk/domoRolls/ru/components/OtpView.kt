@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -72,7 +71,10 @@ fun RegistrationCodeInput(
 }
 
 @Composable
-private fun CodeEntry(text: String, isError: Boolean = false) {
+private fun CodeEntry(
+    modifier: Modifier = Modifier,
+    text: String,
+    isError: Boolean = false) {
 
     val color = animateColorAsState(
         targetValue = if (isError) Color.Red
@@ -80,10 +82,9 @@ private fun CodeEntry(text: String, isError: Boolean = false) {
     )
 
     Box(
-        modifier = Modifier
-            .padding(4.dp)
-            .width(74.dp)
-            .height(80.dp)
+        modifier = modifier
+            .padding(2.dp)
+            .height(70.dp)
             .clip(RectangleShape)
             .border(
                 width = 1.dp,
@@ -106,13 +107,17 @@ private fun CodeInputDecoration(code: String, length: Int, isError: Boolean = fa
     Box(modifier = Modifier) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 10.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween) {
             for (i in 0 until length) {
                 val text = if (i < code.length) code[i].toString() else ""
                 val isFinalError = isError && code.length == length
-                CodeEntry(text, isFinalError)
+                CodeEntry(
+                    modifier = Modifier.weight(1/length.toFloat()),
+                    text,
+                    isFinalError
+                )
             }
         }
     }

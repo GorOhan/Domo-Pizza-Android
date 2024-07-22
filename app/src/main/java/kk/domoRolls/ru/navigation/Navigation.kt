@@ -1,12 +1,15 @@
 package kk.domoRolls.ru.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kk.domoRolls.ru.html.HtmlScreen
 import kk.domoRolls.ru.onboarding.NotifyPermissionScreen
 import kk.domoRolls.ru.registration.OTPScreen
 import kk.domoRolls.ru.registration.RegistrationScreen
+import kk.domoRolls.ru.registration.RegistrationViewModel
 import kk.domoRolls.ru.splash.SplashScreen
 
 sealed class Screen(val route: String) {
@@ -14,12 +17,14 @@ sealed class Screen(val route: String) {
     data object RegistrationScreen : Screen("registrationScreen")
     data object OTPScreen : Screen("otpScreen")
     data object NotifyPermissionScreen : Screen("notifyPermissionScreen")
+    data object HTMLScreen : Screen("htmlScreen")
 }
 
 @Composable
 internal fun NavMain(
 ) {
     val navController = rememberNavController()
+    val registrationViewModel: RegistrationViewModel = hiltViewModel()
 
     NavHost(navController, startDestination = Screen.SplashScreen.route) {
 
@@ -28,15 +33,19 @@ internal fun NavMain(
         }
 
         composable(route = Screen.RegistrationScreen.route) {
-            RegistrationScreen(navController)
+            RegistrationScreen(navController,registrationViewModel)
         }
 
         composable(route = Screen.OTPScreen.route) {
-            OTPScreen(navController)
+            OTPScreen(navController,registrationViewModel)
         }
 
         composable(route = Screen.NotifyPermissionScreen.route) {
             NotifyPermissionScreen()
+        }
+
+        composable(route = Screen.HTMLScreen.route) {
+            HtmlScreen()
         }
 
 //

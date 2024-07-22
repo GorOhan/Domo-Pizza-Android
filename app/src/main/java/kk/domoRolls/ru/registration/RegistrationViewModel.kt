@@ -5,12 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.auth.SendOTPRequest
+import kk.domoRolls.ru.data.model.auth.TokenRequest
 import kk.domoRolls.ru.domain.repository.AuthRepository
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.random.Random
@@ -20,45 +24,70 @@ class RegistrationViewModel @Inject constructor(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
 
-    private val _toLoginScreen: MutableSharedFlow<Boolean> = MutableSharedFlow()
-    val toLoginScreen = _toLoginScreen.asSharedFlow()
+    private val _userName: MutableStateFlow<String> = MutableStateFlow("")
+    val userName = _userName.asStateFlow()
 
-    private val _toMainScreen: MutableSharedFlow<Boolean> = MutableSharedFlow()
-    val toMainScreen = _toMainScreen.asSharedFlow()
+    private val _phoneNumber: MutableStateFlow<String> = MutableStateFlow("")
+    val phoneNumber = _phoneNumber.asStateFlow()
 
-    private val _toOnBoardingScreen: MutableSharedFlow<Boolean> = MutableSharedFlow()
-    val toOnBoardingScreen = _toOnBoardingScreen.asSharedFlow()
+    private val _codeInput: MutableStateFlow<String> = MutableStateFlow("")
+    val codeInput = _codeInput.asStateFlow()
 
+    private val _token: MutableStateFlow<String> = MutableStateFlow("")
+    private val _generatedOtp: MutableStateFlow<String> = MutableStateFlow("")
+
+    private val _otpLength: MutableStateFlow<Int> = MutableStateFlow(0)
+    val otpLength = _otpLength.asStateFlow()
+
+    private val _navigateToMain: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val navigateToMain = _navigateToMain.asStateFlow()
 
     init {
-
-//        viewModelScope.launch {
-//            authRepository.getToken(
-//                TokenRequest(user = "KonstantinKiski", pass = "xadrat-2cyxjo-nefFix")
-//            )
-//                .onEach {
-//                    sendOTP("Bearer Token ${it.token}")
-//                }
-//                .catch {
-//
-//                }
-//                .collect()
-//        }
+        _otpLength.value = FirebaseRemoteConfig.getInstance().getLong("otpLenght").toInt()
     }
 
-    private fun sendOTP(token: String) {
-        var test: String = FirebaseRemoteConfig.getInstance().getString("otpMessage")
+    val isReadyToSendOtp =
+        combine(
+            _userName,
+            _phoneNumber,
+        ) { user, phone ->
+            (user.isNotBlank()) && (phone.length == 10)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = false,
+        )
 
+    val isReadyToLogin =
+        combine(
+            _otpLength,
+            _codeInput,
+        ) { otpLength, code ->
+            otpLength == code.length
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = false,
+        )
+
+    fun onUserNameInput(input: String) {
+        if (input.length < 15) _userName.value = input
+    }
+
+    fun onUserPhoneInput(input: String) {
+        if (input.length < 11) _phoneNumber.value = input
+    }
+
+    fun getToken() {
         viewModelScope.launch {
-            authRepository.sendOTP(
-                sendOTPRequest = SendOTPRequest(
-                    to = "79378852905",
-                    txt = "$test ${generateOTP()}"
-                ),
-                token = token
+            authRepository.getToken(
+                TokenRequest(
+                    user = "KonstantinKiski",
+                    pass = "xadrat-2cyxjo-nefFix"
+                )
             )
                 .onEach {
-
+                    _token.value = it.token
                 }
                 .catch {
 
@@ -66,15 +95,45 @@ class RegistrationViewModel @Inject constructor(
                 .collect()
         }
     }
-}
 
-fun generateOTP(): String {
-    val digits = "0123456789"
-    var otp = ""
-    for (i in 0 until 6) {
-        val randomIndex = Random.nextInt(digits.length)
-        val character = digits[randomIndex]
-        otp += character
+    fun sendOTP() {
+        _generatedOtp.value = generateOTP()
+        val otpMessage: String = FirebaseRemoteConfig.getInstance().getString("otpMessage")
+
+        viewModelScope.launch {
+            authRepository.sendOTP(
+                sendOTPRequest = SendOTPRequest(
+                    to = "7${_phoneNumber.value}",
+                    txt = "$otpMessage ${_generatedOtp.value}"
+                ),
+                token = _token.value
+            )
+                .onEach {}
+                .catch {}
+                .collect()
+        }
     }
-    return otp
+
+    fun onOTPInput(input: String) {
+        if (input.length <= _otpLength.value) _codeInput.value = input
+    }
+
+    private fun generateOTP(): String {
+        val digits = "0123456789"
+        var otp = ""
+        for (i in 0 until _otpLength.value) {
+            val randomIndex = Random.nextInt(digits.length)
+            val character = digits[randomIndex]
+            otp += character
+        }
+        return otp
+    }
+
+    fun verifyOtpCode() {
+        if (_generatedOtp.value == _codeInput.value) {
+            _navigateToMain.value = true
+        } else {
+            //todo show error
+        }
+    }
 }

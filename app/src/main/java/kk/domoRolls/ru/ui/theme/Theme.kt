@@ -62,7 +62,6 @@ fun DomoTheme(
             fontWeight = FontWeight.Thin,
             fontSize = 20.sp,
             lineHeight = 40.sp,
-            color = DomoGray,
             textAlign = TextAlign.Start,
             fontFamily = InterFont
         ),

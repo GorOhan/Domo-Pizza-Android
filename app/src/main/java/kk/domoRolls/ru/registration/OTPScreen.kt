@@ -1,6 +1,7 @@
 package kk.domoRolls.ru.registration
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,22 +30,47 @@ import kk.domoRolls.ru.components.RegistrationCodeInput
 import kk.domoRolls.ru.navigation.Screen
 import kk.domoRolls.ru.ui.theme.DomoTheme
 import kk.domoRolls.ru.ui.theme.InterFont
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun OTPScreen(
     navController: NavController,
+    registrationViewModel: RegistrationViewModel,
 ) {
+    val loginUser by registrationViewModel.navigateToMain.collectAsState()
+
+    LaunchedEffect(loginUser) {
+        if (loginUser) navController.navigate(Screen.NotifyPermissionScreen.route)
+    }
+
     OTPScreenUI(
-        onNavigationClick = {
-            navController.navigate(Screen.NotifyPermissionScreen.route)
-        }
+        onGetOtpClick = { registrationViewModel.sendOTP() },
+        onNavBackClick = { navController.popBackStack() },
+        verifyOtp = { registrationViewModel.verifyOtpCode() },
+        onOTPInput = { registrationViewModel.onOTPInput(it) },
+        codeState = registrationViewModel.codeInput,
+        phoneState = registrationViewModel.phoneNumber,
+        otpLengthState = registrationViewModel.otpLength,
+        loginButtonEnableState = registrationViewModel.isReadyToLogin,
     )
 }
 
 @Composable
 fun OTPScreenUI(
-    onNavigationClick: () -> Unit = {}
-) {
+    onGetOtpClick: () -> Unit = {},
+    onNavBackClick: () -> Unit = {},
+    verifyOtp: () -> Unit = {},
+    onOTPInput: (String) -> Unit = {},
+    codeState: StateFlow<String> = MutableStateFlow(""),
+    phoneState: StateFlow<String> = MutableStateFlow(""),
+    otpLengthState: StateFlow<Int> = MutableStateFlow(0),
+    loginButtonEnableState: StateFlow<Boolean> = MutableStateFlow(false)
+    ) {
+    val code by codeState.collectAsState()
+    val phone by phoneState.collectAsState()
+    val otpLength by otpLengthState.collectAsState()
+    val loginButtonEnable by loginButtonEnableState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -93,24 +122,24 @@ fun OTPScreenUI(
             modifier = Modifier
                 .padding(horizontal = 22.dp)
                 .fillMaxWidth(),
-            text = "+7 999 999 99 99",
+            text = "+7$phone",
             textAlign = TextAlign.Left,
             style = MaterialTheme.typography.bodyMedium,
-
             )
 
 
         RegistrationCodeInput(
             modifier = Modifier
                 .padding(vertical = 10.dp),
-            codeLength = 4,
-            initialCode = "23",
+            codeLength = otpLength,
+            initialCode = code,
             onTextChanged = {
-                if (it.length == 4) {
+                if (it.length == otpLength) {
+
                     //  viewModel.loginUser(otp = it, phone = phoneNumber)
                 }
-                if (it.length <= 4) {
-                    // otp = it
+                if (it.length <= otpLength) {
+                    onOTPInput(it)
                 }
 //                if (otp.length != 6) {
 //                    viewModel.setOtpError()
@@ -131,9 +160,11 @@ fun OTPScreenUI(
                 text = "Изменить номер",
                 textAlign = TextAlign.Left,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.clickable { onNavBackClick() }
             )
             Text(
+                modifier = Modifier.clickable { onGetOtpClick() },
                 text = "Получить код повторно",
                 textAlign = TextAlign.Left,
                 style = MaterialTheme.typography.bodyLarge,
@@ -148,8 +179,9 @@ fun OTPScreenUI(
                 .padding(horizontal = 22.dp, vertical = 20.dp)
                 .fillMaxWidth(),
             onClick = {
-                onNavigationClick.invoke()
-            }
+                verifyOtp()
+            },
+            enable = loginButtonEnable
         )
     }
 }
