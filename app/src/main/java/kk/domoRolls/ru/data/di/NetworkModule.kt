@@ -5,6 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kk.domoRolls.ru.data.api.AuthApi
+import kk.domoRolls.ru.data.api.ServiceApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -34,6 +35,7 @@ object NetworkModule {
         .addInterceptor(httpLoggingInterceptor)
         .build()
 
+
     @Singleton
     @Named("auth")
     @Provides
@@ -47,11 +49,31 @@ object NetworkModule {
             .build()
     }
 
+    @Singleton
+    @Named("order")
+    @Provides
+    fun provideRetrofitOrder(
+        okHttpClient: OkHttpClient
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://api-ru.iiko.services/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+    }
+
 
     @Singleton
     @Provides
     fun provideDriverApi(@Named("auth") retrofit: Retrofit): AuthApi {
         return retrofit.create(AuthApi::class.java)
     }
+
+    @Singleton
+    @Provides
+    fun provideServiceApi(@Named("order") retrofit: Retrofit): ServiceApi {
+        return retrofit.create(ServiceApi::class.java)
+    }
+
 
 }

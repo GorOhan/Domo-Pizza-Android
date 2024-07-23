@@ -68,7 +68,7 @@ fun OTPScreenUI(
     onOTPInput: (String) -> Unit = {},
     codeState: StateFlow<String> = MutableStateFlow(""),
     phoneState: StateFlow<String> = MutableStateFlow(""),
-    otpLengthState: StateFlow<Int> = MutableStateFlow(0),
+    otpLengthState: StateFlow<Int> = MutableStateFlow(6),
     loginButtonEnableState: StateFlow<Boolean> = MutableStateFlow(false),
     isOtpErrorState: StateFlow<Boolean> = MutableStateFlow(false),
     setOtpError: (Boolean) ->Unit = {},
