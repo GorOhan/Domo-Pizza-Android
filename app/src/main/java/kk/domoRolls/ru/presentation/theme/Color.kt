@@ -12,3 +12,5 @@ val Pink40 = Color(0xFF7D5260)
 
 val DomoGray = Color(0xFFBCBCBC)
 val DomoBlue = Color(0xFF4759F6)
+val DomoBorder = Color(0xFFF9F9F9)
+val DomoSub = Color(0xFFCECECE)

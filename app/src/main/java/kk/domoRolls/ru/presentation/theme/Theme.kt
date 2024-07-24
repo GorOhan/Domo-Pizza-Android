@@ -73,7 +73,7 @@ fun DomoTheme(
         bodySmall = TextStyle(
             fontFamily = InterFont,
             fontWeight = FontWeight.Normal,
-            fontSize = 8.sp,
+            fontSize = 12.sp,
             color = MaterialTheme.colorScheme.tertiary
         ),
         bodyLarge = TextStyle(

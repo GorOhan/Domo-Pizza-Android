@@ -3,12 +3,12 @@ package kk.domoRolls.ru.data.model.order
 import com.google.gson.annotations.SerializedName
 
 data class GetMenuResponse(
-    @SerializedName("id")
-    val id: String?,
-    @SerializedName("name")
-    val name: String?,
-    @SerializedName("description")
-    val description: String?,
+//    @SerializedName("id")
+//    val id: String?,
+//    @SerializedName("name")
+//    val name: String?,
+//    @SerializedName("description")
+//    val description: String?,
     @SerializedName("itemCategories")
     val itemCategories: List<ItemCategory>
     )
@@ -20,21 +20,42 @@ data class ItemCategory(
     val id: String?,
     @SerializedName("name")
     val name: String?,
+//    @SerializedName("description")
+//    val description: String?,
+//    @SerializedName("buttonImageUrl")
+//    val buttonImageUrl: String?,
+//    @SerializedName("headerImageUrl")
+//    val headerImageUrl: String?,
+)
+
+data class MenuItem(
+    @SerializedName("itemSizes")
+    val itemSizes: List<MenuItemSize>? = emptyList(),
+    @SerializedName("itemId")
+    val itemId: String? = "",
+    @SerializedName("name")
+    val name: String? = "",
+    @SerializedName("description")
+    val description: String? = "",
+    val isEnable:Boolean = true,
+    val countInCart:Int = 0,
+)
+
+data class MenuItemSize(
+    @SerializedName("prices")
+    val prices: List<ItemPrice>?,
+    @SerializedName("portionWeightGrams")
+    val portionWeightGrams: Int?,
     @SerializedName("description")
     val description: String?,
     @SerializedName("buttonImageUrl")
     val buttonImageUrl: String?,
-    @SerializedName("headerImageUrl")
-    val headerImageUrl: String?,
 )
 
-data class MenuItem(
-    @SerializedName("sku")
-    val sku: String?,
-    @SerializedName("name")
-    val name: String?,
-    @SerializedName("description")
-    val description: String?,
-    @SerializedName("orderItemType")
-    val orderItemType: String?,
+data class ItemPrice(
+    @SerializedName("organizationId")
+    val organizationId: String?,
+    @SerializedName("price")
+    val price: Double?,
+
 )
