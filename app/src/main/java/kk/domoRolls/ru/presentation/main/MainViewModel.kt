@@ -27,7 +27,7 @@ class MainViewModel @Inject constructor(
     private val serviceRepository: ServiceRepository
 ) : ViewModel() {
 
-    private val _user: MutableStateFlow<User?> = MutableStateFlow(User())
+    private val _user: MutableStateFlow<User> = MutableStateFlow(User())
     val user = _user.asStateFlow()
 
     private val _promoList: MutableStateFlow<List<Promo>> = MutableStateFlow(emptyList())
@@ -36,9 +36,13 @@ class MainViewModel @Inject constructor(
     private val _menu: MutableStateFlow<List<MenuItem>> = MutableStateFlow(emptyList())
     val menu = _menu.asStateFlow()
 
+    private val _showLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val showLoading = _showLoading.asStateFlow()
+
     init {
 
         viewModelScope.launch {
+            _showLoading.value = true
 
             val firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
             val otpMessage: String = firebaseRemoteConfig.getString("promo_list")
@@ -47,7 +51,6 @@ class MainViewModel @Inject constructor(
             otpMessage.parseJson()?.let {
                 _promoList.value = it
             }
-                                          println("PROMO PROM ${_promoList.value}")
 
 
 //            firebaseRemoteConfig.fetch(100)
@@ -77,6 +80,7 @@ class MainViewModel @Inject constructor(
                 }
                 .collect { menuItems ->
                     _menu.value = menuItems
+                    _showLoading.value = false
                 }
         }
     }

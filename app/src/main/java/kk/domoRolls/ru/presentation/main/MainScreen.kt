@@ -36,6 +36,8 @@ import coil.compose.AsyncImage
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.domain.model.Promo
+import kk.domoRolls.ru.domain.model.User
+import kk.domoRolls.ru.presentation.components.DomoLoading
 import kk.domoRolls.ru.presentation.components.MenuItemComponent
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoTheme
@@ -48,6 +50,7 @@ fun MainScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
 ) {
     val promo by mainViewModel.promoList.collectAsState()
+
     MainScreenUI(
         menuState = mainViewModel.menu,
         promoList = promo,
@@ -55,7 +58,9 @@ fun MainScreen(
             navController.navigate(it)
         },
         onAddToCart = { mainViewModel.addToCart(it) },
-        onRemoveFromCart = { mainViewModel.removeFromCart(it) }
+        onRemoveFromCart = { mainViewModel.removeFromCart(it) },
+        showLoadingState = mainViewModel.showLoading,
+        userState = mainViewModel.user
     )
 }
 
@@ -66,8 +71,12 @@ fun MainScreenUI(
     onNavigationClick: (String) -> Unit = {},
     onAddToCart: (MenuItem) -> Unit = {},
     onRemoveFromCart: (MenuItem) -> Unit = {},
+    showLoadingState: StateFlow<Boolean> = MutableStateFlow(false),
+    userState: StateFlow<User> = MutableStateFlow(User())
 ) {
     val menu by menuState.collectAsState()
+    val showLoading by showLoadingState.collectAsState()
+    val user by userState.collectAsState()
 
 
     Column(
@@ -83,7 +92,7 @@ fun MainScreenUI(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Text(text = "Hy")
+                Text(text = "Привет ${user.name}")
                 Text(text = "address")
             }
             Image(
@@ -102,6 +111,10 @@ fun MainScreenUI(
             onPlusClick = onAddToCart,
             onMinusClick = onRemoveFromCart,
         )
+    }
+
+    if (showLoading){
+        DomoLoading()
     }
 
 }
@@ -128,16 +141,6 @@ fun MenuSection(
                 onMinusClick = { onMinusClick(item) },
                 onPlusClick = { onPlusClick(item) }
                 )
-//            Image(
-//                painter = rememberAsyncImagePainter(item.itemSizes?.first()?.buttonImageUrl),
-//                contentDescription = null,
-//                modifier = Modifier
-//                    .clickable {
-//                    }
-//                    .height(212.dp)
-//                    .padding(8.dp)
-//                    .clip(RoundedCornerShape(20.dp))
-//            )
         }
     }
 }
@@ -154,11 +157,11 @@ fun StorySection(
             AsyncImage(
                 modifier = Modifier
                     .clickable {
-                            onNavigationClick("${Screen.StoryScreen.route}/${promo.indexOf(item)}")
-                        }
-                        .height(160.dp)
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(20.dp)),
+                        onNavigationClick("${Screen.StoryScreen.route}/${promo.indexOf(item)}")
+                    }
+                    .height(160.dp)
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(20.dp)),
                 model = item.bannerImage,
                 contentDescription = "", imageLoader = ImageLoader(LocalContext.current) )
         })

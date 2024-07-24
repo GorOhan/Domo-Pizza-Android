@@ -1,6 +1,12 @@
 package kk.domoRolls.ru.presentation.components
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,15 +28,19 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
 import coil.compose.rememberAsyncImagePainter
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.MenuItem
@@ -75,7 +85,7 @@ fun MenuItemComponent(
     menuItem: MenuItem,
     onMinusClick: () -> Unit = {},
     onPlusClick: () -> Unit = {},
-    ) {
+) {
     Column(
         modifier = Modifier
             .padding(4.dp)
@@ -108,7 +118,7 @@ fun MenuItemComponent(
         Text(
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(start = 16.dp),
-            text = menuItem.itemSizes?.first()?.portionWeightGrams.toString(),
+            text = "${menuItem.itemSizes?.first()?.portionWeightGrams.toString()} гр",
             color = DomoSub
         )
 
@@ -119,30 +129,46 @@ fun MenuItemComponent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DomoBorder)
-                    .clickable(
-                        interactionSource = MutableInteractionSource(),
-                        indication = rememberRipple(),
-                        onClick = { onMinusClick() }
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    modifier = Modifier.size(20.dp),
-                    painter = painterResource(id = R.drawable.ic_minus),
-                    contentDescription = ""
+
+
+            AnimatedVisibility(visible = menuItem.countInCart>0) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.5f),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(DomoBorder)
+                            .clickable(
+                                interactionSource = MutableInteractionSource(),
+                                indication = rememberRipple(),
+                                onClick = { onMinusClick() }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            modifier = Modifier.size(14.dp),
+                            painter = painterResource(id = R.drawable.ic_minus),
+                            contentDescription = ""
+                        )
+                    }
+
+                    Text(
+                        text = menuItem.countInCart.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 16.sp,
+                    )
+                }
+            }
+            AnimatedVisibility(visible = menuItem.countInCart == 0,) {
+                Text(
+                    text = "${menuItem.itemSizes?.first()?.prices?.first()?.price?.toInt().toString()} ₽",
+                    style = MaterialTheme.typography.bodyLarge,
                 )
             }
-
-            Text(
-                text = "4",
-                style = MaterialTheme.typography.bodyMedium,
-                fontSize = 16.sp,
-            )
             Box(
                 modifier = Modifier
                     .size(36.dp)
@@ -157,7 +183,7 @@ fun MenuItemComponent(
             ) {
 
                 Image(
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(14.dp),
                     painter = painterResource(id = R.drawable.ic_plus),
                     contentDescription = ""
                 )
@@ -165,6 +191,35 @@ fun MenuItemComponent(
 
         }
 
+    }
+}
+
+@Composable
+fun DomoLoading() {
+    val infiniteTransition = rememberInfiniteTransition(label = "")
+
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1000),
+            repeatMode = RepeatMode.Reverse
+        ), label = ""
+    )
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .alpha(0.4f)
+            .background(Color.White)
+    ) {
+            Image(
+                modifier = Modifier
+                    .size((alpha + 0.3) * 72.dp)
+                    .alpha(alpha),
+                painter = painterResource(id = R.drawable.ic_domo),
+                contentDescription = ""
+            )
     }
 }
 

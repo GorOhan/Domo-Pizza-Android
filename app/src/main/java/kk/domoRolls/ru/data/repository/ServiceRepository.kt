@@ -18,12 +18,22 @@ class ServiceRepositoryImpl(
     private var currentMenu: MutableStateFlow<List<MenuItem>> = MutableStateFlow(emptyList())
     private var currentCart: MutableList<MenuItem> = mutableListOf()
 
-    override fun addToCart(menuItem: MenuItem){
+    override fun addToCart(menuItem: MenuItem) {
+        val item = currentMenu.value.indexOf(menuItem)
+        val lists = currentMenu.value.toMutableList()
+        lists[item] =
+            currentMenu.value[item].copy(countInCart = currentMenu.value[item].countInCart + 1)
         currentCart.add(menuItem)
+        currentMenu.value = lists
     }
 
     override fun removeFromCart(menuItem: MenuItem) {
+        val item = currentMenu.value.indexOf(menuItem)
+        val lists = currentMenu.value.toMutableList()
+        lists[item] =
+            currentMenu.value[item].copy(countInCart = currentMenu.value[item].countInCart -1)
         currentCart.remove(menuItem)
+        currentMenu.value = lists
     }
 
     override fun getCart(): Flow<List<MenuItem>> = emitFlow {
@@ -36,21 +46,21 @@ class ServiceRepositoryImpl(
         return@emitFlow token
     }
 
-    override fun getMenuById(
+    override suspend fun getMenuById(
         disableIds: List<String>,
         getMenuRequest: GetMenuRequest,
         token: String
-    ): Flow<List<MenuItem>> =
-        emitFlow {
-            currentMenu.value = currentMenu.value.ifEmpty {
-                serviceApi.getMenuById(
-                    getMenuRequest,
-                    token = "Bearer $token"
-                ).itemCategories.flatMap { it.items ?: emptyList() }
-            }
-            currentMenu.value = currentMenu.value.map { it.copy(isEnable = !disableIds.contains(it.itemId))}
-            return@emitFlow currentMenu.value
+    ): Flow<List<MenuItem>> {
+        currentMenu.value = currentMenu.value.ifEmpty {
+            serviceApi.getMenuById(
+                getMenuRequest,
+                token = "Bearer $token"
+            ).itemCategories.flatMap { it.items ?: emptyList() }
         }
+        currentMenu.value =
+            currentMenu.value.map { it.copy(isEnable = !disableIds.contains(it.itemId)) }
+        return currentMenu
+    }
 
     override fun getStopListsIds(
         getStopListRequest: GetStopListRequest,
