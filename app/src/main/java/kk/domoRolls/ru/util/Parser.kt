@@ -7,12 +7,16 @@ import kk.domoRolls.ru.domain.model.Promo
 import java.lang.reflect.Type
 
 fun String.parseJson(): List<Promo>? {
-    val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
+    try {
+        val moshi = Moshi.Builder()
+            .add(KotlinJsonAdapterFactory())
+            .build()
 
-    val listMyDataType: Type = Types.newParameterizedType(List::class.java, Promo::class.java)
-    val jsonAdapter = moshi.adapter<List<Promo>>(listMyDataType)
+        val listMyDataType: Type = Types.newParameterizedType(List::class.java, Promo::class.java)
+        val jsonAdapter = moshi.adapter<List<Promo>>(listMyDataType)
+        return jsonAdapter.fromJson(this)
 
-    return jsonAdapter.fromJson(this)
+    } catch (e: Exception){
+        return null
+    }
 }

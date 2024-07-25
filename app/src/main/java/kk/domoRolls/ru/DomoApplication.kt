@@ -16,7 +16,7 @@ class DomoApplication : Application() {
 
         val remoteConfig: FirebaseRemoteConfig = Firebase.remoteConfig
         val configSettings = remoteConfigSettings {
-            minimumFetchIntervalInSeconds = 3600
+            minimumFetchIntervalInSeconds = 36
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
 

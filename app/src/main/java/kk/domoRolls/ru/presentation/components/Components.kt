@@ -89,12 +89,19 @@ fun MenuItemComponent(
     Column(
         modifier = Modifier
             .padding(4.dp)
+            .clickable(
+                enabled = menuItem.isEnable,
+                interactionSource = MutableInteractionSource(),
+                indication = null,
+                onClick = {}
+            )
             .clip(RoundedCornerShape(20.dp))
             .border(
                 width = 1.dp,
                 shape = RoundedCornerShape(20.dp),
                 color = DomoBorder
-            ),
+            )
+            .alpha(if (menuItem.isEnable) 1f else 0.3f)
     ) {
         Box(
             modifier = Modifier
@@ -221,6 +228,49 @@ fun DomoLoading() {
                 contentDescription = ""
             )
     }
+}
+
+@Composable
+fun CartButton(
+    size: Int,
+    price: String,
+    backgroundColor: Color,
+    titleColor: Color = Color.White,
+    modifier: Modifier,
+    enable: Boolean = true,
+    onClick: () -> Unit = {}
+) {
+    Button(
+        modifier = modifier
+            .height(48.dp)
+            .clip(RoundedCornerShape(0.4f)),
+        enabled = enable,
+        content = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text ="Корзина $size",
+                    color = titleColor,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = price,
+                    color = titleColor,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+        },
+        onClick = { onClick.invoke() },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = backgroundColor,
+            contentColor = Color.White,
+            disabledContainerColor = MaterialTheme.colorScheme.onSecondary,
+            disabledContentColor = Color.White
+        )
+    )
 }
 
 @Preview(showBackground = true)

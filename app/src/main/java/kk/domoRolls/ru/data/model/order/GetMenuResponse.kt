@@ -20,6 +20,7 @@ data class ItemCategory(
     val id: String?,
     @SerializedName("name")
     val name: String?,
+    var isChecked:Boolean = false,
 //    @SerializedName("description")
 //    val description: String?,
 //    @SerializedName("buttonImageUrl")
@@ -39,6 +40,7 @@ data class MenuItem(
     val description: String? = "",
     val isEnable:Boolean = true,
     val countInCart:Int = 0,
+    val categoryId: String = ""
 )
 
 data class MenuItemSize(

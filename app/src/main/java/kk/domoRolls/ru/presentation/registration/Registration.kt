@@ -2,10 +2,18 @@ package kk.domoRolls.ru.presentation.registration
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.presentation.components.BaseButton
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoBlue
@@ -117,6 +126,7 @@ fun RegistrationScreenUI(
                 .fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
             value = userName,
+            singleLine = true,
             onValueChange = { value -> onUserNameInput(value) },
             colors = OutlinedTextFieldDefaults.colors(
                 cursorColor = DomoBlue,
@@ -205,4 +215,68 @@ fun RegistrationPreview() {
     }
 }
 
+fun LazyListScope.gridItems(
+    count: Int,
+    nColumns: Int,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    itemContent: @Composable BoxScope.(Int) -> Unit,
+) {
+    gridItems(
+        data = List(count) { it },
+        nColumns = nColumns,
+        horizontalArrangement = horizontalArrangement,
+        itemContent = itemContent,
+    )
+}
+
+fun <T> LazyListScope.gridItems(
+    data: List<T>,
+    nColumns: Int,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    key: ((item: T) -> Any)? = null,
+    itemContent: @Composable BoxScope.(T) -> Unit,
+) {
+    val rows = if (data.isEmpty()) 0 else 1 + (data.count() - 1) / nColumns
+    items(rows) { rowIndex ->
+        Row(horizontalArrangement = horizontalArrangement) {
+            for (columnIndex in 0 until nColumns) {
+                val itemIndex = rowIndex * nColumns + columnIndex
+                if (itemIndex < data.count()) {
+                    val item = data[itemIndex]
+                    androidx.compose.runtime.key(key?.invoke(item)) {
+                        Box(
+                            modifier = Modifier.weight(1f, fill = true),
+                            propagateMinConstraints = true
+                        ) {
+                            itemContent.invoke(this, item)
+                        }
+                    }
+                } else {
+                    Spacer(Modifier.weight(1f, fill = true))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TestContainer(
+    menu:List<MenuItem>,
+){
+    LazyColumn {
+        item {
+            Text(text = "My LazyColumn Title")
+        }
+        // with coun
+        // or with list of items
+        gridItems(menu, nColumns = 2) { item ->
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .padding(5.dp)
+                    .background(Color.Gray)
+            )
+        }
+    }
+}
 

@@ -5,6 +5,7 @@ import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
 import kk.domoRolls.ru.data.model.order.GetStreetsRequest
 import kk.domoRolls.ru.data.model.order.GetStreetsResponse
+import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.domain.repository.ServiceRepository
@@ -15,6 +16,8 @@ class ServiceRepositoryImpl(
     private val serviceApi: ServiceApi,
 ) : ServiceRepository {
 
+    private var currentCategories: MutableStateFlow<List<ItemCategory>> =
+        MutableStateFlow(emptyList())
     private var currentMenu: MutableStateFlow<List<MenuItem>> = MutableStateFlow(emptyList())
     private var currentCart: MutableList<MenuItem> = mutableListOf()
 
@@ -31,7 +34,7 @@ class ServiceRepositoryImpl(
         val item = currentMenu.value.indexOf(menuItem)
         val lists = currentMenu.value.toMutableList()
         lists[item] =
-            currentMenu.value[item].copy(countInCart = currentMenu.value[item].countInCart -1)
+            currentMenu.value[item].copy(countInCart = currentMenu.value[item].countInCart - 1)
         currentCart.remove(menuItem)
         currentMenu.value = lists
     }
@@ -52,10 +55,9 @@ class ServiceRepositoryImpl(
         token: String
     ): Flow<List<MenuItem>> {
         currentMenu.value = currentMenu.value.ifEmpty {
-            serviceApi.getMenuById(
-                getMenuRequest,
-                token = "Bearer $token"
-            ).itemCategories.flatMap { it.items ?: emptyList() }
+            val api = serviceApi.getMenuById(tokenRequest = getMenuRequest, token = "Bearer $token")
+            currentCategories.value = api.itemCategories
+            api.itemCategories.flatMap { cat -> cat.items?.map { it.copy(categoryId = cat.id?:"") } ?: emptyList() }
         }
         currentMenu.value =
             currentMenu.value.map { it.copy(isEnable = !disableIds.contains(it.itemId)) }
@@ -80,4 +82,10 @@ class ServiceRepositoryImpl(
         val menu = serviceApi.getStreets(getStreetsRequest, token = "Bearer $token")
         return@emitFlow menu
     }
+
+    override fun getCategories(): Flow<List<ItemCategory>> {
+        return currentCategories
+    }
+
+
 }

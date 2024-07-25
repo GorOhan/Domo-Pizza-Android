@@ -4,6 +4,7 @@ import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
 import kk.domoRolls.ru.data.model.order.GetStreetsRequest
 import kk.domoRolls.ru.data.model.order.GetStreetsResponse
+import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.model.order.ServiceTokenResponse
@@ -18,5 +19,7 @@ interface ServiceRepository {
     fun addToCart(menuItem: MenuItem)
     fun removeFromCart(menuItem: MenuItem)
     fun getCart():Flow<List<MenuItem>>
+    fun getCategories():Flow<List<ItemCategory>>
+
 
 }
