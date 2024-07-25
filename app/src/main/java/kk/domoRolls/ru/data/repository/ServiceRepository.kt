@@ -58,9 +58,8 @@ class ServiceRepositoryImpl(
             val api = serviceApi.getMenuById(tokenRequest = getMenuRequest, token = "Bearer $token")
             currentCategories.value = api.itemCategories
             api.itemCategories.flatMap { cat -> cat.items?.map { it.copy(categoryId = cat.id?:"") } ?: emptyList() }
+                .map { it.copy(isEnable = !disableIds.contains(it.itemId)) }
         }
-        currentMenu.value =
-            currentMenu.value.map { it.copy(isEnable = !disableIds.contains(it.itemId)) }
         return currentMenu
     }
 

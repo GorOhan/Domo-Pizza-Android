@@ -19,13 +19,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,7 +48,6 @@ import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.domain.model.Promo
 import kk.domoRolls.ru.domain.model.User
-import kk.domoRolls.ru.presentation.components.CartButton
 import kk.domoRolls.ru.presentation.components.DomoLoading
 import kk.domoRolls.ru.presentation.components.MenuItemComponent
 import kk.domoRolls.ru.presentation.navigation.Screen
@@ -94,7 +92,7 @@ fun MainScreenUI(
     showLoadingState: StateFlow<Boolean> = MutableStateFlow(false),
     userState: StateFlow<User> = MutableStateFlow(User()),
     categoriesState: StateFlow<List<ItemCategory>> = MutableStateFlow(emptyList()),
-    onCategoryCheck:(ItemCategory)->Unit = {}
+    onCategoryCheck: (ItemCategory) -> Unit = {}
 ) {
     val menu by menuState.collectAsState()
     val showLoading by showLoadingState.collectAsState()
@@ -108,12 +106,12 @@ fun MainScreenUI(
         contentAlignment = Alignment.Center
 
     ) {
-        CartButton(
-            modifier = Modifier
-                .padding(horizontal = 22.dp, vertical = 64.dp)
-                .zIndex(1f)
-                .align(Alignment.BottomCenter),
-            size = 4, price = "450", backgroundColor = DomoBlue,)
+//        CartButton(
+//            modifier = Modifier
+//                .padding(horizontal = 22.dp, vertical = 64.dp)
+//                .zIndex(1f)
+//                .align(Alignment.BottomCenter),
+//            size = 4, price = "450", backgroundColor = DomoBlue,)
 
         ContentSection(
             promoList = promoList,
@@ -145,14 +143,30 @@ fun ContentSection(
     onPlusClick: (MenuItem) -> Unit = {},
     onNavigationClick: (String) -> Unit,
     categories: List<ItemCategory>,
-    onCategoryCheck:(ItemCategory)->Unit = {},
-    user:User,
+    onCategoryCheck: (ItemCategory) -> Unit = {},
+    user: User,
 ) {
     val insets = WindowInsets.statusBars
     val statusBarHeight = insets.asPaddingValues().calculateTopPadding()
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(key1 = listState.firstVisibleItemIndex) {
+        var accumulatedSize = 0
+
+        categories.forEachIndexed { index, category ->
+            val categorySize = menu.filter { it.categoryId == category.id }.size
+            val thresholdIndex = index + (accumulatedSize + categorySize) / 2
+
+            if (listState.firstVisibleItemIndex == thresholdIndex) {
+                onCategoryCheck.invoke(category)
+            }
+
+            accumulatedSize += categorySize
+        }
+    }
+
 
     LazyColumn(
         modifier = Modifier
@@ -190,25 +204,51 @@ fun ContentSection(
         }
 
         stickyHeader {
+            val rowState = rememberLazyListState()
+
+            LaunchedEffect(key1 = categories) {
+                if (categories.any { it.isChecked }) {
+                    rowState.animateScrollToItem(categories.indexOfFirst { it.isChecked })
+                }
+            }
+
             LazyRow(
+                state = rowState,
                 modifier = Modifier
-                    .padding(start = 12.dp)
-                    .zIndex(1f)
                     .background(Color.White)
-                ,
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp)
+                    .zIndex(1f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 itemsIndexed(items = categories, itemContent = { index, item ->
                     Box(
                         modifier = Modifier
+                            .padding(
+                                start = if (index == 0) 16.dp else 0.dp,
+                                end = if (index == categories.size - 1) 16.dp else 0.dp
+                            )
                             .clickable {
                                 onCategoryCheck(item)
                                 coroutineScope.launch {
-                                    listState.animateScrollToItem(
-                                        index = (menu.indexOfFirst {
-                                            it.categoryId == item.id
-                                        } / 2) + index + 2,
-                                    )
+                                    var accumulatedSize = 0
+                                    val catIndex = categories.indexOf(item)
+
+                                    categories.subList(0,catIndex).forEachIndexed { index, category ->
+                                        val categorySize = menu.filter { it.categoryId == category.id }.size
+                                        accumulatedSize += categorySize
+
+                                    }
+
+
+
+                                    listState.animateScrollToItem(index+accumulatedSize/2)
+
+//                                    listState.animateScrollToItem(
+//                                        index = (menu.indexOfFirst {
+//                                            it.categoryId == item.id
+//                                        } / 2) + index + 2,
+//                                    )
                                 }
                             }
                             .border(
@@ -219,8 +259,7 @@ fun ContentSection(
                             .background(
                                 if (item.isChecked) MaterialTheme.colorScheme.secondary else Color.White,
                                 RoundedCornerShape(24.dp)
-                            )
-                        ,
+                            ),
 
                         ) {
                         Text(
@@ -263,15 +302,20 @@ fun StorySection(
     promo: List<Promo>,
     onNavigationClick: (String) -> Unit,
 ) {
-    LazyRow() {
-        items(items = promo, itemContent = { item ->
+    LazyRow {
+        itemsIndexed(items = promo, itemContent = { inex, item ->
             AsyncImage(
                 modifier = Modifier
                     .clickable {
                         onNavigationClick("${Screen.StoryScreen.route}/${promo.indexOf(item)}")
                     }
                     .height(124.dp)
-                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
+                    .padding(
+                        start = 16.dp,
+                        top = 8.dp,
+                        bottom = 8.dp,
+                        end = if (inex == promo.size - 1) 16.dp else 0.dp
+                    )
                     .clip(RoundedCornerShape(20.dp)),
                 model = item.bannerImage,
                 contentDescription = "", imageLoader = ImageLoader(LocalContext.current))

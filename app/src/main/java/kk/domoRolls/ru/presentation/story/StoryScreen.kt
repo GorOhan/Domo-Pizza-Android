@@ -53,7 +53,7 @@ fun StoryScreen(
     StoryScreenUI(
         promoState = storyViewModel.promoList,
         currentIndex = currentIndex,
-        onBackClick = { navController.popBackStack() }
+        onBackClick = { navController.navigateUp() }
     )
 }
 
@@ -63,7 +63,7 @@ fun StoryScreen(
 fun StoryScreenUI(
     promoState: StateFlow<List<Promo>?> = MutableStateFlow(emptyList()),
     currentIndex: Int = 0,
-    onBackClick:()->Unit = {},
+    onBackClick: () -> Unit = {},
 ) {
     val promo by promoState.collectAsState()
 
@@ -85,17 +85,18 @@ fun StoryScreenUI(
 
 
     pagerScope.launch {
-        pagerState.animateScrollToPage(currentIndex)
+        enabled = true
+        pagerState.scrollToPage(currentIndex)
         delay(1500L)
-        repeat(promo?.size ?: (1 - currentIndex)){
-            if(pagerState.currentPage == 3){
-                //onBackClick()
-            }
-            delay(1500L)
-            pagerState.animateScrollToPage(
-                page = (pagerState.currentPage + 1),
-            )
-        }
+//        repeat(promo?.size ?: (1 - currentIndex)) {
+//            if (pagerState.currentPage == 3) {
+//                onBackClick()
+//            }
+//            delay(1500L)
+//            pagerState.animateScrollToPage(
+//                page = (pagerState.currentPage + 1),
+//            )
+//        }
     }
 
     HorizontalPager(state = pagerState) {
@@ -108,18 +109,17 @@ fun StoryScreenUI(
                 painter = rememberAsyncImagePainter(model = promo?.get(pagerState.currentPage)?.storyImage),
                 contentDescription = ""
             )
-
-            LinearProgressIndicator(
-                progress = progress,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 64.dp),
-                color =ProgressIndicatorDefaults.linearColor,
-                trackColor= linearTrackColor,
-                strokeCap=  ProgressIndicatorDefaults.LinearStrokeCap,
-            )
         }
     }
+    LinearProgressIndicator(
+        progress = progress,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 64.dp),
+        color = ProgressIndicatorDefaults.linearColor,
+        trackColor = linearTrackColor,
+        strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
+    )
 }
 
 @Preview(showBackground = true)
