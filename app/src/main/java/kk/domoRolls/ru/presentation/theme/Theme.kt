@@ -60,7 +60,7 @@ fun DomoTheme(
         ),
         titleSmall = TextStyle(
             fontWeight = FontWeight.Thin,
-            fontSize = 20.sp,
+            fontSize = 16.sp,
             lineHeight = 40.sp,
             textAlign = TextAlign.Start,
             fontFamily = InterFont

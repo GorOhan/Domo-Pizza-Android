@@ -112,7 +112,10 @@ fun MainScreen(
             sheetState = sheetState
         ) {
             ProductBottomSheet(
-                menuItem = currentItem
+                menuItem = currentItem,
+                menuState = mainViewModel.menu,
+                onMinusClick =  { mainViewModel.removeFromCart(currentItem) },
+                onPlusClick = { mainViewModel.addToCart(currentItem) }
             )
         }
     }
@@ -223,7 +226,8 @@ fun ContentSection(
             Row(
                 modifier = Modifier
                     .padding(horizontal = 22.dp)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(top = 22.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {

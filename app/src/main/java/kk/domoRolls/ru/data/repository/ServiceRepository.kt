@@ -21,7 +21,7 @@ class ServiceRepositoryImpl(
     private var currentMenu: MutableStateFlow<List<MenuItem>> = MutableStateFlow(emptyList())
 
     override fun addToCart(menuItem: MenuItem) {
-        val indexInMenu = currentMenu.value.indexOf(menuItem)
+        val indexInMenu = currentMenu.value.indexOfFirst { it.itemId == menuItem.itemId }
         val lists = currentMenu.value.toMutableList()
         val countInCart = currentMenu.value[indexInMenu].countInCart + 1
         lists[indexInMenu] =
@@ -32,9 +32,11 @@ class ServiceRepositoryImpl(
     override fun removeFromCart(menuItem: MenuItem) {
         val indexOfItem = currentMenu.value.indexOfFirst { it.itemId == menuItem.itemId }
         val lists = currentMenu.value.toMutableList()
-        val countInCart = currentMenu.value[indexOfItem].countInCart - 1
-        lists[indexOfItem] =
-            currentMenu.value[indexOfItem].copy(countInCart = countInCart)
+        if (currentMenu.value[indexOfItem].countInCart > 0) {
+            val countInCart = currentMenu.value[indexOfItem].countInCart - 1
+            lists[indexOfItem] =
+                currentMenu.value[indexOfItem].copy(countInCart = countInCart)
+        }
         currentMenu.value = lists
     }
 

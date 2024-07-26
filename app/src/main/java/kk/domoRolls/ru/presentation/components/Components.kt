@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +32,15 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -51,8 +60,11 @@ import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.MenuItemSize
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
+import kk.domoRolls.ru.presentation.theme.DomoPressed
 import kk.domoRolls.ru.presentation.theme.DomoSub
 import kk.domoRolls.ru.presentation.theme.DomoTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlin.time.times
 
 @Composable
@@ -64,7 +76,11 @@ fun BaseButton(
     enable: Boolean = true,
     onClick: () -> Unit = {}
 ) {
+    val buttonInteractionSource = remember { MutableInteractionSource() }
+    val iconPressed by buttonInteractionSource.collectIsPressedAsState()
+
     Button(
+        interactionSource = buttonInteractionSource,
         modifier = modifier
             .height(48.dp)
             .clip(RoundedCornerShape(0.4f)),
@@ -78,7 +94,7 @@ fun BaseButton(
         },
         onClick = { onClick.invoke() },
         colors = ButtonDefaults.buttonColors(
-            containerColor = backgroundColor,
+            containerColor = if (iconPressed) DomoPressed else backgroundColor,
             contentColor = Color.White,
             disabledContainerColor = MaterialTheme.colorScheme.onSecondary,
             disabledContentColor = Color.White
@@ -92,7 +108,7 @@ fun MenuItemComponent(
     menuItem: MenuItem,
     onMinusClick: () -> Unit = {},
     onPlusClick: () -> Unit = {},
-    onProductClick:() -> Unit = {}
+    onProductClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -312,12 +328,32 @@ fun CartButton(
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 fun ProductBottomSheet(
-    menuItem: MenuItem = MenuItem()
+    menuItem: MenuItem = MenuItem(),
+    menuState: StateFlow<List<MenuItem>> = MutableStateFlow(emptyList()),
+    onPlusClick: () -> Unit = {},
+    onMinusClick: () -> Unit = {},
 ) {
+    val menu by menuState.collectAsState()
+    var countInCart by remember {
+        mutableIntStateOf(0)
+    }
+
+    var itemPrice by remember {
+        mutableDoubleStateOf(0.0)
+    }
+
+
+    LaunchedEffect(key1 = menu) {
+        countInCart = menu.find { it.itemId == menuItem.itemId }?.countInCart ?: 0
+        itemPrice = menu.filter { menuItem -> menuItem.countInCart > 0 }
+            .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
+            .sumOf { it.second * it.first }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 32.dp)
             .background(Color.White)
     ) {
         Image(
@@ -330,36 +366,40 @@ fun ProductBottomSheet(
         )
 
         Text(
+            modifier = Modifier.padding(top = 12.dp),
             style = MaterialTheme.typography.titleMedium,
             color = Color.Black,
-            text = menuItem.name?:""
+            text = menuItem.name ?: ""
         )
 
         Text(
-            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(top = 10.dp),
+            style = MaterialTheme.typography.titleSmall,
             color = DomoGray,
             text = "Состав"
         )
 
         Text(
+            modifier = Modifier.padding(top = 10.dp, bottom = 40.dp),
             style = MaterialTheme.typography.bodySmall,
             color = Color.Black,
-            text = menuItem.description?:""
+            text = menuItem.description ?: ""
         )
 
 
-        if (menuItem.countInCart == 0) {
+        AnimatedVisibility(countInCart == 0) {
             BaseButton(
                 buttonTitle = "В корзину",
                 backgroundColor = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier
-                    .padding( vertical = 20.dp)
+                    .padding(vertical = 20.dp)
                     .fillMaxWidth(),
                 onClick = {
-
+                    onPlusClick()
                 }
             )
-        } else {
+        }
+        AnimatedVisibility(countInCart != 0) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -381,7 +421,7 @@ fun ProductBottomSheet(
                             .clickable(
                                 interactionSource = MutableInteractionSource(),
                                 indication = rememberRipple(),
-                                onClick = { }
+                                onClick = { onMinusClick() }
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -392,11 +432,13 @@ fun ProductBottomSheet(
                         )
                     }
 
-                    Text(
-                        text = menuItem.countInCart.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 16.sp,
-                    )
+                    if (countInCart > 0) {
+                        Text(
+                            text = countInCart.toString(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 16.sp,
+                        )
+                    }
                     Box(
                         modifier = Modifier
                             .size(36.dp)
@@ -405,7 +447,7 @@ fun ProductBottomSheet(
                             .clickable(
                                 interactionSource = MutableInteractionSource(),
                                 indication = rememberRipple(),
-                                onClick = { }
+                                onClick = { onPlusClick() }
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -418,14 +460,12 @@ fun ProductBottomSheet(
                 }
 
                 BaseButton(
-                    buttonTitle = "В корзину",
+                    buttonTitle = "${itemPrice.toInt()} ₽",
                     backgroundColor = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding( start = 16.dp, bottom = 16.dp, top = 16.dp),
-                    onClick = {
-
-                    }
+                        .padding(start = 16.dp, bottom = 20.dp, top = 20.dp),
+                    onClick = { }
                 )
             }
         }
