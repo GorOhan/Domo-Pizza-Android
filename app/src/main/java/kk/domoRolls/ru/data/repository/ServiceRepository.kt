@@ -19,30 +19,24 @@ class ServiceRepositoryImpl(
     private var currentCategories: MutableStateFlow<List<ItemCategory>> =
         MutableStateFlow(emptyList())
     private var currentMenu: MutableStateFlow<List<MenuItem>> = MutableStateFlow(emptyList())
-    private var currentCart: MutableList<MenuItem> = mutableListOf()
 
     override fun addToCart(menuItem: MenuItem) {
-        val item = currentMenu.value.indexOf(menuItem)
+        val indexInMenu = currentMenu.value.indexOf(menuItem)
         val lists = currentMenu.value.toMutableList()
-        lists[item] =
-            currentMenu.value[item].copy(countInCart = currentMenu.value[item].countInCart + 1)
-        currentCart.add(menuItem)
+        val countInCart = currentMenu.value[indexInMenu].countInCart + 1
+        lists[indexInMenu] =
+            currentMenu.value[indexInMenu].copy(countInCart = countInCart)
         currentMenu.value = lists
     }
 
     override fun removeFromCart(menuItem: MenuItem) {
-        val item = currentMenu.value.indexOf(menuItem)
+        val indexOfItem = currentMenu.value.indexOfFirst { it.itemId == menuItem.itemId }
         val lists = currentMenu.value.toMutableList()
-        lists[item] =
-            currentMenu.value[item].copy(countInCart = currentMenu.value[item].countInCart - 1)
-        currentCart.remove(menuItem)
+        val countInCart = currentMenu.value[indexOfItem].countInCart - 1
+        lists[indexOfItem] =
+            currentMenu.value[indexOfItem].copy(countInCart = countInCart)
         currentMenu.value = lists
     }
-
-    override fun getCart(): Flow<List<MenuItem>> = emitFlow {
-        currentCart
-    }
-
 
     override fun getToken(tokenRequest: ServiceTokenRequest) = emitFlow {
         val token = serviceApi.getToken(tokenRequest)
@@ -57,9 +51,16 @@ class ServiceRepositoryImpl(
         currentMenu.value = currentMenu.value.ifEmpty {
             val api = serviceApi.getMenuById(tokenRequest = getMenuRequest, token = "Bearer $token")
             currentCategories.value = api.itemCategories
-            api.itemCategories.flatMap { cat -> cat.items?.map { it.copy(categoryId = cat.id?:"") } ?: emptyList() }
-                .map { it.copy(isEnable = !disableIds.contains(it.itemId)) }
+            api.itemCategories.flatMap { cat ->
+                cat.items?.map {
+                    it.copy(
+                        categoryId = cat.id ?: ""
+                    )
+                } ?: emptyList()
+            }
         }
+        currentMenu.value =
+            currentMenu.value.map { it.copy(isEnable = !disableIds.contains(it.itemId)) }
         return currentMenu
     }
 

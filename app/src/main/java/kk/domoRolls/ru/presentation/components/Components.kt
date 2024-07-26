@@ -16,15 +16,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,10 +46,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import coil.compose.rememberAsyncImagePainter
 import kk.domoRolls.ru.R
+import kk.domoRolls.ru.data.model.order.ItemPrice
 import kk.domoRolls.ru.data.model.order.MenuItem
+import kk.domoRolls.ru.data.model.order.MenuItemSize
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoSub
 import kk.domoRolls.ru.presentation.theme.DomoTheme
+import kotlin.time.times
 
 @Composable
 fun BaseButton(
@@ -138,7 +144,7 @@ fun MenuItemComponent(
         ) {
 
 
-            AnimatedVisibility(visible = menuItem.countInCart>0) {
+            AnimatedVisibility(visible = menuItem.countInCart > 0) {
                 Row(
                     modifier = Modifier.fillMaxWidth(0.5f),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -170,9 +176,11 @@ fun MenuItemComponent(
                     )
                 }
             }
-            AnimatedVisibility(visible = menuItem.countInCart == 0,) {
+            AnimatedVisibility(visible = menuItem.countInCart == 0) {
                 Text(
-                    text = "${menuItem.itemSizes?.first()?.prices?.first()?.price?.toInt().toString()} ₽",
+                    text = "${
+                        menuItem.itemSizes?.first()?.prices?.first()?.price?.toInt().toString()
+                    } ₽",
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
@@ -220,26 +228,30 @@ fun DomoLoading() {
             .alpha(0.4f)
             .background(Color.White)
     ) {
-            Image(
-                modifier = Modifier
-                    .size((alpha + 0.3) * 72.dp)
-                    .alpha(alpha),
-                painter = painterResource(id = R.drawable.ic_domo),
-                contentDescription = ""
-            )
+        Image(
+            modifier = Modifier
+                .size((alpha + 0.3) * 72.dp)
+                .alpha(alpha),
+            painter = painterResource(id = R.drawable.ic_domo),
+            contentDescription = ""
+        )
     }
 }
 
 @Composable
 fun CartButton(
-    size: Int,
-    price: String,
+    menu: List<MenuItem>,
     backgroundColor: Color,
     titleColor: Color = Color.White,
     modifier: Modifier,
     enable: Boolean = true,
     onClick: () -> Unit = {}
 ) {
+    val size = menu.sumOf { it.countInCart }
+    val itemPrice = menu.filter { menuItem ->  menuItem.countInCart > 0 }
+        .map { Pair(it.countInCart,it.itemSizes?.first()?.prices?.first()?.price?:0.0) }
+        .sumOf { it.second*it.first }
+
     Button(
         modifier = modifier
             .height(48.dp)
@@ -248,15 +260,35 @@ fun CartButton(
         content = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        modifier = Modifier.padding(end = 4.dp),
+                        text = "Корзина",
+                        color = titleColor,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Divider(
+                        color = Color.White,
+                        modifier = Modifier
+                            .fillMaxHeight()  //fill the max height
+                            .width(2.dp)
+                            .padding(vertical = 4.dp)
+                    )
+
+                    Text(
+                        modifier = Modifier.padding(start = 6.dp),
+                        text = size.toString(),
+                        color = titleColor,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
                 Text(
-                    text ="Корзина $size",
-                    color = titleColor,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = price,
+                    text = "${itemPrice.toInt()} ₽",
                     color = titleColor,
                     style = MaterialTheme.typography.bodyLarge
                 )

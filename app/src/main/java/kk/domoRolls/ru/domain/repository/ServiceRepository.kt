@@ -18,7 +18,6 @@ interface ServiceRepository {
 
     fun addToCart(menuItem: MenuItem)
     fun removeFromCart(menuItem: MenuItem)
-    fun getCart():Flow<List<MenuItem>>
     fun getCategories():Flow<List<ItemCategory>>
 
 

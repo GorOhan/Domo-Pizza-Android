@@ -48,6 +48,7 @@ import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.domain.model.Promo
 import kk.domoRolls.ru.domain.model.User
+import kk.domoRolls.ru.presentation.components.CartButton
 import kk.domoRolls.ru.presentation.components.DomoLoading
 import kk.domoRolls.ru.presentation.components.MenuItemComponent
 import kk.domoRolls.ru.presentation.navigation.Screen
@@ -92,7 +93,7 @@ fun MainScreenUI(
     showLoadingState: StateFlow<Boolean> = MutableStateFlow(false),
     userState: StateFlow<User> = MutableStateFlow(User()),
     categoriesState: StateFlow<List<ItemCategory>> = MutableStateFlow(emptyList()),
-    onCategoryCheck: (ItemCategory) -> Unit = {}
+    onCategoryCheck: (ItemCategory) -> Unit = {},
 ) {
     val menu by menuState.collectAsState()
     val showLoading by showLoadingState.collectAsState()
@@ -106,12 +107,16 @@ fun MainScreenUI(
         contentAlignment = Alignment.Center
 
     ) {
-//        CartButton(
-//            modifier = Modifier
-//                .padding(horizontal = 22.dp, vertical = 64.dp)
-//                .zIndex(1f)
-//                .align(Alignment.BottomCenter),
-//            size = 4, price = "450", backgroundColor = DomoBlue,)
+        if (menu.sumOf { it.countInCart } > 0) {
+            CartButton(
+                menu = menu,
+                modifier = Modifier
+                    .padding(horizontal = 22.dp, vertical = 64.dp)
+                    .zIndex(1f)
+                    .align(Alignment.BottomCenter),
+                backgroundColor = DomoBlue,
+            )
+        }
 
         ContentSection(
             promoList = promoList,
@@ -149,30 +154,30 @@ fun ContentSection(
     val insets = WindowInsets.statusBars
     val statusBarHeight = insets.asPaddingValues().calculateTopPadding()
 
-    val listState = rememberLazyListState()
+    val menuState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(key1 = listState.firstVisibleItemIndex) {
-        var accumulatedSize = 0
-
-        categories.forEachIndexed { index, category ->
-            val categorySize = menu.filter { it.categoryId == category.id }.size
-            val thresholdIndex = index + (accumulatedSize + categorySize) / 2
-
-            if (listState.firstVisibleItemIndex == thresholdIndex) {
-                onCategoryCheck.invoke(category)
-            }
-
-            accumulatedSize += categorySize
-        }
-    }
+//    LaunchedEffect(key1 = listState.firstVisibleItemIndex) {
+//        var accumulatedSize = 0
+//
+//        categories.forEachIndexed { index, category ->
+//            val categorySize = menu.filter { it.categoryId == category.id }.size
+//            val thresholdIndex = index + (accumulatedSize + categorySize) / 2
+//
+//            if (listState.firstVisibleItemIndex == thresholdIndex) {
+//                onCategoryCheck.invoke(category)
+//            }
+//
+//            accumulatedSize += categorySize
+//        }
+//    }
 
 
     LazyColumn(
         modifier = Modifier
             .padding(top = statusBarHeight)
             .fillMaxSize(),
-        state = listState
+        state = menuState
 
     ) {
 
@@ -208,7 +213,8 @@ fun ContentSection(
 
             LaunchedEffect(key1 = categories) {
                 if (categories.any { it.isChecked }) {
-                    rowState.animateScrollToItem(categories.indexOfFirst { it.isChecked })
+                    val indexOfItem = categories.indexOfFirst { it.isChecked }
+                    rowState.animateScrollToItem(indexOfItem)
                 }
             }
 
@@ -231,24 +237,11 @@ fun ContentSection(
                             .clickable {
                                 onCategoryCheck(item)
                                 coroutineScope.launch {
-                                    var accumulatedSize = 0
-                                    val catIndex = categories.indexOf(item)
-
-                                    categories.subList(0,catIndex).forEachIndexed { index, category ->
-                                        val categorySize = menu.filter { it.categoryId == category.id }.size
-                                        accumulatedSize += categorySize
-
-                                    }
-
-
-
-                                    listState.animateScrollToItem(index+accumulatedSize/2)
-
-//                                    listState.animateScrollToItem(
-//                                        index = (menu.indexOfFirst {
-//                                            it.categoryId == item.id
-//                                        } / 2) + index + 2,
-//                                    )
+                                    menuState.animateScrollToItem(
+                                        index = (menu.indexOfFirst {
+                                            it.categoryId == item.id
+                                        } / 2) + index + 2,
+                                    )
                                 }
                             }
                             .border(
