@@ -57,10 +57,8 @@ class ServiceRepositoryImpl(
                         categoryId = cat.id ?: ""
                     )
                 } ?: emptyList()
-            }
+            }.map { it.copy(isEnable = !disableIds.contains(it.itemId)) }
         }
-        currentMenu.value =
-            currentMenu.value.map { it.copy(isEnable = !disableIds.contains(it.itemId)) }
         return currentMenu
     }
 
