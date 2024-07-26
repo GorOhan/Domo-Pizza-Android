@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,10 +34,12 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import kk.domoRolls.ru.domain.model.Promo
 import kk.domoRolls.ru.presentation.theme.DomoTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 @Composable
@@ -72,7 +75,9 @@ fun StoryScreenUI(
     val pagerScope = rememberCoroutineScope()
     pagerScope.launch {
 
-        pagerState.scrollToPage(currentIndex)
+        withContext(Dispatchers.Main) {
+            pagerState.scrollToPage(currentIndex)
+        }
         delay(2500)
         if (!backClicked.value) onBackClick()
         backClicked.value = true
@@ -95,18 +100,21 @@ fun StoryScreenUI(
         animationSpec = animationSpec, label = ""
     )
 
-    Box {
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
         HorizontalPager(
             state = pagerState,
             userScrollEnabled = false
         ) {
 
             Box(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxWidth()
             ) {
 
 
                 Image(
+                    contentScale = ContentScale.FillBounds,
                     modifier = Modifier.fillMaxSize(),
                     painter = rememberAsyncImagePainter(model = promo?.get(pagerState.currentPage)?.storyImage),
                     contentDescription = ""
@@ -117,12 +125,12 @@ fun StoryScreenUI(
                     modifier = Modifier
                         .fillMaxWidth()
                         .width(1.dp)
-                        .padding(top = 64.dp),
+                        .padding(top = 52.dp),
                     color = Color.White,
                     trackColor = Color.White.copy(alpha = 0.2f),
                     strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
 
-                )
+                    )
             }
         }
     }

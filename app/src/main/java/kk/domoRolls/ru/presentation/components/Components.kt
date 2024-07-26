@@ -50,6 +50,7 @@ import kk.domoRolls.ru.data.model.order.ItemPrice
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.MenuItemSize
 import kk.domoRolls.ru.presentation.theme.DomoBorder
+import kk.domoRolls.ru.presentation.theme.DomoGray
 import kk.domoRolls.ru.presentation.theme.DomoSub
 import kk.domoRolls.ru.presentation.theme.DomoTheme
 import kotlin.time.times
@@ -91,6 +92,7 @@ fun MenuItemComponent(
     menuItem: MenuItem,
     onMinusClick: () -> Unit = {},
     onPlusClick: () -> Unit = {},
+    onProductClick:() -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -99,7 +101,9 @@ fun MenuItemComponent(
                 enabled = menuItem.isEnable,
                 interactionSource = MutableInteractionSource(),
                 indication = null,
-                onClick = {}
+                onClick = {
+                    onProductClick()
+                }
             )
             .clip(RoundedCornerShape(20.dp))
             .border(
@@ -248,9 +252,9 @@ fun CartButton(
     onClick: () -> Unit = {}
 ) {
     val size = menu.sumOf { it.countInCart }
-    val itemPrice = menu.filter { menuItem ->  menuItem.countInCart > 0 }
-        .map { Pair(it.countInCart,it.itemSizes?.first()?.prices?.first()?.price?:0.0) }
-        .sumOf { it.second*it.first }
+    val itemPrice = menu.filter { menuItem -> menuItem.countInCart > 0 }
+        .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
+        .sumOf { it.second * it.first }
 
     Button(
         modifier = modifier
@@ -305,10 +309,136 @@ fun CartButton(
     )
 }
 
+@SuppressLint("UnrememberedMutableInteractionSource")
+@Composable
+fun ProductBottomSheet(
+    menuItem: MenuItem = MenuItem()
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .background(Color.White)
+    ) {
+        Image(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(246.dp),
+            contentScale = ContentScale.Crop,
+            painter = rememberAsyncImagePainter(menuItem.itemSizes?.first()?.buttonImageUrl),
+            contentDescription = null,
+        )
+
+        Text(
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.Black,
+            text = menuItem.name?:""
+        )
+
+        Text(
+            style = MaterialTheme.typography.bodyMedium,
+            color = DomoGray,
+            text = "Состав"
+        )
+
+        Text(
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Black,
+            text = menuItem.description?:""
+        )
+
+
+        if (menuItem.countInCart == 0) {
+            BaseButton(
+                buttonTitle = "В корзину",
+                backgroundColor = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier
+                    .padding( vertical = 20.dp)
+                    .fillMaxWidth(),
+                onClick = {
+
+                }
+            )
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .padding(horizontal = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(DomoBorder)
+                            .clickable(
+                                interactionSource = MutableInteractionSource(),
+                                indication = rememberRipple(),
+                                onClick = { }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            modifier = Modifier.size(14.dp),
+                            painter = painterResource(id = R.drawable.ic_minus),
+                            contentDescription = ""
+                        )
+                    }
+
+                    Text(
+                        text = menuItem.countInCart.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 16.sp,
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(DomoBorder)
+                            .clickable(
+                                interactionSource = MutableInteractionSource(),
+                                indication = rememberRipple(),
+                                onClick = { }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            modifier = Modifier.size(14.dp),
+                            painter = painterResource(id = R.drawable.ic_plus),
+                            contentDescription = ""
+                        )
+                    }
+                }
+
+                BaseButton(
+                    buttonTitle = "В корзину",
+                    backgroundColor = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding( start = 16.dp, bottom = 16.dp, top = 16.dp),
+                    onClick = {
+
+                    }
+                )
+            }
+        }
+
+
+    }
+
+}
+
 @Preview(showBackground = true)
 @Composable
 fun RegistrationPreview() {
     DomoTheme {
-        MenuItemComponent(MenuItem(name = "name"))
+        ProductBottomSheet(MenuItem(name = "name"))
     }
 }

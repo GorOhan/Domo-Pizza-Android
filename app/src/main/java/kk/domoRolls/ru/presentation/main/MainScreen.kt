@@ -22,17 +22,25 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
@@ -51,20 +60,26 @@ import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.presentation.components.CartButton
 import kk.domoRolls.ru.presentation.components.DomoLoading
 import kk.domoRolls.ru.presentation.components.MenuItemComponent
+import kk.domoRolls.ru.presentation.components.ProductBottomSheet
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.registration.gridItems
 import kk.domoRolls.ru.presentation.theme.DomoBlue
+import kk.domoRolls.ru.presentation.theme.DomoGray
 import kk.domoRolls.ru.presentation.theme.DomoTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navController: NavHostController,
     mainViewModel: MainViewModel = hiltViewModel(),
 ) {
     val promo by mainViewModel.promoList.collectAsState()
+    var showBottomSheet by remember { mutableStateOf(false) }
+    var currentItem by remember { mutableStateOf(MenuItem()) }
+
 
     MainScreenUI(
         menuState = mainViewModel.menu,
@@ -79,8 +94,28 @@ fun MainScreen(
         categoriesState = mainViewModel.categories,
         onCategoryCheck = {
             mainViewModel.categoryCheck(it)
+        },
+        onProductClick = {
+            showBottomSheet = true
+            currentItem = it
         }
     )
+    val sheetState =
+        rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            containerColor = Color.White,
+            onDismissRequest = {
+                showBottomSheet = false
+            },
+            sheetState = sheetState
+        ) {
+            ProductBottomSheet(
+                menuItem = currentItem
+            )
+        }
+    }
 }
 
 @Composable
@@ -94,6 +129,7 @@ fun MainScreenUI(
     userState: StateFlow<User> = MutableStateFlow(User()),
     categoriesState: StateFlow<List<ItemCategory>> = MutableStateFlow(emptyList()),
     onCategoryCheck: (ItemCategory) -> Unit = {},
+    onProductClick: (MenuItem) -> Unit = {}
 ) {
     val menu by menuState.collectAsState()
     val showLoading by showLoadingState.collectAsState()
@@ -126,7 +162,8 @@ fun MainScreenUI(
             onNavigationClick = onNavigationClick,
             categories = categories,
             onCategoryCheck = onCategoryCheck,
-            user = user
+            user = user,
+            onProductClick = onProductClick
         )
 
     }
@@ -149,6 +186,7 @@ fun ContentSection(
     onNavigationClick: (String) -> Unit,
     categories: List<ItemCategory>,
     onCategoryCheck: (ItemCategory) -> Unit = {},
+    onProductClick: (MenuItem) -> Unit,
     user: User,
 ) {
     val insets = WindowInsets.statusBars
@@ -281,7 +319,8 @@ fun ContentSection(
                 MenuItemComponent(
                     menuItem = item,
                     onMinusClick = { onMinusClick(item) },
-                    onPlusClick = { onPlusClick(item) }
+                    onPlusClick = { onPlusClick(item) },
+                    onProductClick = { onProductClick(item) }
                 )
             }
 

@@ -4,9 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
@@ -19,35 +22,17 @@ import kk.domoRolls.ru.presentation.theme.DomoTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             DomoTheme {
-               NavMain()
+               Surface(
+                   modifier = Modifier.fillMaxSize(),
+                   color = Color.White
+               ) {
+                   NavMain()
+               }
             }
         }
-        val remoteConfig: FirebaseRemoteConfig = Firebase.remoteConfig
 
-        remoteConfig.fetchAndActivate()
-            .addOnCompleteListener(this) { task ->
-                // Handle the updated status if needed
-                if (task.isSuccessful) {
-                    val updated = task.result
-                    var test: String = FirebaseRemoteConfig.getInstance().getString("otpMessage")
-
-//                    Log.e(ContentValues.TAG, "Config params updated: $updated")
-//                    Toast.makeText(
-//                        this,
-//                        "Fetch and activate succeeded $test",
-//                        Toast.LENGTH_SHORT,
-//                    ).show()
-                } else {
-//                    Toast.makeText(
-//                        this,
-//                        "Fetch failed",
-//                        Toast.LENGTH_SHORT,
-//                    ).show()
-                }
-            }
     }
 }
 
