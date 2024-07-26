@@ -109,7 +109,7 @@ class MainViewModel @Inject constructor(
     fun categoryCheck(menuItem: ItemCategory) {
         val item = categories.value.indexOf(menuItem)
         val lists = categories.value.toMutableList()
-        lists.forEach{
+        lists.forEach {
             it.isChecked = false
         }
         lists[item] = categories.value[item].copy(isChecked = true)
@@ -120,10 +120,12 @@ class MainViewModel @Inject constructor(
     private fun categoryCheckFirst() {
         val item = 0
         val lists = categories.value.toMutableList()
-        lists.forEach{
+        lists.forEach {
             it.isChecked = false
         }
-        lists[item] = categories.value[item].copy(isChecked = true)
+        if (categories.value.size > 0) {
+            lists[item] = categories.value[item].copy(isChecked = true)
+        }
 
         _categories.value = lists
     }

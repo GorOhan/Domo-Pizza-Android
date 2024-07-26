@@ -2,10 +2,13 @@ package kk.domoRolls.ru.presentation.story
 
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -19,6 +22,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,10 +82,6 @@ fun StoryScreenUI(
         withContext(Dispatchers.Main) {
             pagerState.scrollToPage(currentIndex)
         }
-        delay(2500)
-        if (!backClicked.value) onBackClick()
-        backClicked.value = true
-
     }
 
     // Remember the animation state
@@ -89,16 +89,35 @@ fun StoryScreenUI(
 
     // Animate the float value from 0 to 1 and repeat it 4 times
     val animationSpec = infiniteRepeatable<Float>(
-        animation = tween(durationMillis = 2500),
+        animation = tween(
+            delayMillis = 11,
+            durationMillis = 3500,
+            easing = LinearEasing
+        ),
         repeatMode = RepeatMode.Restart,
     )
-
 
     val animatedValue by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = animationSpec, label = ""
     )
+
+    LaunchedEffect(Unit) {
+        repeat(pagerState.pageCount - currentIndex + 1) {
+            delay(3500)
+            val nextPage = (pagerState.currentPage + 1) % 5 // Assuming you have 5 pages
+            pagerScope.launch {
+                if (pagerState.pageCount == pagerState.currentPage + 1) {
+                    if (!backClicked.value) onBackClick()
+                    backClicked.value = true
+                } else {
+                    pagerState.animateScrollToPage(nextPage)
+                }
+            }
+        }
+    }
+
 
     Box(
         modifier = Modifier.fillMaxSize()
