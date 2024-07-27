@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -40,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,7 +49,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
@@ -64,8 +61,8 @@ import kk.domoRolls.ru.presentation.components.ProductBottomSheet
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.registration.gridItems
 import kk.domoRolls.ru.presentation.theme.DomoBlue
-import kk.domoRolls.ru.presentation.theme.DomoGray
 import kk.domoRolls.ru.presentation.theme.DomoTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -114,7 +111,7 @@ fun MainScreen(
             ProductBottomSheet(
                 menuItem = currentItem,
                 menuState = mainViewModel.menu,
-                onMinusClick =  { mainViewModel.removeFromCart(currentItem) },
+                onMinusClick = { mainViewModel.removeFromCart(currentItem) },
                 onPlusClick = { mainViewModel.addToCart(currentItem) }
             )
         }
@@ -197,21 +194,24 @@ fun ContentSection(
 
     val menuState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val isCategoryClicked = remember {
+        mutableStateOf(false)
+    }
 
-//    LaunchedEffect(key1 = listState.firstVisibleItemIndex) {
-//        var accumulatedSize = 0
-//
-//        categories.forEachIndexed { index, category ->
-//            val categorySize = menu.filter { it.categoryId == category.id }.size
-//            val thresholdIndex = index + (accumulatedSize + categorySize) / 2
-//
-//            if (listState.firstVisibleItemIndex == thresholdIndex) {
-//                onCategoryCheck.invoke(category)
-//            }
-//
-//            accumulatedSize += categorySize
-//        }
-//    }
+    LaunchedEffect(key1 = menuState.firstVisibleItemIndex) {
+        var accumulatedSize = 0
+
+        categories.forEachIndexed { index, category ->
+            val categorySize = menu.filter { it.categoryId == category.id }.size
+            val thresholdIndex = index + (accumulatedSize + categorySize) / 2
+
+            if (menuState.firstVisibleItemIndex == thresholdIndex && !isCategoryClicked.value) {
+                onCategoryCheck.invoke(category)
+            }
+
+            accumulatedSize += categorySize
+        }
+    }
 
 
     LazyColumn(
@@ -277,6 +277,7 @@ fun ContentSection(
                                 end = if (index == categories.size - 1) 16.dp else 0.dp
                             )
                             .clickable {
+                                isCategoryClicked.value = true
                                 onCategoryCheck(item)
                                 coroutineScope.launch {
                                     menuState.animateScrollToItem(
@@ -284,6 +285,8 @@ fun ContentSection(
                                             it.categoryId == item.id
                                         } / 2) + index + 2,
                                     )
+                                    delay(500L)
+                                    isCategoryClicked.value = false
                                 }
                             }
                             .border(

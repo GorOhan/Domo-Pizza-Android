@@ -113,7 +113,6 @@ class MainViewModel @Inject constructor(
             it.isChecked = false
         }
         lists[item] = categories.value[item].copy(isChecked = true)
-
         _categories.value = lists
     }
 

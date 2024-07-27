@@ -1,14 +1,11 @@
 package kk.domoRolls.ru.presentation.story
 
-
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -68,26 +65,17 @@ fun StoryScreenUI(
     onBackClick: () -> Unit = {},
 ) {
     val promo by promoState.collectAsState()
-
-    val backClicked = remember {
-        mutableStateOf(false)
-    }
-    val pagerState = rememberPagerState {
-        promo?.size ?: 0
-    }
-
+    val backClicked = remember { mutableStateOf(false) }
+    val pagerState = rememberPagerState { promo?.size ?: 0 }
     val pagerScope = rememberCoroutineScope()
-    pagerScope.launch {
 
+    pagerScope.launch {
         withContext(Dispatchers.Main) {
             pagerState.scrollToPage(currentIndex)
         }
     }
 
-    // Remember the animation state
     val infiniteTransition = rememberInfiniteTransition(label = "")
-
-    // Animate the float value from 0 to 1 and repeat it 4 times
     val animationSpec = infiniteRepeatable<Float>(
         animation = tween(
             delayMillis = 11,
@@ -96,7 +84,6 @@ fun StoryScreenUI(
         ),
         repeatMode = RepeatMode.Restart,
     )
-
     val animatedValue by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
@@ -118,7 +105,6 @@ fun StoryScreenUI(
         }
     }
 
-
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -130,8 +116,6 @@ fun StoryScreenUI(
             Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
-
-
                 Image(
                     contentScale = ContentScale.FillBounds,
                     modifier = Modifier.fillMaxSize(),
@@ -148,7 +132,6 @@ fun StoryScreenUI(
                     color = Color.White,
                     trackColor = Color.White.copy(alpha = 0.2f),
                     strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
-
                     )
             }
         }
@@ -161,6 +144,5 @@ fun StoryScreenUI(
 fun OTPScreenPreview() {
     DomoTheme {
         StoryScreenUI()
-
     }
 }
