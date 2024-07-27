@@ -12,7 +12,10 @@ import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.Promo
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.ServiceRepository
+import kk.domoRolls.ru.util.getCurrentWeekdayInRussian
+import kk.domoRolls.ru.util.isWorkingTime
 import kk.domoRolls.ru.util.parseJson
+import kk.domoRolls.ru.util.parseToWorkingHours
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,6 +49,9 @@ class MainViewModel @Inject constructor(
     private val _categories: MutableStateFlow<List<ItemCategory>> = MutableStateFlow(emptyList())
     val categories = _categories.asStateFlow()
 
+    private val _isOpen: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    val isOpen = _isOpen.asStateFlow()
+
     init {
 
         viewModelScope.launch {
@@ -63,12 +69,17 @@ class MainViewModel @Inject constructor(
                         firebaseRemoteConfig.activate().addOnCompleteListener { task ->
                             if (task.isSuccessful) {
 
-                                val workingHours: String = firebaseRemoteConfig.getString("working_hours")
-                                _user.value = dataStoreService.getUserData()
-                                promoJson.parseJson()?.let {
+                                val promoList: String = firebaseRemoteConfig.getString("promo_list")
+                                val workingHours: String =
+                                    firebaseRemoteConfig.getString("working_hours")
+
+                                promoList.parseJson()?.let {
                                     _promoList.value = it
                                 }
-                                println("PROMO PROM ${_promoList.value}")
+                                val hours = workingHours.parseToWorkingHours()?.workingHours?.get(
+                                    getCurrentWeekdayInRussian()
+                                )
+                                _isOpen.value = hours?.let { isWorkingTime(it) } ?: true
                             }
                         }
                     }
@@ -129,7 +140,7 @@ class MainViewModel @Inject constructor(
         _categories.value = lists
     }
 
-    fun getWorkingHours(){
-
+    fun hideSleepView(){
+        _isOpen.value = true
     }
 }

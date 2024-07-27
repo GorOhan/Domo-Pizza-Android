@@ -15,4 +15,5 @@ val DomoBlue = Color(0xFF4759F6)
 val DomoBorder = Color(0xFFF9F9F9)
 val DomoSub = Color(0xFFCECECE)
 val DomoPressed = Color(0xFF6373FF)
+val DomoOpacity = Color(0x88000000)
 

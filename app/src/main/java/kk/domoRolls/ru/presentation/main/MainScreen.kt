@@ -58,6 +58,7 @@ import kk.domoRolls.ru.presentation.components.CartButton
 import kk.domoRolls.ru.presentation.components.DomoLoading
 import kk.domoRolls.ru.presentation.components.MenuItemComponent
 import kk.domoRolls.ru.presentation.components.ProductBottomSheet
+import kk.domoRolls.ru.presentation.components.SleepView
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.registration.gridItems
 import kk.domoRolls.ru.presentation.theme.DomoBlue
@@ -77,7 +78,6 @@ fun MainScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     var currentItem by remember { mutableStateOf(MenuItem()) }
 
-
     MainScreenUI(
         menuState = mainViewModel.menu,
         promoList = promo,
@@ -95,6 +95,10 @@ fun MainScreen(
         onProductClick = {
             showBottomSheet = true
             currentItem = it
+        },
+        isOpenState = mainViewModel.isOpen,
+        seeMenuClick = {
+            mainViewModel.hideSleepView()
         }
     )
     val sheetState =
@@ -129,12 +133,15 @@ fun MainScreenUI(
     userState: StateFlow<User> = MutableStateFlow(User()),
     categoriesState: StateFlow<List<ItemCategory>> = MutableStateFlow(emptyList()),
     onCategoryCheck: (ItemCategory) -> Unit = {},
-    onProductClick: (MenuItem) -> Unit = {}
+    onProductClick: (MenuItem) -> Unit = {},
+    isOpenState: StateFlow<Boolean> = MutableStateFlow(true),
+    seeMenuClick: () -> Unit = {},
 ) {
     val menu by menuState.collectAsState()
     val showLoading by showLoadingState.collectAsState()
     val user by userState.collectAsState()
     val categories by categoriesState.collectAsState()
+    val isOpen by isOpenState.collectAsState()
 
     Box(
         modifier = Modifier
@@ -172,6 +179,11 @@ fun MainScreenUI(
         DomoLoading()
     }
 
+    if (!isOpen) {
+        SleepView(
+            seeMenuClick = { seeMenuClick() }
+        )
+    }
 
 }
 
