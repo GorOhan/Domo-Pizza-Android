@@ -8,12 +8,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
-class HTMLViewModel @Inject constructor() : ViewModel() {
+class HTMLViewModel @Inject constructor(
+    private val firebaseRemoteConfig: FirebaseRemoteConfig,
+) : ViewModel() {
 
-    private val _content: MutableStateFlow<String> = MutableStateFlow("")
+    private val _content: MutableStateFlow<String> =
+        MutableStateFlow(firebaseRemoteConfig.getString("termsOfUsage_text"))
     val content = _content.asStateFlow()
 
-    init {
-        _content.value = FirebaseRemoteConfig.getInstance().getString("termsOfUsage_text")
-    }
 }

@@ -30,6 +30,7 @@ import kotlin.random.Random
 class RegistrationViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val dataStoreService: DataStoreService,
+    private val firebaseRemoteConfig: FirebaseRemoteConfig
 ) : ViewModel() {
 
     private val _userName: MutableStateFlow<String> = MutableStateFlow("")
@@ -44,7 +45,7 @@ class RegistrationViewModel @Inject constructor(
     private val _token: MutableStateFlow<String> = MutableStateFlow("")
     private val _generatedOtp: MutableStateFlow<String> = MutableStateFlow("")
 
-    private val _otpLength: MutableStateFlow<Int> = MutableStateFlow(FirebaseRemoteConfig.getInstance().getLong("otpLenght").toInt())
+    private val _otpLength: MutableStateFlow<Int> = MutableStateFlow(firebaseRemoteConfig.getLong("otpLenght").toInt())
     val otpLength = _otpLength.asStateFlow()
 
     private val _navigateToMain: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -108,7 +109,7 @@ class RegistrationViewModel @Inject constructor(
 
     fun sendOTP() {
         _generatedOtp.value = generateOTP()
-        val otpMessage: String = FirebaseRemoteConfig.getInstance().getString("otpMessage")
+        val otpMessage: String = firebaseRemoteConfig.getString("otpMessage")
 
         viewModelScope.launch {
             if (_phoneNumber.value == "9378852905") return@launch

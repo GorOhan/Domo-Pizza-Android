@@ -27,7 +27,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
-    private val serviceRepository: ServiceRepository
+    private val serviceRepository: ServiceRepository,
+    private val firebaseRemoteConfig: FirebaseRemoteConfig,
 ) : ViewModel() {
 
     private val _user: MutableStateFlow<User> = MutableStateFlow(User())
@@ -50,29 +51,28 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             _showLoading.value = true
 
-            val firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
             val promoJson: String = firebaseRemoteConfig.getString("promo_list")
             promoJson.parseJson()?.let {
                 _promoList.value = it
             }
             _user.value = dataStoreService.getUserData()
 
-//            firebaseRemoteConfig.fetch(10)
-//                .addOnCompleteListener { taskFetch ->
-//                    if (taskFetch.isSuccessful) {
-//                        firebaseRemoteConfig.activate().addOnCompleteListener { task ->
-//                            if (task.isSuccessful) {
-//
-//                               // val promoJson: String = firebaseRemoteConfig.getString("promo_list")
-//                                _user.value = dataStoreService.getUserData()
-//                                promoJson.parseJson()?.let {
-//                                    _promoList.value = it
-//                                }
-//                                println("PROMO PROM ${_promoList.value}")
-//                            }
-//                        }
-//                    }
-//                }
+            firebaseRemoteConfig.fetch(10)
+                .addOnCompleteListener { taskFetch ->
+                    if (taskFetch.isSuccessful) {
+                        firebaseRemoteConfig.activate().addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+
+                                val workingHours: String = firebaseRemoteConfig.getString("working_hours")
+                                _user.value = dataStoreService.getUserData()
+                                promoJson.parseJson()?.let {
+                                    _promoList.value = it
+                                }
+                                println("PROMO PROM ${_promoList.value}")
+                            }
+                        }
+                    }
+                }
         }
 
         viewModelScope.launch {
@@ -122,10 +122,14 @@ class MainViewModel @Inject constructor(
         lists.forEach {
             it.isChecked = false
         }
-        if (categories.value.size > 0) {
+        if (categories.value.isNotEmpty()) {
             lists[item] = categories.value[item].copy(isChecked = true)
         }
 
         _categories.value = lists
+    }
+
+    fun getWorkingHours(){
+
     }
 }
