@@ -158,6 +158,9 @@ fun MainScreenUI(
                     .zIndex(1f)
                     .align(Alignment.BottomCenter),
                 backgroundColor = DomoBlue,
+                onClick = {
+                    onNavigationClick(Screen.CartScreen.route)
+                }
             )
         }
 

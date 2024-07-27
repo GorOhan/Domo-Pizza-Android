@@ -272,7 +272,11 @@ fun CartButton(
         .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
         .sumOf { it.second * it.first }
 
+    val buttonInteractionSource = remember { MutableInteractionSource() }
+    val buttonPressed by buttonInteractionSource.collectIsPressedAsState()
+
     Button(
+        interactionSource = buttonInteractionSource,
         modifier = modifier
             .height(48.dp)
             .clip(RoundedCornerShape(0.4f)),
@@ -317,7 +321,7 @@ fun CartButton(
         },
         onClick = { onClick.invoke() },
         colors = ButtonDefaults.buttonColors(
-            containerColor = backgroundColor,
+            containerColor = if (!buttonPressed) backgroundColor else DomoPressed,
             contentColor = Color.White,
             disabledContainerColor = MaterialTheme.colorScheme.onSecondary,
             disabledContentColor = Color.White
