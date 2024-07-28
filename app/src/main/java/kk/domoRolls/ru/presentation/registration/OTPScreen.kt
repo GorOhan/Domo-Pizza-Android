@@ -32,6 +32,7 @@ import kk.domoRolls.ru.presentation.components.RegistrationCodeInput
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoTheme
 import kk.domoRolls.ru.presentation.theme.InterFont
+import kk.domoRolls.ru.util.formatNumber
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -139,7 +140,7 @@ fun OTPScreenUI(
             modifier = Modifier
                 .padding(horizontal = 22.dp)
                 .fillMaxWidth(),
-            text = "+7$phone",
+            text = formatNumber(phone, "+7 ### ### ## ##"),
             textAlign = TextAlign.Left,
             style = MaterialTheme.typography.bodyMedium,
             )

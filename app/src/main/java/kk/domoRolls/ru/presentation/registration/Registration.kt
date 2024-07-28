@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -218,20 +216,6 @@ fun RegistrationPreview() {
     }
 }
 
-fun LazyListScope.gridItems(
-    count: Int,
-    nColumns: Int,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
-    itemContent: @Composable BoxScope.(Int) -> Unit,
-) {
-    gridItems(
-        data = List(count) { it },
-        nColumns = nColumns,
-        horizontalArrangement = horizontalArrangement,
-        itemContent = itemContent,
-    )
-}
-
 fun <T> LazyListScope.gridItems(
     data: List<T>,
     nColumns: Int,
@@ -262,24 +246,4 @@ fun <T> LazyListScope.gridItems(
     }
 }
 
-@Composable
-fun TestContainer(
-    menu:List<MenuItem>,
-){
-    LazyColumn {
-        item {
-            Text(text = "My LazyColumn Title")
-        }
-        // with coun
-        // or with list of items
-        gridItems(menu, nColumns = 2) { item ->
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .padding(5.dp)
-                    .background(Color.Gray)
-            )
-        }
-    }
-}
 
