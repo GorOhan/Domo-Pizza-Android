@@ -46,6 +46,8 @@ class ServiceRepositoryImpl(
     }
 
     override suspend fun getMenuById(
+        newList:List<String>,
+        hotList:List<String>,
         disableIds: List<String>,
         getMenuRequest: GetMenuRequest,
         token: String
@@ -60,7 +62,11 @@ class ServiceRepositoryImpl(
                     )
                 } ?: emptyList()
             }.map { it.copy(isEnable = !disableIds.contains(it.itemId)) }
+
         }
+        if (hotList.isNotEmpty()) currentMenu.value = currentMenu.value.map { it.copy(isHot = hotList.contains(it.itemId)) }
+        if (newList.isNotEmpty()) currentMenu.value = currentMenu.value.map { it.copy(isNew = newList.contains(it.itemId)) }
+
         return currentMenu
     }
 

@@ -29,16 +29,15 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,24 +47,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import coil.compose.rememberAsyncImagePainter
 import kk.domoRolls.ru.R
-import kk.domoRolls.ru.data.model.order.ItemPrice
 import kk.domoRolls.ru.data.model.order.MenuItem
-import kk.domoRolls.ru.data.model.order.MenuItemSize
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
+import kk.domoRolls.ru.presentation.theme.DomoGreen
 import kk.domoRolls.ru.presentation.theme.DomoPressed
+import kk.domoRolls.ru.presentation.theme.DomoRed
 import kk.domoRolls.ru.presentation.theme.DomoSub
 import kk.domoRolls.ru.presentation.theme.DomoTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlin.time.times
 
 @Composable
 fun BaseButton(
@@ -133,12 +130,59 @@ fun MenuItemComponent(
             modifier = Modifier
                 .height(104.dp)
         ) {
+
             Image(
                 contentScale = ContentScale.Crop,
                 painter = rememberAsyncImagePainter(menuItem.itemSizes?.first()?.buttonImageUrl),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize()
             )
+            if (menuItem.isHot){
+                Row(modifier = Modifier
+                    .padding(10.dp)
+                    .width(48.dp)
+                    .height(16.dp)
+                    .background(DomoRed, RoundedCornerShape(10.dp)),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(
+                        modifier = Modifier.size(8.dp),
+                        tint = Color.White,
+                        painter = painterResource(id = R.drawable.ic_hot),
+                        contentDescription ="" )
+                    Text(
+                        fontSize = 6.sp,
+                        style = MaterialTheme.typography.bodySmall,
+                        text = "ОСТРЫЙ",
+                        color = Color.White
+                    )
+                }
+            }
+
+            if (menuItem.isNew){
+                Row(modifier = Modifier
+                    .padding(10.dp)
+                    .width(48.dp)
+                    .height(16.dp)
+                    .background(DomoGreen, RoundedCornerShape(10.dp)),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(
+                        modifier = Modifier.size(8.dp),
+                        tint = Color.White,
+                        painter = painterResource(id = R.drawable.ic_new),
+                        contentDescription ="" )
+                    Text(
+                        fontSize = 6.sp,
+                        style = MaterialTheme.typography.bodySmall,
+                        text = "НОВЫЙ",
+                        color = Color.White
+                    )
+                }
+            }
+
         }
 
         Text(
@@ -483,6 +527,6 @@ fun ProductBottomSheet(
 @Composable
 fun RegistrationPreview() {
     DomoTheme {
-        ProductBottomSheet(MenuItem(name = "name"))
+        MenuItemComponent(MenuItem(name = "name"))
     }
 }

@@ -14,6 +14,7 @@ import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.getCurrentWeekdayInRussian
 import kk.domoRolls.ru.util.isWorkingTime
+import kk.domoRolls.ru.util.parseToListString
 import kk.domoRolls.ru.util.parseToPromos
 import kk.domoRolls.ru.util.parseToWorkingHours
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -52,53 +53,52 @@ class MainViewModel @Inject constructor(
     private val _isOpen: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val isOpen = _isOpen.asStateFlow()
 
+    private var hotList: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
+    private var newList: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
+
     init {
 
         viewModelScope.launch {
             _showLoading.value = true
-
-            val promoJson: String = firebaseRemoteConfig.getString("promo_list")
-            promoJson.parseToPromos()?.let {
-                _promoList.value = it
-            }
             _user.value = dataStoreService.getUserData()
+        }
 
+        viewModelScope.launch {
             firebaseRemoteConfig.fetch(10)
                 .addOnCompleteListener { taskFetch ->
                     if (taskFetch.isSuccessful) {
                         firebaseRemoteConfig.activate().addOnCompleteListener { task ->
+
                             if (task.isSuccessful) {
 
-                                val promoList: String = firebaseRemoteConfig.getString("promo_list")
+                                val hots =
+                                    firebaseRemoteConfig.getString("hot_items")
+                                        .parseToListString()
+                                        ?: emptyList()
+                                hotList.value = hots
+                                newList.value = firebaseRemoteConfig.getString("new_items")
+                                    .parseToListString() ?: emptyList()
+                                val promoList: String =
+                                    firebaseRemoteConfig.getString("promo_list")
                                 val workingHours: String =
                                     firebaseRemoteConfig.getString("working_hours")
 
                                 promoList.parseToPromos()?.let {
                                     _promoList.value = it
                                 }
-                                val hours = workingHours.parseToWorkingHours()?.workingHours?.get(
-                                    getCurrentWeekdayInRussian()
-                                )
+                                val hours =
+                                    workingHours.parseToWorkingHours()?.workingHours?.get(
+                                        getCurrentWeekdayInRussian()
+                                    )
                                 _isOpen.value = hours?.let { isWorkingTime(it) } ?: true
+                                fetchMenu()
                             }
                         }
                     }
                 }
         }
 
-        viewModelScope.launch {
-            serviceRepository.getToken(ServiceTokenRequest())
-                .flatMapConcat { token ->
-                    serviceRepository.getMenuById(
-                        getMenuRequest = GetMenuRequest(),
-                        token = token.token
-                    )
-                }
-                .collect { menuItems ->
-                    _menu.value = menuItems
-                    _showLoading.value = false
-                }
-        }
+
 
         viewModelScope.launch {
             serviceRepository.getCategories().onEach {
@@ -140,7 +140,26 @@ class MainViewModel @Inject constructor(
         _categories.value = lists
     }
 
-    fun hideSleepView(){
+    fun hideSleepView() {
         _isOpen.value = true
     }
+
+    fun fetchMenu() {
+        viewModelScope.launch {
+            serviceRepository.getToken(ServiceTokenRequest())
+                .flatMapConcat { token ->
+                    serviceRepository.getMenuById(
+                        hotList = hotList.value,
+                        newList = newList.value,
+                        getMenuRequest = GetMenuRequest(),
+                        token = token.token
+                    )
+                }
+                .collect { menuItems ->
+                    _menu.value = menuItems
+                    _showLoading.value = false
+                }
+        }
+    }
+
 }

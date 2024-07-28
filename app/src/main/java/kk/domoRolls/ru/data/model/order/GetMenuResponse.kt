@@ -40,7 +40,9 @@ data class MenuItem(
     val description: String? = "",
     val isEnable:Boolean = true,
     val countInCart:Int = 0,
-    val categoryId: String = ""
+    val categoryId: String = "",
+    val isHot:Boolean = false,
+    val isNew: Boolean = false,
 )
 
 data class MenuItemSize(

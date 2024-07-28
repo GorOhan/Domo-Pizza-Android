@@ -41,3 +41,15 @@ fun String.parseToPromoCodes(): List<PromoCode>? {
         return null
     }
 }
+
+fun String.parseToListString(): List<String>? {
+    try {
+
+        val gson = Gson()
+        val type = object : TypeToken<List<String>>() {}.type
+
+        return gson.fromJson(this, type)
+    } catch (e: Exception) {
+        return null
+    }
+}
