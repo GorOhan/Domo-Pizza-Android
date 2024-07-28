@@ -1,6 +1,7 @@
 package kk.domoRolls.ru.presentation.myprofile
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.prefs.DataStoreService
@@ -9,6 +10,7 @@ import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.util.parseToPromoCodes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,4 +41,11 @@ class MyProfileViewModel @Inject constructor(
                 }
             }
     }
+
+
+ fun logOut(){
+     viewModelScope.launch {
+         dataStoreService.setUserData(User())
+     }
+ }
 }

@@ -16,4 +16,17 @@ class HTMLViewModel @Inject constructor(
         MutableStateFlow(firebaseRemoteConfig.getString("termsOfUsage_text"))
     val content = _content.asStateFlow()
 
+    fun setContent(htmlScreenType: HTMLScreenType) {
+        when (htmlScreenType) {
+            HTMLScreenType.TERMS -> {
+                _content.value = firebaseRemoteConfig.getString("termsOfUsage_text")
+            }
+            HTMLScreenType.OFFER -> {
+                _content.value = firebaseRemoteConfig.getString("offer_text")
+
+            }
+        }
+
+    }
+
 }

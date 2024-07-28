@@ -82,7 +82,7 @@ fun BaseButton(
     Button(
         interactionSource = buttonInteractionSource,
         modifier = modifier
-            .height(48.dp)
+            .height(50.dp)
             .clip(RoundedCornerShape(0.4f)),
         enabled = enable,
         content = {

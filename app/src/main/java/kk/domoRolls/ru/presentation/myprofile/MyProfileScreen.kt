@@ -1,5 +1,6 @@
 package kk.domoRolls.ru.presentation.myprofile
 
+import android.widget.Switch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +22,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -28,6 +31,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +49,9 @@ import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.presentation.components.BaseButton
 import kk.domoRolls.ru.presentation.components.DomoToolbar
+import kk.domoRolls.ru.presentation.html.HTMLScreenType
+import kk.domoRolls.ru.presentation.navigation.Screen
+import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
 import kk.domoRolls.ru.presentation.theme.DomoRed
@@ -70,8 +77,16 @@ fun MyProfileScreen(
                 is Event.NavigateClick -> {
                     navController.navigate(event.route)
                 }
-            }
 
+                Event.LogOut -> {
+                    viewModel.logOut()
+                    navController.navigate(Screen.RegistrationScreen.route) {
+                        popUpTo(navController.graph.id) {
+                            inclusive = false
+                        }
+                    }
+                }
+            }
         }
     )
 }
@@ -95,7 +110,7 @@ fun MyProfileScreenUI(
         MyInfo(user = user)
         MyOrdersAndAddresses()
         MyGiftsView(
-            modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp),
+            modifier = Modifier.padding(horizontal = 22.dp, vertical = 20.dp),
             promoCodes = promoCode.value
         )
 
@@ -106,15 +121,34 @@ fun MyProfileScreenUI(
                 .padding(horizontal = 22.dp),
             color = DomoBorder
         )
-        ProfileInfoItem(title = "Пользовательское соглашение")
-        ProfileInfoItem(title = "Оферта")
         ProfileInfoItem(
+            title = "Пуш-уведомления",
+            showArrowIcon = false,
+            showSwitch = true
+        )
+        ProfileInfoItem(
+            title = "Пользовательское соглашение",
+            onClick = {
+                onClick(Event.NavigateClick("${Screen.HTMLScreen.route}/${HTMLScreenType.TERMS.name}"))
+            }
+        )
+        ProfileInfoItem(
+            title = "Оферта",
+            onClick = {
+                onClick(Event.NavigateClick("${Screen.HTMLScreen.route}/${HTMLScreenType.OFFER.name}"))
+
+            }
+        )
+        ProfileInfoItem(
+            onClick = { onClick(Event.LogOut) },
             title = "Выйти из профиля",
             titleColor = DomoRed,
+            showArrowIcon = false,
         )
         ProfileInfoItem(
             title = "Версия 01.1.1",
-            titleColor = DomoGray
+            titleColor = DomoGray,
+            showArrowIcon = false,
         )
 
         BaseButton(
@@ -122,7 +156,7 @@ fun MyProfileScreenUI(
             titleColor = Color.Black,
             backgroundColor = DomoBorder,
             modifier = Modifier
-                .padding(horizontal = 22.dp, vertical = 16.dp)
+                .padding(horizontal = 22.dp, vertical = 20.dp)
                 .fillMaxWidth()
         )
     }
@@ -137,7 +171,7 @@ fun MyGiftsView(
     if (promoCodes.isNotEmpty()) {
         Column {
             Text(
-                modifier = Modifier.padding(start = 22.dp),
+                modifier = Modifier.padding(start = 22.dp, top = 20.dp),
                 text = "Мои акции"
             )
 
@@ -257,7 +291,7 @@ fun MyOrdersAndAddresses() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 22.dp, vertical = 10.dp),
+            .padding(start = 22.dp, end = 22.dp, top = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween
 
     ) {
@@ -270,7 +304,7 @@ fun MyOrdersAndAddresses() {
 
                 }
                 .padding(end = 8.dp)
-                .fillMaxWidth(if (!buttonPressed) 0.5f else 0.3f)
+                .fillMaxWidth(0.5f)
                 .background(DomoBorder, RoundedCornerShape(20.dp)),
         ) {
             Text(
@@ -295,13 +329,13 @@ fun MyOrdersAndAddresses() {
             Text(
                 modifier = Modifier.padding(start = 20.dp, top = 20.dp),
                 style = MaterialTheme.typography.bodyMedium,
-                text = "Мои заказы"
+                text = "Мои адреса"
             )
 
             Text(
                 modifier = Modifier.padding(start = 20.dp, bottom = 20.dp, top = 6.dp),
                 style = MaterialTheme.typography.bodyMedium,
-                text = "2 заказа"
+                text = "4 адреса"
             )
         }
     }
@@ -312,6 +346,7 @@ fun ProfileInfoItem(
     title: String = "Пуш-уведомления",
     titleColor: Color = Color.Black,
     showArrowIcon: Boolean = true,
+    showSwitch: Boolean = false,
     onClick: () -> Unit = {}
 ) {
     Column(
@@ -339,6 +374,21 @@ fun ProfileInfoItem(
                     contentDescription = "",
                 )
             }
+
+            if (showSwitch) {
+                var checked by remember { mutableStateOf(true) }
+
+                Switch(
+                    checked = checked,
+                    onCheckedChange = { checked = it },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = DomoBlue,
+                        uncheckedThumbColor = DomoBlue,
+                        uncheckedTrackColor = Color.White,
+                    )
+                )
+            }
         }
         Divider(
             modifier = Modifier
@@ -357,8 +407,9 @@ fun MyProfileScreenPreview() {
     }
 }
 
-sealed class Event() {
+sealed class Event {
     data object BackClick : Event()
     data class NavigateClick(val route: String) : Event()
+    data object LogOut : Event()
 
 }

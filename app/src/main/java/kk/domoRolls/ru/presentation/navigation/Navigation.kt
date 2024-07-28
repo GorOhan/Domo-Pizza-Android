@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kk.domoRolls.ru.presentation.cart.CartScreen
+import kk.domoRolls.ru.presentation.html.HTMLScreenType
 import kk.domoRolls.ru.presentation.html.HtmlScreen
 import kk.domoRolls.ru.presentation.main.MainScreen
 import kk.domoRolls.ru.presentation.myprofile.MyProfileScreen
@@ -55,8 +56,15 @@ internal fun NavMain(
             )
         }
 
-        composable(route = Screen.HTMLScreen.route) {
-            HtmlScreen()
+        composable(route = "${Screen.HTMLScreen.route}/{screenType}",
+            arguments = listOf(
+                navArgument("screenType") { type = NavType.StringType}),
+            ) {backStackEntry ->
+            val enumArgument = backStackEntry.arguments?.getString("screenType")
+
+            HtmlScreen(
+                htmlScreenType = enumArgument?.let { HTMLScreenType.valueOf(it) }?:run { HTMLScreenType.TERMS }
+            )
         }
 
         composable(route = Screen.MainScreen.route) {

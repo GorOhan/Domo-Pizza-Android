@@ -9,9 +9,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,6 +28,10 @@ fun HtmlScreen(
     htmlScreenType: HTMLScreenType = HTMLScreenType.TERMS,
     viewModel: HTMLViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.setContent(htmlScreenType)
+    }
+
     HtmlScreenUI(
         viewModel.content
     )
@@ -52,9 +58,9 @@ fun HtmlScreenUI(
 
         Text(
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 64.dp),
+            modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 32.dp),
             text = annotatedString,
-            color = MaterialTheme.colorScheme.secondary
+            color = Color.Black
         )
     }
 }
