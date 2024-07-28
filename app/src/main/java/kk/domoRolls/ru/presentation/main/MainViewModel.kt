@@ -52,9 +52,9 @@ class MainViewModel @Inject constructor(
 
     private val _isOpen: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val isOpen = _isOpen.asStateFlow()
-
-    private var hotList: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
-    private var newList: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
+//
+//    private var hotList: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
+//    private var newList: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
 
     init {
 
@@ -71,13 +71,10 @@ class MainViewModel @Inject constructor(
 
                             if (task.isSuccessful) {
 
-                                val hots =
-                                    firebaseRemoteConfig.getString("hot_items")
-                                        .parseToListString()
-                                        ?: emptyList()
-                                hotList.value = hots
-                                newList.value = firebaseRemoteConfig.getString("new_items")
-                                    .parseToListString() ?: emptyList()
+//                                val hots = firebaseRemoteConfig.getString("hot_items").parseToListString() ?: emptyList()
+//                                hotList.value = hots
+//                                newList.value = firebaseRemoteConfig.getString("new_items")
+//                                    .parseToListString() ?: emptyList()
                                 val promoList: String =
                                     firebaseRemoteConfig.getString("promo_list")
                                 val workingHours: String =
@@ -91,7 +88,6 @@ class MainViewModel @Inject constructor(
                                         getCurrentWeekdayInRussian()
                                     )
                                 _isOpen.value = hours?.let { isWorkingTime(it) } ?: true
-                                fetchMenu()
                             }
                         }
                     }
@@ -105,6 +101,10 @@ class MainViewModel @Inject constructor(
                 _categories.value = it
                 categoryCheckFirst()
             }.collect()
+        }
+
+        viewModelScope.launch {
+            fetchMenu()
         }
     }
 
@@ -144,13 +144,11 @@ class MainViewModel @Inject constructor(
         _isOpen.value = true
     }
 
-    fun fetchMenu() {
+    private fun fetchMenu() {
         viewModelScope.launch {
             serviceRepository.getToken(ServiceTokenRequest())
                 .flatMapConcat { token ->
                     serviceRepository.getMenuById(
-                        hotList = hotList.value,
-                        newList = newList.value,
                         getMenuRequest = GetMenuRequest(),
                         token = token.token
                     )

@@ -1,5 +1,6 @@
 package kk.domoRolls.ru.data.di
 
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,7 +24,7 @@ object RepositoryModule {
 
     @Singleton
     @Provides
-    fun provideServiceRepository(serviceApi: ServiceApi): ServiceRepository {
-        return ServiceRepositoryImpl(serviceApi)
+    fun provideServiceRepository(serviceApi: ServiceApi,firebaseRemoteConfig:FirebaseRemoteConfig): ServiceRepository {
+        return ServiceRepositoryImpl(serviceApi,firebaseRemoteConfig)
     }
 }

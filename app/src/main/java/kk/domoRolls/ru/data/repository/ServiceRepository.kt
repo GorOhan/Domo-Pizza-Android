@@ -1,5 +1,6 @@
 package kk.domoRolls.ru.data.repository
 
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import kk.domoRolls.ru.data.api.ServiceApi
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
@@ -9,16 +10,46 @@ import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.domain.repository.ServiceRepository
+import kk.domoRolls.ru.util.getCurrentWeekdayInRussian
+import kk.domoRolls.ru.util.isWorkingTime
+import kk.domoRolls.ru.util.parseToListString
+import kk.domoRolls.ru.util.parseToPromos
+import kk.domoRolls.ru.util.parseToWorkingHours
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class ServiceRepositoryImpl(
     private val serviceApi: ServiceApi,
+    private val firebaseRemoteConfig: FirebaseRemoteConfig,
 ) : ServiceRepository {
 
     private var currentCategories: MutableStateFlow<List<ItemCategory>> =
         MutableStateFlow(emptyList())
     private var currentMenu: MutableStateFlow<List<MenuItem>> = MutableStateFlow(emptyList())
+
+    private val hotItems: MutableList<String> = mutableListOf()
+    private val newItems: MutableList<String> = mutableListOf()
+
+
+    init {
+        firebaseRemoteConfig.fetch(10)
+            .addOnCompleteListener { taskFetch ->
+                if (taskFetch.isSuccessful) {
+                    firebaseRemoteConfig.activate().addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+
+                            val hots =
+                                firebaseRemoteConfig.getString("hot_items").parseToListString()
+                                    ?: emptyList()
+                            hotItems.addAll(hots)
+                            val new = firebaseRemoteConfig.getString("new_items")
+                                .parseToListString() ?: emptyList()
+                            newItems.addAll(new)
+                        }
+                    }
+                }
+            }
+    }
 
     override fun addToCart(menuItem: MenuItem) {
         val indexInMenu = currentMenu.value.indexOfFirst { it.itemId == menuItem.itemId }
@@ -46,8 +77,8 @@ class ServiceRepositoryImpl(
     }
 
     override suspend fun getMenuById(
-        newList:List<String>,
-        hotList:List<String>,
+        newList: List<String>,
+        hotList: List<String>,
         disableIds: List<String>,
         getMenuRequest: GetMenuRequest,
         token: String
@@ -64,8 +95,10 @@ class ServiceRepositoryImpl(
             }.map { it.copy(isEnable = !disableIds.contains(it.itemId)) }
 
         }
-        if (hotList.isNotEmpty()) currentMenu.value = currentMenu.value.map { it.copy(isHot = hotList.contains(it.itemId)) }
-        if (newList.isNotEmpty()) currentMenu.value = currentMenu.value.map { it.copy(isNew = newList.contains(it.itemId)) }
+        if (hotItems.isNotEmpty()) currentMenu.value =
+            currentMenu.value.map { it.copy(isHot = hotItems.contains(it.itemId)) }
+        if (newItems.isNotEmpty()) currentMenu.value =
+            currentMenu.value.map { it.copy(isNew = newItems.contains(it.itemId)) }
 
         return currentMenu
     }
