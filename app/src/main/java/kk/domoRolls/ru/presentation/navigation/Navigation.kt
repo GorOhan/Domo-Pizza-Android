@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import kk.domoRolls.ru.presentation.cart.CartScreen
 import kk.domoRolls.ru.presentation.html.HtmlScreen
 import kk.domoRolls.ru.presentation.main.MainScreen
+import kk.domoRolls.ru.presentation.myprofile.MyProfileScreen
 import kk.domoRolls.ru.presentation.registration.OTPScreen
 import kk.domoRolls.ru.presentation.registration.RegistrationScreen
 import kk.domoRolls.ru.presentation.registration.RegistrationViewModel
@@ -25,6 +26,7 @@ sealed class Screen(val route: String) {
     data object MainScreen : Screen("mainScreen")
     data object StoryScreen : Screen("storyScreen")
     data object CartScreen : Screen("cartScreen")
+    data object MyProfileScreen : Screen("myProfileScreen")
 
 }
 
@@ -76,6 +78,12 @@ internal fun NavMain(
 
         composable(route = Screen.CartScreen.route) {
             CartScreen()
+        }
+
+        composable(route = Screen.MyProfileScreen.route) {
+            MyProfileScreen(
+                navController = navController
+            )
         }
     }
 }

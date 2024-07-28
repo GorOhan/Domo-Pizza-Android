@@ -99,6 +99,9 @@ fun MainScreen(
         isOpenState = mainViewModel.isOpen,
         seeMenuClick = {
             mainViewModel.hideSleepView()
+        },
+        onProfileClick = {
+            navController.navigate(Screen.MyProfileScreen.route)
         }
     )
     val sheetState =
@@ -136,6 +139,7 @@ fun MainScreenUI(
     onProductClick: (MenuItem) -> Unit = {},
     isOpenState: StateFlow<Boolean> = MutableStateFlow(true),
     seeMenuClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     val menu by menuState.collectAsState()
     val showLoading by showLoadingState.collectAsState()
@@ -173,7 +177,8 @@ fun MainScreenUI(
             categories = categories,
             onCategoryCheck = onCategoryCheck,
             user = user,
-            onProductClick = onProductClick
+            onProductClick = onProductClick,
+            onProfileClick = onProfileClick
         )
 
     }
@@ -203,6 +208,7 @@ fun ContentSection(
     onCategoryCheck: (ItemCategory) -> Unit = {},
     onProductClick: (MenuItem) -> Unit,
     user: User,
+    onProfileClick: () -> Unit
 ) {
     val insets = WindowInsets.statusBars
     val statusBarHeight = insets.asPaddingValues().calculateTopPadding()
@@ -251,7 +257,10 @@ fun ContentSection(
                     Text(text = "address")
                 }
                 Image(
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onProfileClick() }
+                    ,
                     painter = painterResource(id = R.drawable.ic_profile),
                     contentDescription = ""
                 )

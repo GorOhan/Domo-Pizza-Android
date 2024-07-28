@@ -1,5 +1,9 @@
 package kk.domoRolls.ru.util
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import kk.domoRolls.ru.domain.model.TimeSlot
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
@@ -38,3 +42,33 @@ fun isWorkingTimeForSlot(timeSlot: TimeSlot): Boolean {
 
 fun isWorkingTime(timeSlots: List<TimeSlot>) =
     timeSlots.map { isWorkingTimeForSlot(it) }.any { true }
+
+fun formatNumber(input: String,format: String): String {
+    // Ensure the input contains only digits
+    require(input.all { it.isDigit() }) { "Input must contain only digits" }
+
+    var formattedNumber = format
+    var inputIndex = 0
+
+    for (i in formattedNumber.indices) {
+        if (formattedNumber[i] == '#') {
+            require(inputIndex < input.length) { "Input does not have enough digits for the format" }
+            formattedNumber = formattedNumber.replaceFirst('#', input[inputIndex])
+            inputIndex++
+        }
+    }
+
+    return formattedNumber
+}
+
+fun copyTextToClipboard(context: Context, text: String) {
+    // Get the clipboard manager
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+    // Create a ClipData object with the text to copy
+    val clip = ClipData.newPlainText("Промокод скопирован", text)
+    Toast.makeText(context, "Промокод скопирован", Toast.LENGTH_SHORT).show()
+
+    // Set the ClipData object as the primary clip
+    clipboard.setPrimaryClip(clip)
+}

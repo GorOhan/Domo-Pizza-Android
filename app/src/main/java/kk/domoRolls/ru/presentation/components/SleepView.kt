@@ -35,14 +35,6 @@ fun SleepView(
             .background(DomoOpacity)
 
     ) {
-
-//        Box(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .alpha(0.4f)
-//                .background(Color.Black)
-//        )
-
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier

@@ -14,7 +14,7 @@ import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.getCurrentWeekdayInRussian
 import kk.domoRolls.ru.util.isWorkingTime
-import kk.domoRolls.ru.util.parseJson
+import kk.domoRolls.ru.util.parseToPromos
 import kk.domoRolls.ru.util.parseToWorkingHours
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,7 +58,7 @@ class MainViewModel @Inject constructor(
             _showLoading.value = true
 
             val promoJson: String = firebaseRemoteConfig.getString("promo_list")
-            promoJson.parseJson()?.let {
+            promoJson.parseToPromos()?.let {
                 _promoList.value = it
             }
             _user.value = dataStoreService.getUserData()
@@ -73,7 +73,7 @@ class MainViewModel @Inject constructor(
                                 val workingHours: String =
                                     firebaseRemoteConfig.getString("working_hours")
 
-                                promoList.parseJson()?.let {
+                                promoList.parseToPromos()?.let {
                                     _promoList.value = it
                                 }
                                 val hours = workingHours.parseToWorkingHours()?.workingHours?.get(
