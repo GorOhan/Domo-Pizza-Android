@@ -2,15 +2,24 @@ package kk.domoRolls.ru.presentation.splash
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.repository.ServiceRepository
+import kk.domoRolls.ru.util.getCurrentWeekdayInRussian
+import kk.domoRolls.ru.util.isWorkingTime
+import kk.domoRolls.ru.util.parseToPromos
+import kk.domoRolls.ru.util.parseToWorkingHours
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,41 +29,56 @@ import javax.inject.Inject
 class SplashViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
     private val serviceRepository: ServiceRepository,
+    private val firebaseRemoteConfig: FirebaseRemoteConfig,
 ) : ViewModel() {
 
     private val _userId: MutableStateFlow<String?> = MutableStateFlow("")
     val userId = _userId.asStateFlow()
 
+    private val _isAppAvailable: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    val isAppAvailable = _isAppAvailable.asStateFlow()
+
     init {
+        initApp()
+    }
+
+    fun initApp() {
+
         viewModelScope.launch {
-            _userId.value = dataStoreService.getUserData().id
-            serviceRepository.getToken(ServiceTokenRequest())
-                .flatMapConcat { token ->
-                    serviceRepository.getStopListsIds(
-                        GetStopListRequest(), token.token
-                    ).flatMapConcat { stopList->
-                        serviceRepository.getMenuById(
-                            disableIds = stopList,
-                            getMenuRequest = GetMenuRequest(),
-                            token = token.token
-                        )
+            val userCall = async {
+                _userId.value = dataStoreService.getUserData().id
+                serviceRepository.getToken(ServiceTokenRequest())
+                    .flatMapConcat { token ->
+                        serviceRepository.getStopListsIds(
+                            GetStopListRequest(), token.token
+                        ).flatMapConcat { stopList ->
+                            serviceRepository.getMenuById(
+                                disableIds = stopList,
+                                getMenuRequest = GetMenuRequest(),
+                                token = token.token
+                            )
+                        }
+                    }.catch {
+
                     }
-                }
-                .collect { menuItems ->
+                    .collect()
+            }
+            val firebase = async {
+                firebaseRemoteConfig.fetch(10)
+                    .addOnCompleteListener { taskFetch ->
+                        if (taskFetch.isSuccessful) {
+                            firebaseRemoteConfig.activate().addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    _isAppAvailable.value =
+                                        firebaseRemoteConfig.getBoolean("isAppAvailable")
+                                }
+                            }
+                        }
+                    }
+            }
 
-                     // Handle the collected stopLists here
-                }
-
-//            serviceRepository.getToken(ServiceTokenRequest())
-//                .onEach {
-//                    serviceRepository.getStreets(GetStreetsRequest(), it.token)
-//                        .onEach {
-//                            println("CITY  ${it.correlationId}")
-//                        }
-//                        .collect()
-//                }.collect()
-
-
+            firebase.await()
+            userCall.await()
         }
     }
 }
