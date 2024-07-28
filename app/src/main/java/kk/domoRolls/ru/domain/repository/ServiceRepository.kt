@@ -1,6 +1,8 @@
 package kk.domoRolls.ru.domain.repository
 
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
+import kk.domoRolls.ru.data.model.order.GetOrdersRequest
+import kk.domoRolls.ru.data.model.order.GetOrdersResponse
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
 import kk.domoRolls.ru.data.model.order.GetStreetsRequest
 import kk.domoRolls.ru.data.model.order.GetStreetsResponse
@@ -26,6 +28,8 @@ interface ServiceRepository {
     fun addToCart(menuItem: MenuItem)
     fun removeFromCart(menuItem: MenuItem)
     fun getCategories(): Flow<List<ItemCategory>>
+
+    fun getOrders(getOrdersRequest: GetOrdersRequest, token: String): Flow<GetOrdersResponse>
 
 
 }

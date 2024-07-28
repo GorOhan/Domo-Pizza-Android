@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
+import kk.domoRolls.ru.data.model.order.GetOrdersRequest
 import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
@@ -20,6 +21,7 @@ import kk.domoRolls.ru.util.parseToWorkingHours
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.onEach
@@ -106,6 +108,8 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             fetchMenu()
         }
+       getOrders()
+
     }
 
     fun addToCart(menuItem: MenuItem) {
@@ -156,6 +160,24 @@ class MainViewModel @Inject constructor(
                 .collect { menuItems ->
                     _menu.value = menuItems
                     _showLoading.value = false
+                }
+        }
+    }
+
+    private fun getOrders() {
+        viewModelScope.launch {
+            serviceRepository.getToken(ServiceTokenRequest())
+                .flatMapConcat { token ->
+                    serviceRepository.getOrders(
+                        getOrdersRequest = GetOrdersRequest(
+                            phone = "+7${_user.value.phone}"
+                        ),
+                        token = token.token
+                    )
+                }
+                .catch {  }
+                .collect { it ->
+
                 }
         }
     }

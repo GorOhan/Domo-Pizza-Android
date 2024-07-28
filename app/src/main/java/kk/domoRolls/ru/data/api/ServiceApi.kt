@@ -3,6 +3,8 @@ package kk.domoRolls.ru.data.api
 
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.GetMenuResponse
+import kk.domoRolls.ru.data.model.order.GetOrdersRequest
+import kk.domoRolls.ru.data.model.order.GetOrdersResponse
 import kk.domoRolls.ru.data.model.order.GetStopListResponse
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
 import kk.domoRolls.ru.data.model.order.GetStreetsRequest
@@ -37,4 +39,11 @@ interface ServiceApi {
         @Body getStreetsRequest: GetStreetsRequest,
         @Header("Authorization") token: String,
     ): GetStreetsResponse
+
+    @POST("api/1/deliveries/by_delivery_date_and_phone")
+    suspend fun getOrders(
+        @Body getOrdersRequest: GetOrdersRequest,
+        @Header("Authorization") token: String,
+    ): GetOrdersResponse
+
 }

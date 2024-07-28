@@ -3,6 +3,8 @@ package kk.domoRolls.ru.data.repository
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import kk.domoRolls.ru.data.api.ServiceApi
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
+import kk.domoRolls.ru.data.model.order.GetOrdersRequest
+import kk.domoRolls.ru.data.model.order.GetOrdersResponse
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
 import kk.domoRolls.ru.data.model.order.GetStreetsRequest
 import kk.domoRolls.ru.data.model.order.GetStreetsResponse
@@ -118,12 +120,20 @@ class ServiceRepositoryImpl(
         getStreetsRequest: GetStreetsRequest,
         token: String
     ): Flow<GetStreetsResponse> = emitFlow {
-        val menu = serviceApi.getStreets(getStreetsRequest, token = "Bearer $token")
-        return@emitFlow menu
+        val streets = serviceApi.getStreets(getStreetsRequest, token = "Bearer $token")
+        return@emitFlow streets
     }
 
     override fun getCategories(): Flow<List<ItemCategory>> {
         return currentCategories
+    }
+
+    override fun getOrders(
+        getOrdersRequest: GetOrdersRequest,
+        token: String
+    ): Flow<GetOrdersResponse> = emitFlow {
+        val orders = serviceApi.getOrders(getOrdersRequest, token = "Bearer $token")
+        return@emitFlow orders
     }
 
 
