@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.presentation.components.BaseButton
+import kk.domoRolls.ru.presentation.html.HTMLScreenType
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoGray
@@ -67,7 +68,9 @@ fun RegistrationScreen(
         userPhoneState = viewModel.phoneNumber,
         onUserNameInput = { viewModel.onUserNameInput(it) },
         onUserPhoneInput = { viewModel.onUserPhoneInput(it) },
-        onTermsNav = { navController.navigate(Screen.HTMLScreen.route) }
+        onTermsNav = {
+            navController.navigate("${Screen.HTMLScreen.route}/${HTMLScreenType.TERMS.name}")
+        }
     )
 }
 
