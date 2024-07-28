@@ -41,7 +41,7 @@ fun isWorkingTimeForSlot(timeSlot: TimeSlot): Boolean {
 }
 
 fun isWorkingTime(timeSlots: List<TimeSlot>) =
-    timeSlots.map { isWorkingTimeForSlot(it) }.any { true }
+    timeSlots.map { isWorkingTimeForSlot(it) }.any { it }
 
 fun formatNumber(input: String,format: String): String {
     // Ensure the input contains only digits
