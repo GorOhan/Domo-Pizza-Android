@@ -2,6 +2,7 @@ package kk.domoRolls.ru.util
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.Promo
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.model.WorkingHoursWrapper
@@ -49,6 +50,18 @@ fun String.parseToListString(): List<String>? {
         val type = object : TypeToken<List<String>>() {}.type
 
         return gson.fromJson(this, type)
+    } catch (e: Exception) {
+        return null
+    }
+}
+
+fun String.parseToGiftProduct(): GiftProduct? {
+    try {
+        val gson = Gson()
+        val type = object : TypeToken<GiftProduct>() {}.type
+
+        return gson.fromJson(this, type)
+
     } catch (e: Exception) {
         return null
     }
