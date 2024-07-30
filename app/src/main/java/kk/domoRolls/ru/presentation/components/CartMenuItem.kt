@@ -567,7 +567,8 @@ fun PromoInput(
     inputPromo: String,
     isPromoSuccess: Boolean?,
     onInputPromo: (String) -> Unit = {},
-    confirmPromo: () -> Unit = {}
+    confirmPromo: () -> Unit = {},
+    onConfirmOrder: () -> Unit = {}
 ) {
     val countOfItems = currentCart.sumOf { it.countInCart }
     var cartPrice = currentCart.filter { menuItem -> menuItem.countInCart > 0 }
@@ -677,7 +678,8 @@ fun PromoInput(
             modifier = Modifier
                 .imePadding()
                 .padding(horizontal = 22.dp, vertical = 20.dp)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            onClick = { onConfirmOrder() }
         )
     }
 }

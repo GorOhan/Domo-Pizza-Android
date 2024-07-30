@@ -12,6 +12,7 @@ import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
+import kk.domoRolls.ru.util.isWorkingTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,6 +59,11 @@ class CartViewModel @Inject constructor(
     private val _promoCodes: MutableStateFlow<List<PromoCode>> = MutableStateFlow(emptyList())
     private val promoCodes = _promoCodes.asStateFlow()
 
+    private val _isWorkingTime: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val isWorkingTime = _isWorkingTime.asStateFlow()
+
+    private val _onEvent: MutableStateFlow<Event> = MutableStateFlow(Event.Nothing)
+    val onEvent = _onEvent.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -97,6 +103,12 @@ class CartViewModel @Inject constructor(
             }.collect()
         }
 
+        firebaseConfigRepository.getWorkingHours()
+            .onEach {
+                _isWorkingTime.value = isWorkingTime(it)
+            }
+            .launchIn(viewModelScope)
+
     }
 
     fun addToCart(menuItem: MenuItem) {
@@ -115,5 +127,9 @@ class CartViewModel @Inject constructor(
 
     fun confirmPromo() {
         _isPromoSuccess.value = promoCodes.value.any { it.value == _inputPromo.value }
+    }
+
+    fun setEvent(event: Event){
+        _onEvent.value = event
     }
 }

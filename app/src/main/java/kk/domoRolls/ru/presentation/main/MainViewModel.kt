@@ -64,7 +64,7 @@ class MainViewModel @Inject constructor(
 
             firebaseConfigRepository.getWorkingHours()
                 .onEach {
-                    _isOpen.value = isWorkingTime(it) ?: true
+                    _isOpen.value = isWorkingTime(it)
                 }
                 .collect()
         }
