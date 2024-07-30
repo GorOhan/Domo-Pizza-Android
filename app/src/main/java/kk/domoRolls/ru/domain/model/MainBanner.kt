@@ -1,7 +1,7 @@
 package kk.domoRolls.ru.domain.model
 
 
-data class Promo(
+data class PromoStory(
     val id: Int,
     val name: String,
     val descriptionFull: String,

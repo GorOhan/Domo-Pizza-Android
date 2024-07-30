@@ -6,13 +6,13 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.auth.SendOTPRequest
 import kk.domoRolls.ru.data.model.auth.TokenRequest
 import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.AuthRepository
+import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +30,7 @@ import kotlin.random.Random
 class RegistrationViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val dataStoreService: DataStoreService,
-    private val firebaseRemoteConfig: FirebaseRemoteConfig
+    private val firebaseConfigRepository: FirebaseConfigRepository
 ) : ViewModel() {
 
     private val _userName: MutableStateFlow<String> = MutableStateFlow("")
@@ -45,7 +45,7 @@ class RegistrationViewModel @Inject constructor(
     private val _token: MutableStateFlow<String> = MutableStateFlow("")
     private val _generatedOtp: MutableStateFlow<String> = MutableStateFlow("")
 
-    private val _otpLength: MutableStateFlow<Int> = MutableStateFlow(firebaseRemoteConfig.getLong("otpLenght").toInt())
+    private val _otpLength: MutableStateFlow<Int> = MutableStateFlow(6)
     val otpLength = _otpLength.asStateFlow()
 
     private val _navigateToMain: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -54,8 +54,25 @@ class RegistrationViewModel @Inject constructor(
     private val _isOtpError: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isOtpError = _isOtpError.asStateFlow()
 
+    private val _otpMessage: MutableStateFlow<String> = MutableStateFlow("")
+
+
     init {
-        _otpLength.value = 6
+        viewModelScope.launch {
+            firebaseConfigRepository.getOtpLength()
+                .onEach {
+                    _otpLength.value = it
+                }
+                .collect()
+        }
+
+        viewModelScope.launch {
+            firebaseConfigRepository.getOtpMessage()
+                .onEach {
+                    _otpMessage.value = it
+                }
+                .collect()
+        }
     }
     val isReadyToSendOtp =
         combine(
@@ -109,14 +126,13 @@ class RegistrationViewModel @Inject constructor(
 
     fun sendOTP() {
         _generatedOtp.value = generateOTP()
-        val otpMessage: String = firebaseRemoteConfig.getString("otpMessage")
 
         viewModelScope.launch {
             if (_phoneNumber.value == "9378852905") return@launch
             authRepository.sendOTP(
                 sendOTPRequest = SendOTPRequest(
                     to = "7${_phoneNumber.value}",
-                    txt = "$otpMessage ${_generatedOtp.value}"
+                    txt = "${_otpMessage.value} ${_generatedOtp.value}"
                 ),
                 token = _token.value
             )

@@ -52,7 +52,7 @@ import coil.compose.AsyncImage
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
-import kk.domoRolls.ru.domain.model.Promo
+import kk.domoRolls.ru.domain.model.PromoStory
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.presentation.components.CartButton
 import kk.domoRolls.ru.presentation.components.DomoLoading
@@ -80,7 +80,7 @@ fun MainScreen(
 
     MainScreenUI(
         menuState = mainViewModel.menu,
-        promoList = promo,
+        promoStoryList = promo,
         onNavigationClick = {
             navController.navigate(it)
         },
@@ -127,7 +127,7 @@ fun MainScreen(
 
 @Composable
 fun MainScreenUI(
-    promoList: List<Promo> = emptyList(),
+    promoStoryList: List<PromoStory> = emptyList(),
     menuState: StateFlow<List<MenuItem>> = MutableStateFlow(emptyList()),
     onNavigationClick: (String) -> Unit = {},
     onAddToCart: (MenuItem) -> Unit = {},
@@ -169,7 +169,7 @@ fun MainScreenUI(
         }
 
         ContentSection(
-            promoList = promoList,
+            promoStoryList = promoStoryList,
             menu = menu,
             onPlusClick = onAddToCart,
             onMinusClick = onRemoveFromCart,
@@ -199,7 +199,7 @@ fun MainScreenUI(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ContentSection(
-    promoList: List<Promo>,
+    promoStoryList: List<PromoStory>,
     menu: List<MenuItem>,
     onMinusClick: (MenuItem) -> Unit = {},
     onPlusClick: (MenuItem) -> Unit = {},
@@ -269,7 +269,7 @@ fun ContentSection(
 
         item {
             StorySection(
-                promo = promoList,
+                promoStory = promoStoryList,
                 onNavigationClick = onNavigationClick
             )
         }
@@ -362,22 +362,22 @@ fun ContentSection(
 
 @Composable
 fun StorySection(
-    promo: List<Promo>,
+    promoStory: List<PromoStory>,
     onNavigationClick: (String) -> Unit,
 ) {
     LazyRow {
-        itemsIndexed(items = promo, itemContent = { inex, item ->
+        itemsIndexed(items = promoStory, itemContent = { inex, item ->
             AsyncImage(
                 modifier = Modifier
                     .clickable {
-                        onNavigationClick("${Screen.StoryScreen.route}/${promo.indexOf(item)}")
+                        onNavigationClick("${Screen.StoryScreen.route}/${promoStory.indexOf(item)}")
                     }
                     .height(124.dp)
                     .padding(
                         start = 16.dp,
                         top = 8.dp,
                         bottom = 8.dp,
-                        end = if (inex == promo.size - 1) 16.dp else 0.dp
+                        end = if (inex == promoStory.size - 1) 16.dp else 0.dp
                     )
                     .clip(RoundedCornerShape(20.dp)),
                 model = item.bannerImage,

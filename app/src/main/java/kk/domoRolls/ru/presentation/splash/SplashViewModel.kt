@@ -2,12 +2,12 @@ package kk.domoRolls.ru.presentation.splash
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.prefs.DataStoreService
+import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,7 +25,7 @@ import javax.inject.Inject
 class SplashViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
     private val serviceRepository: ServiceRepository,
-    private val firebaseRemoteConfig: FirebaseRemoteConfig,
+    private val firebaseConfigRepository: FirebaseConfigRepository,
 ) : ViewModel() {
 
     private val _userId: MutableStateFlow<String?> = MutableStateFlow("")
@@ -59,17 +60,9 @@ class SplashViewModel @Inject constructor(
                     .collect()
             }
             val firebase = async {
-                firebaseRemoteConfig.fetch(10)
-                    .addOnCompleteListener { taskFetch ->
-                        if (taskFetch.isSuccessful) {
-                            firebaseRemoteConfig.activate().addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    _isAppAvailable.value =
-                                        firebaseRemoteConfig.getBoolean("isAppAvailable")
-                                }
-                            }
-                        }
-                    }
+                firebaseConfigRepository.getAppAvailable().onEach {
+                    _isAppAvailable.value = it
+                }.collect()
             }
 
             firebase.await()

@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
-import kk.domoRolls.ru.domain.model.Promo
+import kk.domoRolls.ru.domain.model.PromoStory
 import kk.domoRolls.ru.presentation.theme.DomoTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -50,7 +50,7 @@ fun StoryScreen(
     storyViewModel: StoryViewModel = hiltViewModel()
 ) {
     StoryScreenUI(
-        promoState = storyViewModel.promoList,
+        promoStoryState = storyViewModel.promoList,
         currentIndex = currentIndex,
         onBackClick = { navController.navigateUp() }
     )
@@ -60,11 +60,11 @@ fun StoryScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StoryScreenUI(
-    promoState: StateFlow<List<Promo>?> = MutableStateFlow(emptyList()),
+    promoStoryState: StateFlow<List<PromoStory>?> = MutableStateFlow(emptyList()),
     currentIndex: Int = 0,
     onBackClick: () -> Unit = {},
 ) {
-    val promo by promoState.collectAsState()
+    val promo by promoStoryState.collectAsState()
     val backClicked = remember { mutableStateOf(false) }
     val pagerState = rememberPagerState { promo?.size ?: 0 }
     val pagerScope = rememberCoroutineScope()
