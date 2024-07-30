@@ -85,7 +85,9 @@ internal fun NavMain(
         }
 
         composable(route = Screen.CartScreen.route) {
-            CartScreen()
+            CartScreen(
+                navController = navController
+            )
         }
 
         composable(route = Screen.MyProfileScreen.route) {

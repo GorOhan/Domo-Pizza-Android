@@ -15,7 +15,6 @@ import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.getCurrentWeekdayInRussian
 import kk.domoRolls.ru.util.isWorkingTime
-import kk.domoRolls.ru.util.parseToListString
 import kk.domoRolls.ru.util.parseToPromos
 import kk.domoRolls.ru.util.parseToWorkingHours
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -54,9 +53,6 @@ class MainViewModel @Inject constructor(
 
     private val _isOpen: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val isOpen = _isOpen.asStateFlow()
-//
-//    private var hotList: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
-//    private var newList: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
 
     init {
 

@@ -100,7 +100,7 @@ fun NotifyPermissionScreen() {
                     .height(106.dp)
                     .width(86.dp)
                     .align(Alignment.CenterEnd),
-                painter = painterResource(id = R.drawable.ic_attention),
+                painter = painterResource(id = R.drawable.ic_text_attention),
                 contentDescription = "",
             )
         }

@@ -20,7 +20,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import kk.domoRolls.ru.data.model.order.MenuItem
+import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.presentation.components.CartMenuItem
 import kk.domoRolls.ru.presentation.components.Devices
 import kk.domoRolls.ru.presentation.components.DomoToolbar
@@ -32,19 +34,53 @@ import kk.domoRolls.ru.presentation.theme.DomoTheme
 
 @Composable
 fun CartScreen(
+    navController: NavHostController,
     viewModel: CartViewModel = hiltViewModel()
 ) {
     CartScreenUI(
+        isPromoSuccess = viewModel.isPromoSuccess.collectAsState(),
+        inputPromo = viewModel.inputPromo.collectAsState(),
+        gift = viewModel.gift.collectAsState(),
         currentCart = viewModel.currentCart.collectAsState(),
-        giftProduct = viewModel.giftProduct.collectAsState()
+        giftProduct = viewModel.giftProduct.collectAsState(),
+        spices = viewModel.spices.collectAsState(),
+        onClick = {
+            when (it) {
+                Event.ConfirmPromo -> {
+                    viewModel.confirmPromo()
+                }
+
+                Event.BackClick -> {
+                    navController.popBackStack()
+                }
+
+                Event.LogOut -> TODO()
+                is Event.NavigateClick -> TODO()
+                is Event.AddToCart -> {
+                    viewModel.addToCart(it.item)
+                }
+
+                is Event.RemoveFromCart -> {
+                    viewModel.removeFromCart(it.item)
+                }
+
+                is Event.InputPromo -> {
+                    viewModel.inputPromo(it.input)
+                }
+            }
+        }
     )
 }
 
 @Composable
 fun CartScreenUI(
+    isPromoSuccess: State<Boolean?> = mutableStateOf(null),
+    inputPromo: State<String> = mutableStateOf(""),
+    gift: State<GiftProduct> = mutableStateOf(GiftProduct()),
     currentCart: State<List<MenuItem>> = mutableStateOf(emptyList()),
-    giftProduct: State<MenuItem> = mutableStateOf(MenuItem())
-
+    giftProduct: State<MenuItem> = mutableStateOf(MenuItem()),
+    spices: State<List<MenuItem>> = mutableStateOf(emptyList()),
+    onClick: (type: Event) -> Unit = { _ -> },
 ) {
     val keyboardVisible = isKeyboardVisible()
 
@@ -53,15 +89,28 @@ fun CartScreenUI(
         animationSpec = tween(durationMillis = 100), label = ""
     )
     Scaffold(
-        topBar = { DomoToolbar() },
+        topBar = {
+            DomoToolbar(
+                onBackClick = { onClick(Event.BackClick) }
+            )
+        },
         bottomBar = {
             PromoInput(
-                modifier = Modifier.padding(bottom = animatedIconDp)
+                modifier = Modifier.padding(bottom = animatedIconDp),
+                currentCart = currentCart.value,
+                inputPromo = inputPromo.value,
+                isPromoSuccess = isPromoSuccess.value,
+                onInputPromo = { onClick(Event.InputPromo(it)) },
+                confirmPromo = { onClick(Event.ConfirmPromo) }
             )
         },
         floatingActionButton = {}
 
     ) { innerPadding ->
+
+        val cartPrice = currentCart.value.filter { menuItem -> menuItem.countInCart > 0 }
+            .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
+            .sumOf { it.second * it.first }
         Column(
             modifier = Modifier
                 .background(Color.White)
@@ -72,21 +121,43 @@ fun CartScreenUI(
         ) {
 
 
-            currentCart.value.forEach {
-                CartMenuItem(menuItem = it)
+            currentCart.value.filter { !spices.value.contains(it) }.forEach {
+                CartMenuItem(
+                    menuItem = it,
+                    onMinusClick = { onClick(Event.RemoveFromCart(it)) },
+                    onPlusClick = { onClick(Event.AddToCart(it)) }
+                )
             }
 
-            if (giftProduct.value.itemId?.isNotBlank() == true) {
+            if (giftProduct.value.itemId?.isNotBlank() == true && (cartPrice > gift.value.sum)) {
                 GiftProductItem(menuItem = giftProduct.value)
             }
 
 
-            Devices()
+            Devices(
+                currentCount = currentCart.value.sumOf { it.countInCart },
+            )
 
-            SpicesSection(currentCart.value)
+            SpicesSection(
+                spices.value,
+                onMinusClick = { onClick(Event.RemoveFromCart(it)) },
+                onPlusClick = { onClick(Event.AddToCart(it)) }
+            )
 
         }
     }
+}
+
+sealed class Event {
+    data object BackClick : Event()
+    data object ConfirmPromo : Event()
+    data class InputPromo(val input: String) : Event()
+    data class AddToCart(val item: MenuItem) : Event()
+    data class RemoveFromCart(val item: MenuItem) : Event()
+
+    data class NavigateClick(val route: String) : Event()
+    data object LogOut : Event()
+
 }
 
 @Preview(showBackground = true)

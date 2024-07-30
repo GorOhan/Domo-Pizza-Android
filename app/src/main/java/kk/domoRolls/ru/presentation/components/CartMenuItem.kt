@@ -3,7 +3,6 @@ package kk.domoRolls.ru.presentation.components
 import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.view.ViewTreeObserver
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -174,21 +173,20 @@ fun CartMenuItem(
                         modifier = Modifier
                             .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.Start
 
                     ) {
                         Text(
+                            modifier = Modifier.width(50.dp),
                             text = "${
                                 menuItem.itemSizes?.first()?.prices?.first()?.price?.toInt()
                                     .toString()
                             } ₽",
                             style = MaterialTheme.typography.bodyLarge,
                         )
-                        Spacer(modifier = Modifier.weight(1f))
                         Row(
                             modifier = Modifier
-                                .padding(start = 16.dp)
-                                .fillMaxWidth(1f),
+                                .width(110.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -260,7 +258,11 @@ fun CartMenuItem(
 
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
-fun Devices() {
+fun Devices(
+    currentCount: Int
+) {
+    val devicesCount = remember { mutableIntStateOf(currentCount) }
+
     Box {
         Row(
             modifier = Modifier
@@ -275,8 +277,8 @@ fun Devices() {
             )
             Row(
                 modifier = Modifier
-                    .padding(start = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                    .width(110.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
@@ -288,7 +290,7 @@ fun Devices() {
                         .clickable(
                             interactionSource = MutableInteractionSource(),
                             indication = rememberRipple(),
-                            onClick = { }
+                            onClick = { devicesCount.intValue-- }
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -300,7 +302,7 @@ fun Devices() {
                 }
 
                 Text(
-                    text = "0",
+                    text = devicesCount.intValue.toString(),
                     style = MaterialTheme.typography.bodyMedium,
                     fontSize = 16.sp,
                 )
@@ -313,7 +315,7 @@ fun Devices() {
                         .clickable(
                             interactionSource = MutableInteractionSource(),
                             indication = rememberRipple(),
-                            onClick = { }
+                            onClick = { devicesCount.intValue++ }
                         ),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -343,6 +345,8 @@ fun Devices() {
 @Composable
 fun SpicesSection(
     spices: List<MenuItem> = emptyList(),
+    onPlusClick: (MenuItem) -> Unit,
+    onMinusClick: (MenuItem) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -353,17 +357,32 @@ fun SpicesSection(
             style = MaterialTheme.typography.titleSmall,
             text = "Добавить специи в заказ"
         )
-        Text(
-            modifier = Modifier.padding(start = 22.dp, top = 6.dp),
-            color = DomoRed,
-            style = MaterialTheme.typography.bodyMedium,
-            text = "В заказ идёт 1 набор специй в подарок"
-        )
+        Row(
+            modifier = Modifier
+                .padding(start = 22.dp, top = 6.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                tint = DomoRed,
+                painter = painterResource(id = R.drawable.ic_text_attention),
+                contentDescription = "")
+            Text(
+                modifier = Modifier.padding(start = 6.dp),
+                color = DomoRed,
+                style = MaterialTheme.typography.bodySmall,
+                text = "В заказ идёт 1 набор специй в подарок"
+            )
+        }
         LazyRow(
             modifier = Modifier.padding(top = 32.dp)
         ) {
             itemsIndexed(spices) { index, item ->
-                SpiceItem(item)
+                SpiceItem(
+                    item,
+                    onPlusClick = { onPlusClick(item) },
+                    onMinusClick = { onMinusClick(item) }
+                )
             }
         }
 
@@ -485,76 +504,81 @@ fun SpiceItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-
-            AnimatedVisibility(visible = menuItem.countInCart > 0) {
-                Row(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(DomoBorder)
+                        .clickable(
+                            interactionSource = MutableInteractionSource(),
+                            indication = rememberRipple(),
+                            onClick = { onMinusClick() }
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(DomoBorder)
-                            .clickable(
-                                interactionSource = MutableInteractionSource(),
-                                indication = rememberRipple(),
-                                onClick = { onMinusClick() }
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            modifier = Modifier.size(14.dp),
-                            painter = painterResource(id = R.drawable.ic_minus),
-                            contentDescription = ""
-                        )
-                    }
-
-                    Text(
-                        text = menuItem.countInCart.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 16.sp,
+                    Image(
+                        modifier = Modifier.size(14.dp),
+                        painter = painterResource(id = R.drawable.ic_minus),
+                        contentDescription = ""
                     )
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(DomoBorder)
-                            .clickable(
-                                interactionSource = MutableInteractionSource(),
-                                indication = rememberRipple(),
-                                onClick = { onPlusClick() }
-                            ),
-                        contentAlignment = Alignment.Center,
-                    ) {
+                }
 
-                        Image(
-                            modifier = Modifier.size(14.dp),
-                            painter = painterResource(id = R.drawable.ic_plus),
-                            contentDescription = ""
-                        )
-                    }
+                Text(
+                    text = menuItem.countInCart.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 16.sp,
+                )
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(DomoBorder)
+                        .clickable(
+                            interactionSource = MutableInteractionSource(),
+                            indication = rememberRipple(),
+                            onClick = { onPlusClick() }
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+
+                    Image(
+                        modifier = Modifier.size(14.dp),
+                        painter = painterResource(id = R.drawable.ic_plus),
+                        contentDescription = ""
+                    )
                 }
             }
-
-
         }
-
     }
 }
 
 @Composable
 fun PromoInput(
-    modifier: Modifier
+    modifier: Modifier,
+    currentCart: List<MenuItem>,
+    inputPromo: String,
+    isPromoSuccess: Boolean?,
+    onInputPromo: (String) -> Unit = {},
+    confirmPromo: () -> Unit = {}
 ) {
+    val countOfItems = currentCart.sumOf { it.countInCart }
+    var cartPrice = currentCart.filter { menuItem -> menuItem.countInCart > 0 }
+        .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
+        .sumOf { it.second * it.first }
+    cartPrice = if (isPromoSuccess == true) cartPrice * (1-0.15) else cartPrice
+
     Column(
         modifier = modifier
     ) {
         Divider(
             modifier = Modifier
-                .padding(start = 22.dp, end = 22.dp, top = 22.dp)
+                .padding(start = 22.dp, end = 22.dp)
                 .fillMaxWidth()
                 .width(1.dp),
             color = DomoBorder
@@ -571,18 +595,21 @@ fun PromoInput(
                     .padding(start = 22.dp)
                     .fillMaxWidth(.6f),
                 shape = RoundedCornerShape(24.dp),
-                value = "",
+                value = inputPromo,
+                isError = isPromoSuccess == false,
                 singleLine = true,
-                onValueChange = { value -> },
+                onValueChange = { value -> onInputPromo(value) },
                 colors = OutlinedTextFieldDefaults.colors(
                     cursorColor = DomoBlue,
                     unfocusedBorderColor = DomoGray,
-                    focusedBorderColor = DomoBlue,
+                    focusedBorderColor = if (isPromoSuccess != true) DomoBlue else DomoGreen,
                     unfocusedTextColor = DomoGray,
                     focusedTextColor = Color.Black,
                     unfocusedPlaceholderColor = DomoGray,
                     focusedPlaceholderColor = DomoGray,
-                ),
+                    errorBorderColor = DomoRed,
+
+                    ),
                 textStyle = MaterialTheme.typography.titleSmall,
                 placeholder = {
                     Text(
@@ -597,7 +624,8 @@ fun PromoInput(
                 backgroundColor = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier
                     .padding(horizontal = 22.dp)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                onClick = { confirmPromo() }
             )
         }
         Row(
@@ -607,8 +635,8 @@ fun PromoInput(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "5 товаров")
-            Text(text = "3544 ₽")
+            Text(text = "$countOfItems товаров")
+            Text(text = "${cartPrice.toInt()} ₽")
         }
 
         Row(
@@ -618,8 +646,8 @@ fun PromoInput(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "5 товаров")
-            Text(text = "3544 ₽")
+            Text(text = "Доставка")
+            Text(text = "0 ₽")
         }
 
         Row(
@@ -629,8 +657,8 @@ fun PromoInput(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "5 товаров")
-            Text(text = "3544 ₽")
+            Text(text = "Скидка")
+            Text(text = "0 ₽")
         }
 
         Divider(
@@ -642,7 +670,7 @@ fun PromoInput(
         )
 
         BaseButton(
-            buttonTitle = "Оформить заказ на 3444 ₽",
+            buttonTitle = "Оформить заказ на ${cartPrice.toInt()} ₽",
             backgroundColor = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
                 .imePadding()
