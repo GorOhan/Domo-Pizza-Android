@@ -107,7 +107,9 @@ fun MyProfileScreenUI(
             onBackClick = { onClick(Event.BackClick) },
             title = "Мой профиль"
         )
-        MyInfo(user = user)
+        MyInfo(user = user,
+            onPersonalDataClick = { onClick(Event.NavigateClick(Screen.PersonalDataScreen.route)) }
+        )
         MyOrdersAndAddresses()
         MyGiftsView(
             modifier = Modifier.padding(horizontal = 22.dp, vertical = 20.dp),
@@ -250,12 +252,16 @@ fun MyGiftsView(
 }
 
 @Composable
-fun MyInfo(user: State<User>) {
+fun MyInfo(
+    user: State<User>,
+    onPersonalDataClick: () -> Unit = {},
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 22.dp, end = 22.dp, top = 25.dp)
-            .background(DomoBorder, RoundedCornerShape(20.dp)),
+            .background(DomoBorder, RoundedCornerShape(20.dp))
+            .clickable { onPersonalDataClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(

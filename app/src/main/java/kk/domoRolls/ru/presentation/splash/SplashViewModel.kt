@@ -62,7 +62,9 @@ class SplashViewModel @Inject constructor(
             val firebase = async {
                 firebaseConfigRepository.getAppAvailable().onEach {
                     _isAppAvailable.value = it
-                }.collect()
+                }
+                    .catch { }
+                    .collect()
             }
 
             firebase.await()

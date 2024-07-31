@@ -80,6 +80,7 @@ class CartViewModel @Inject constructor(
                     _showLoading.value = false
                     _spices.value =
                         menuItems.filter { it.categoryId == _categories.value.last().id }
+                    if (menuItems.none { it.countInCart > 0 }) _onEvent.value = Event.BackClick
                 }
         }
 
@@ -129,7 +130,7 @@ class CartViewModel @Inject constructor(
         _isPromoSuccess.value = promoCodes.value.any { it.value == _inputPromo.value }
     }
 
-    fun setEvent(event: Event){
+    fun setEvent(event: Event) {
         _onEvent.value = event
     }
 }

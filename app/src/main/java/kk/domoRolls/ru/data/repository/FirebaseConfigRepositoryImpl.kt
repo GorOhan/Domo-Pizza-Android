@@ -29,7 +29,7 @@ class FirebaseConfigRepositoryImpl(
     private val _giftProduct:MutableStateFlow<GiftProduct> = MutableStateFlow(GiftProduct())
 
     init {
-        firebaseRemoteConfig.fetchAndActivate()
+        firebaseRemoteConfig.fetch(1)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     _isAppAvailable.value =
