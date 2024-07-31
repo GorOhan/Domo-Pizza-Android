@@ -100,7 +100,9 @@ internal fun NavMain(
         }
 
         composable(route = Screen.PersonalDataScreen.route) {
-            PersonalDataScreen()
+            PersonalDataScreen(
+                navController = navController
+            )
         }
     }
 }

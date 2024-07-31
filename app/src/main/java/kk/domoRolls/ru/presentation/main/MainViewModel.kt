@@ -32,7 +32,7 @@ class MainViewModel @Inject constructor(
     private val firebaseConfigRepository: FirebaseConfigRepository,
 ) : ViewModel() {
 
-    private val _user: MutableStateFlow<User> = MutableStateFlow(User())
+    private val _user: MutableStateFlow<User> = MutableStateFlow(dataStoreService.getUserData())
     val user = _user.asStateFlow()
 
     private val _promoStoryList: MutableStateFlow<List<PromoStory>> = MutableStateFlow(emptyList())
@@ -54,7 +54,6 @@ class MainViewModel @Inject constructor(
 
         viewModelScope.launch {
             _showLoading.value = true
-            _user.value = dataStoreService.getUserData()
         }
 
         viewModelScope.launch {

@@ -17,6 +17,7 @@ class DataStoreServiceImpl(context: Context) : DataStoreService {
     private val userIdKey = "userIdKey"
     private val userPhoneKey = "userPhoneKey"
     private val userNameKey = "userNameKey"
+    private val userEmailKey = "userEmailKey"
 
 
     private fun set(key: String, value: Any?) {
@@ -48,13 +49,14 @@ class DataStoreServiceImpl(context: Context) : DataStoreService {
         set(userIdKey,user.id)
         set(userNameKey,user.name)
         set(userPhoneKey,user.phone)
-
+        set(userEmailKey,user.email)
     }
 
     override fun getUserData() = User(
         id = get(userIdKey, ""),
         name = get(userNameKey,""),
-        phone = get(userPhoneKey,"")
+        phone = get(userPhoneKey,""),
+        email = get(userEmailKey,"")
     )
 
 }

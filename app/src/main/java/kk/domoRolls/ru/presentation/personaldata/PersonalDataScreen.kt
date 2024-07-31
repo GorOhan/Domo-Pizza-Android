@@ -1,9 +1,8 @@
 package kk.domoRolls.ru.presentation.personaldata
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,8 +16,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,38 +27,48 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kk.domoRolls.ru.domain.model.User
-import kk.domoRolls.ru.presentation.cart.Event
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import kk.domoRolls.ru.presentation.components.BaseButton
 import kk.domoRolls.ru.presentation.components.DomoToolbar
-import kk.domoRolls.ru.presentation.components.isKeyboardVisible
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
+import kk.domoRolls.ru.presentation.theme.DomoRed
 import kk.domoRolls.ru.presentation.theme.DomoTheme
+import kk.domoRolls.ru.util.MaskVisualTransformation
 
 @Composable
-fun PersonalDataScreen(){
-    PersonalDataUI()
+fun PersonalDataScreen(
+    navController: NavHostController,
+    personalDataViewModel: PersonalDataViewModel = hiltViewModel()
+) {
+    val event = personalDataViewModel.onEvent.collectAsState()
+    LaunchedEffect(event.value) {
+        if (event.value is PersonalDataEvent.BackClick) navController.popBackStack()
+    }
+    PersonalDataUI(
+        userNameInput = personalDataViewModel.inputUserName.collectAsState(),
+        userEmailInput = personalDataViewModel.inputUserEmail.collectAsState(),
+        userPhoneInput = personalDataViewModel.inputUserPhone.collectAsState(),
+        onEvent = { personalDataViewModel.setEvent(it) }
+    )
 }
 
 @Composable
 fun PersonalDataUI(
-    user: State<User> = mutableStateOf(User()),
-    onClick: (type: Event) -> Unit = { _ -> },
+    userEmailInput: State<String> = mutableStateOf(""),
+    userPhoneInput: State<String> = mutableStateOf(""),
+    userNameInput: State<String> = mutableStateOf(""),
+    onEvent: (type: PersonalDataEvent) -> Unit = { _ -> },
 ) {
-    val keyboardVisible = isKeyboardVisible()
-
-    val animatedIconDp by animateDpAsState(
-        targetValue = if (keyboardVisible) 220.dp else 0.dp,
-        animationSpec = tween(durationMillis = 200), label = ""
-    )
 
     Scaffold(
         containerColor = Color.White,
         topBar = {
             DomoToolbar(
                 title = "Личные данные",
-                onBackClick = { onClick(Event.BackClick) }
+                onBackClick = { onEvent(PersonalDataEvent.BackClick) }
             )
         },
         bottomBar = {},
@@ -68,16 +78,56 @@ fun PersonalDataUI(
 
         Column(
             modifier = Modifier
+                .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .fillMaxSize()
                 .background(Color.White),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            PersonalDataItem(label = "Имя", value = "Регина", onValueChange = {})
-            PersonalDataItem(label = "Телефон", value = "+7 999 999 99 99", onValueChange = {})
-            PersonalDataItem(label = "Почта", value = "Почта", onValueChange = {})
-            PersonalDataItem(label = "День рождения", value = "Введите дату", onValueChange = {})
+            PersonalDataItem(
+                label = "Имя",
+                value = userNameInput.value,
+                placeHolder = "user name",
+                onValueChange = { onEvent(PersonalDataEvent.InputName(it)) })
+
+            PersonalDataPhoneItem(
+                label = "Телефон",
+                value = userPhoneInput.value,
+                onValueChange = { onEvent(PersonalDataEvent.InputPhone(it)) },
+            )
+
+            PersonalDataItem(
+                label = "Почта",
+                placeHolder = "example@mail.ru",
+                value = userEmailInput.value,
+                onValueChange = { onEvent(PersonalDataEvent.InputEmail(it)) })
+
+            PersonalDataItem(
+                label = "День рождения",
+                value = "Введите дату",
+                onValueChange = {},
+                placeHolder = "Введите дату",
+                readOnly = true,
+            )
+
+            Spacer(Modifier.weight(1f))
+            BaseButton(
+                onClick = { onEvent(PersonalDataEvent.ConfirmChanges) },
+                buttonTitle = "Сохранить",
+                backgroundColor = DomoBlue,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 22.dp, vertical = 16.dp)
+            )
+
+            BaseButton(
+                onClick = { onEvent(PersonalDataEvent.DeleteAccount) },
+                buttonTitle = "Удалить профиль",
+                backgroundColor = DomoRed,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 22.dp, end = 22.dp, bottom = 32.dp)
+            )
 
 
         }
@@ -97,7 +147,49 @@ fun PersonalDataPreview() {
 fun PersonalDataItem(
     label: String,
     value: String,
-    onValueChange: (String) -> Unit = {}
+    placeHolder: String,
+    readOnly: Boolean = false,
+    onValueChange: (String) -> Unit = {},
+) {
+    TextField(
+        modifier = Modifier
+            .padding(start = 22.dp, end = 22.dp, top = 10.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp)),
+        label = { Text(label, color = DomoGray) },
+        shape = RoundedCornerShape(24.dp),
+        value = value,
+        readOnly = readOnly,
+        onValueChange = { onValueChange(it) },
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            focusedContainerColor = DomoBorder,
+            unfocusedContainerColor = DomoBorder,
+            disabledContainerColor = DomoBorder,
+            cursorColor = DomoBlue,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedPlaceholderColor = DomoGray,
+            unfocusedPlaceholderColor = DomoGray,
+        ),
+        textStyle = MaterialTheme.typography.titleSmall,
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
+        singleLine = true,
+        placeholder = {
+            Text(
+                text = placeHolder,
+                style = MaterialTheme.typography.titleSmall,
+            )
+        },
+    )
+}
+
+@Composable
+fun PersonalDataPhoneItem(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit = {},
 ) {
     TextField(
         modifier = Modifier
@@ -129,7 +221,17 @@ fun PersonalDataItem(
                 style = MaterialTheme.typography.titleSmall,
             )
         },
-
-        )
+        visualTransformation = MaskVisualTransformation("+7 ### ### ## ##")
+    )
 }
 
+sealed class PersonalDataEvent {
+    data class InputName(val input: String) : PersonalDataEvent()
+    data class InputPhone(val input: String) : PersonalDataEvent()
+    data class InputEmail(val input: String) : PersonalDataEvent()
+    data object BackClick : PersonalDataEvent()
+    data object ConfirmChanges : PersonalDataEvent()
+    data object DeleteAccount : PersonalDataEvent()
+    data object Nothing : PersonalDataEvent()
+
+}

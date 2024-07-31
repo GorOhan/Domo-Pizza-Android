@@ -160,13 +160,17 @@ class RegistrationViewModel @Inject constructor(
     fun verifyOtpCode() {
         viewModelScope.launch {
             if (_generatedOtp.value == _codeInput.value ||
-                phoneNumber.value == "9378852905") {
-                _navigateToMain.value = true
+                phoneNumber.value == "9378852905"
+            ) {
                 isExistUser(phone = _phoneNumber.value) { id ->
                     if (id == null) {
-                        saveUser()
+                        saveUser {
+                            _navigateToMain.value = true
+                        }
                     } else {
-                        fillUser(id)
+                        fillUser(id) {
+                            _navigateToMain.value = true
+                        }
                     }
                 }
             } else {
@@ -195,46 +199,57 @@ class RegistrationViewModel @Inject constructor(
         })
     }
 
-    private fun saveUser() {
+    private fun saveUser(completion: () -> Unit) {
 
         val userID = UUID.randomUUID().toString()
 
         val ref = FirebaseDatabase.getInstance().reference
-        val user = User(id = userID,
+        val user = User(
+            id = userID,
             name = userName.value,
-            phone = phoneNumber.value)
+            phone = phoneNumber.value
+        )
 
-        ref.child("users").child(userID).setValue(mapOf(
-            "username" to user.name,
-            "phone" to user.phone,
-            "email" to "",
-            "birthday" to "",
-            "gender" to ""
-            ))
+        ref.child("users").child(userID).setValue(
+            mapOf(
+                "username" to user.name,
+                "phone" to user.phone,
+                "email" to "",
+                "birthday" to "",
+                "gender" to ""
+            )
+        )
 
         dataStoreService.setUserData(user)
+        completion()
     }
 
-    private fun fillUser(userID:String) {
+    private fun fillUser(userID: String, completion: () -> Unit) {
         val ref = FirebaseDatabase.getInstance().reference
 
-        ref.child("users").child(userID).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val value = snapshot.value
-                val mapData = value as HashMap<String,String>
-                dataStoreService.setUserData(User(
-                    id = userID,
-                    name = mapData["username"] ?:"",
-                    phone = mapData["phone"] ?:""
-                ))
-            }
+        ref.child("users").child(userID)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val value = snapshot.value
+                    val mapData = value as HashMap<String, String>
 
-            override fun onCancelled(error: DatabaseError) {
-            }
-        })
+                    dataStoreService.setUserData(
+                        User(
+                            id = userID,
+                            name = mapData["username"] ?: "",
+                            phone = mapData["phone"] ?: "",
+                            email = mapData["email"] ?: ""
+                        )
+                    )
+                    completion()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
     }
 
-    fun setOTPError(isError:Boolean){
+    fun setOTPError(isError: Boolean) {
         _isOtpError.value = isError
     }
 }
