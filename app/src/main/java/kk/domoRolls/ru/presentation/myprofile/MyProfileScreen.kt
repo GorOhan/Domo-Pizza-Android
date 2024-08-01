@@ -65,6 +65,7 @@ fun MyProfileScreen(
 ) {
 
     MyProfileScreenUI(
+        addressCount = viewModel.myAddressesCount.collectAsState(),
         promoCode = viewModel.promoCodes.collectAsState(),
         user = viewModel.user.collectAsState(),
         onClick = { event ->
@@ -94,6 +95,7 @@ fun MyProfileScreen(
 fun MyProfileScreenUI(
     promoCode: State<List<PromoCode>> = mutableStateOf(emptyList()),
     user: State<User> = mutableStateOf(User()),
+    addressCount: State<Int> = mutableStateOf(0),
     onClick: (type: Event) -> Unit = { _ -> }
 ) {
     Column(
@@ -110,6 +112,7 @@ fun MyProfileScreenUI(
             onPersonalDataClick = { onClick(Event.NavigateClick(Screen.PersonalDataScreen.route)) }
         )
         MyOrdersAndAddresses(
+            addressCount = addressCount.value,
             onClick = { onClick(Event.NavigateClick(Screen.MyAddressesScreen.route))}
         )
         MyGiftsView(
@@ -292,6 +295,7 @@ fun MyInfo(
 
 @Composable
 fun MyOrdersAndAddresses(
+    addressCount:Int,
     onClick: () -> Unit,
 ) {
 
@@ -347,7 +351,7 @@ fun MyOrdersAndAddresses(
             Text(
                 modifier = Modifier.padding(start = 20.dp, bottom = 20.dp, top = 6.dp),
                 style = MaterialTheme.typography.bodyMedium,
-                text = "4 адреса"
+                text = "$addressCount адреса"
             )
         }
     }

@@ -168,7 +168,8 @@ fun AddressItem(
             )
             Text(
                 modifier = Modifier.padding(top = 4.dp, bottom = 20.dp),
-                text = "address.comment", style = MaterialTheme.typography.bodySmall,
+                text = "Не звоните в домофон, спит ребёнок",
+                style = MaterialTheme.typography.bodySmall,
                 color = DomoGray,
                 textAlign = TextAlign.Start
             )

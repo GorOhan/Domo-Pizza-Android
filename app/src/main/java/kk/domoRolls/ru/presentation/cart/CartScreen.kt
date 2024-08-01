@@ -36,7 +36,6 @@ import kk.domoRolls.ru.presentation.components.SleepView
 import kk.domoRolls.ru.presentation.components.SpicesSection
 import kk.domoRolls.ru.presentation.components.isKeyboardVisible
 import kk.domoRolls.ru.presentation.theme.DomoTheme
-import kk.domoRolls.ru.util.isWorkingTime
 
 @Composable
 fun CartScreen(
@@ -72,7 +71,6 @@ fun CartScreen(
 
 @Composable
 fun CartScreenUI(
-    isWorkingTime: State<Boolean> = mutableStateOf(true),
     isPromoSuccess: State<Boolean?> = mutableStateOf(null),
     inputPromo: State<String> = mutableStateOf(""),
     gift: State<GiftProduct> = mutableStateOf(GiftProduct()),
@@ -107,9 +105,11 @@ fun CartScreenUI(
 
     ) { innerPadding ->
 
-        val cartPrice = currentCart.value.filter { menuItem -> menuItem.countInCart > 0 }
+        var cartPrice = currentCart.value.filter { menuItem -> menuItem.countInCart > 0 }
             .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
             .sumOf { it.second * it.first }
+        cartPrice = if (isPromoSuccess.value == true) cartPrice * (1 - 0.15) else cartPrice
+
         Column(
             modifier = Modifier
                 .background(Color.White)
@@ -133,7 +133,6 @@ fun CartScreenUI(
                     )
                 }
             }
-
             AnimatedVisibility (giftProduct.value.itemId?.isNotBlank() == true && (cartPrice > gift.value.sum)) {
                 GiftProductItem(menuItem = giftProduct.value)
             }
