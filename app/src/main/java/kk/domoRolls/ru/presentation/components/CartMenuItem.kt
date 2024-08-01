@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -46,12 +47,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.MenuItem
+import kk.domoRolls.ru.presentation.cart.Event
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
@@ -368,7 +371,8 @@ fun SpicesSection(
             Icon(
                 tint = DomoRed,
                 painter = painterResource(id = R.drawable.ic_text_attention),
-                contentDescription = "")
+                contentDescription = ""
+            )
             Text(
                 modifier = Modifier.padding(start = 6.dp),
                 color = DomoRed,
@@ -566,15 +570,13 @@ fun PromoInput(
     currentCart: List<MenuItem>,
     inputPromo: String,
     isPromoSuccess: Boolean?,
-    onInputPromo: (String) -> Unit = {},
-    confirmPromo: () -> Unit = {},
-    onConfirmOrder: () -> Unit = {}
+    onEvent:(Event) -> Unit = {}
 ) {
     val countOfItems = currentCart.sumOf { it.countInCart }
     var cartPrice = currentCart.filter { menuItem -> menuItem.countInCart > 0 }
         .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
         .sumOf { it.second * it.first }
-    cartPrice = if (isPromoSuccess == true) cartPrice * (1-0.15) else cartPrice
+    cartPrice = if (isPromoSuccess == true) cartPrice * (1 - 0.15) else cartPrice
 
     Column(
         modifier = modifier
@@ -598,10 +600,11 @@ fun PromoInput(
                     .padding(start = 22.dp)
                     .fillMaxWidth(.6f),
                 shape = RoundedCornerShape(24.dp),
-                value = inputPromo,
+                value =  inputPromo,
                 isError = isPromoSuccess == false,
-                singleLine = true,
-                onValueChange = { value -> onInputPromo(value) },
+                singleLine = false,
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
+                onValueChange = { value -> onEvent(Event.InputPromo(value)) },
                 colors = OutlinedTextFieldDefaults.colors(
                     cursorColor = DomoBlue,
                     unfocusedBorderColor = DomoGray,
@@ -628,7 +631,7 @@ fun PromoInput(
                 modifier = Modifier
                     .padding(horizontal = 22.dp)
                     .fillMaxWidth(),
-                onClick = { confirmPromo() }
+                onClick = { onEvent(Event.ConfirmPromo) }
             )
         }
         Row(
@@ -679,7 +682,7 @@ fun PromoInput(
                 .imePadding()
                 .padding(horizontal = 22.dp, vertical = 20.dp)
                 .fillMaxWidth(),
-            onClick = { onConfirmOrder() }
+            onClick = { onEvent(Event.ConfirmOrder) }
         )
     }
 }

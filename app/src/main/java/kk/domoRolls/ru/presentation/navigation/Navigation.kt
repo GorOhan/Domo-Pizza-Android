@@ -11,9 +11,9 @@ import kk.domoRolls.ru.presentation.cart.CartScreen
 import kk.domoRolls.ru.presentation.html.HTMLScreenType
 import kk.domoRolls.ru.presentation.html.HtmlScreen
 import kk.domoRolls.ru.presentation.main.MainScreen
+import kk.domoRolls.ru.presentation.myaddresses.MyAddressesScreen
 import kk.domoRolls.ru.presentation.myprofile.MyProfileScreen
 import kk.domoRolls.ru.presentation.personaldata.PersonalDataScreen
-import kk.domoRolls.ru.presentation.personaldata.PersonalDataUI
 import kk.domoRolls.ru.presentation.registration.OTPScreen
 import kk.domoRolls.ru.presentation.registration.RegistrationScreen
 import kk.domoRolls.ru.presentation.registration.RegistrationViewModel
@@ -31,6 +31,7 @@ sealed class Screen(val route: String) {
     data object CartScreen : Screen("cartScreen")
     data object MyProfileScreen : Screen("myProfileScreen")
     data object PersonalDataScreen: Screen("personalDataScreen")
+    data object MyAddressesScreen: Screen("myAddressesScreen")
 
 }
 
@@ -101,6 +102,12 @@ internal fun NavMain(
 
         composable(route = Screen.PersonalDataScreen.route) {
             PersonalDataScreen(
+                navController = navController
+            )
+        }
+
+        composable(route = Screen.MyAddressesScreen.route) {
+            MyAddressesScreen(
                 navController = navController
             )
         }

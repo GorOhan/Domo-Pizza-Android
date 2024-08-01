@@ -1,6 +1,5 @@
 package kk.domoRolls.ru.presentation.myprofile
 
-import android.widget.Switch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -110,7 +109,9 @@ fun MyProfileScreenUI(
         MyInfo(user = user,
             onPersonalDataClick = { onClick(Event.NavigateClick(Screen.PersonalDataScreen.route)) }
         )
-        MyOrdersAndAddresses()
+        MyOrdersAndAddresses(
+            onClick = { onClick(Event.NavigateClick(Screen.MyAddressesScreen.route))}
+        )
         MyGiftsView(
             modifier = Modifier.padding(horizontal = 22.dp, vertical = 20.dp),
             promoCodes = promoCode.value
@@ -290,14 +291,19 @@ fun MyInfo(
 
 
 @Composable
-fun MyOrdersAndAddresses() {
+fun MyOrdersAndAddresses(
+    onClick: () -> Unit,
+) {
 
     val buttonInteractionSource = remember { MutableInteractionSource() }
     val buttonPressed by buttonInteractionSource.collectIsPressedAsState()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 22.dp, end = 22.dp, top = 10.dp),
+            .padding(start = 22.dp, end = 22.dp, top = 10.dp)
+            .clickable {
+                onClick()
+            },
         horizontalArrangement = Arrangement.SpaceBetween
 
     ) {

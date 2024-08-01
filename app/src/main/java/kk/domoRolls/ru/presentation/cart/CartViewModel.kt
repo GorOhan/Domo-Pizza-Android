@@ -1,6 +1,5 @@
 package kk.domoRolls.ru.presentation.cart
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -112,25 +111,46 @@ class CartViewModel @Inject constructor(
 
     }
 
-    fun addToCart(menuItem: MenuItem) {
+    private fun addToCart(menuItem: MenuItem) {
         serviceRepository.addToCart(menuItem)
     }
 
-    fun removeFromCart(menuItem: MenuItem) {
+    private fun removeFromCart(menuItem: MenuItem) {
         serviceRepository.removeFromCart(menuItem)
     }
 
-    fun inputPromo(code: String) {
+    private fun inputPromo(code: String) {
         if (code.length > 8) return
         _inputPromo.value = code
         _isPromoSuccess.value = null
     }
 
-    fun confirmPromo() {
+    private fun confirmPromo() {
         _isPromoSuccess.value = promoCodes.value.any { it.value == _inputPromo.value }
     }
 
     fun setEvent(event: Event) {
         _onEvent.value = event
+
+        when (event) {
+            Event.ConfirmPromo -> { confirmPromo() }
+            is Event.AddToCart -> {
+                addToCart(event.item)
+            }
+
+            is Event.RemoveFromCart -> {
+                removeFromCart(event.item)
+            }
+
+            is Event.InputPromo -> {
+                inputPromo(event.input)
+            }
+
+            Event.BackClick,
+            Event.ConfirmOrder,
+            Event.Nothing,
+            Event.LogOut,
+            is Event.NavigateClick -> {}
+        }
     }
 }

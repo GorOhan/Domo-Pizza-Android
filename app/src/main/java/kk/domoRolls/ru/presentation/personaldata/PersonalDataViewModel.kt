@@ -12,6 +12,7 @@ import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,14 +32,26 @@ class PersonalDataViewModel @Inject constructor(
         MutableStateFlow(dataStoreService.getUserData().phone)
     val inputUserPhone = _inputUserPhone.asStateFlow()
 
-    private val _inputUserEmail: MutableStateFlow<String> = MutableStateFlow(dataStoreService.getUserData().email)
+    private val _inputUserEmail: MutableStateFlow<String> =
+        MutableStateFlow(dataStoreService.getUserData().email)
     val inputUserEmail = _inputUserEmail.asStateFlow()
 
-    private val _onEvent: MutableStateFlow<PersonalDataEvent> = MutableStateFlow(PersonalDataEvent.Nothing)
+    private val _onEvent: MutableStateFlow<PersonalDataEvent> =
+        MutableStateFlow(PersonalDataEvent.Nothing)
     val onEvent = _onEvent.asStateFlow()
 
+    val confirmButtonEnable = combine(
+        _inputUserPhone,
+        inputUserName,
+        inputUserEmail
+    ) { inputPhone, inputName, inputEmail ->
+        inputPhone != dataStoreService.getUserData().phone || inputName != dataStoreService.getUserData().name ||
+                inputEmail != dataStoreService.getUserData().email
+    }
+
+
     init {
-        observeDB()
+        observeUserData()
 
     }
 
@@ -58,7 +71,7 @@ class PersonalDataViewModel @Inject constructor(
                 if (task.isSuccessful) {
                     // Username updated successfully
                     Log.d("Firebase", "Username updated.")
-                    observeDB()
+                    observeUserData()
                 } else {
                     // Handle the error
                     Log.e("Firebase", "Failed to update username.", task.exception)
@@ -86,12 +99,13 @@ class PersonalDataViewModel @Inject constructor(
                 saveChanges()
             }
 
-            PersonalDataEvent.DeleteAccount -> {}
-            PersonalDataEvent.Nothing -> {}
+            PersonalDataEvent.DeleteAccount,
+            PersonalDataEvent.Nothing,
+            is PersonalDataEvent.OnNavigateClick -> {}
         }
     }
 
-    fun observeDB() {
+    private fun observeUserData() {
         databaseReference.child("users").child(dataStoreService.getUserData().id)
             .addListenerForSingleValueEvent(object :
                 ValueEventListener {

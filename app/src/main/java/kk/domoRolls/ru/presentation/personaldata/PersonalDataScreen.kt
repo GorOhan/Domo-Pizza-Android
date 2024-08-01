@@ -45,9 +45,21 @@ fun PersonalDataScreen(
 ) {
     val event = personalDataViewModel.onEvent.collectAsState()
     LaunchedEffect(event.value) {
-        if (event.value is PersonalDataEvent.BackClick) navController.popBackStack()
+        when(val event = event.value){
+            is PersonalDataEvent.OnNavigateClick -> navController.navigate(event.route)
+            PersonalDataEvent.BackClick -> navController.popBackStack()
+            PersonalDataEvent.ConfirmChanges,
+            PersonalDataEvent.DeleteAccount,
+            is PersonalDataEvent.InputEmail,
+            is PersonalDataEvent.InputName,
+            is PersonalDataEvent.InputPhone,
+            PersonalDataEvent.Nothing  -> {}
+        }
+
+
     }
     PersonalDataUI(
+        confirmButtonEnable = personalDataViewModel.confirmButtonEnable.collectAsState(initial = false),
         userNameInput = personalDataViewModel.inputUserName.collectAsState(),
         userEmailInput = personalDataViewModel.inputUserEmail.collectAsState(),
         userPhoneInput = personalDataViewModel.inputUserPhone.collectAsState(),
@@ -57,6 +69,7 @@ fun PersonalDataScreen(
 
 @Composable
 fun PersonalDataUI(
+    confirmButtonEnable: State<Boolean> = mutableStateOf(false),
     userEmailInput: State<String> = mutableStateOf(""),
     userPhoneInput: State<String> = mutableStateOf(""),
     userNameInput: State<String> = mutableStateOf(""),
@@ -117,7 +130,8 @@ fun PersonalDataUI(
                 backgroundColor = DomoBlue,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 22.dp, vertical = 16.dp)
+                    .padding(horizontal = 22.dp, vertical = 16.dp),
+                enable = confirmButtonEnable.value,
             )
 
             BaseButton(
@@ -226,6 +240,7 @@ fun PersonalDataPhoneItem(
 }
 
 sealed class PersonalDataEvent {
+    data class OnNavigateClick(val route: String) : PersonalDataEvent()
     data class InputName(val input: String) : PersonalDataEvent()
     data class InputPhone(val input: String) : PersonalDataEvent()
     data class InputEmail(val input: String) : PersonalDataEvent()
@@ -233,5 +248,4 @@ sealed class PersonalDataEvent {
     data object ConfirmChanges : PersonalDataEvent()
     data object DeleteAccount : PersonalDataEvent()
     data object Nothing : PersonalDataEvent()
-
 }

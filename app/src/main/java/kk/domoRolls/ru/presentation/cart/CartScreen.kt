@@ -47,30 +47,10 @@ fun CartScreen(
     val onEvent = viewModel.onEvent.collectAsState()
 
     LaunchedEffect(onEvent.value) {
-        when (val event = onEvent.value) {
-            Event.ConfirmPromo -> {
-                viewModel.confirmPromo()
-            }
-
-            Event.BackClick -> {
-                navController.popBackStack()
-            }
-
-            is Event.AddToCart -> {
-                viewModel.addToCart(event.item)
-            }
-
-            is Event.RemoveFromCart -> {
-                viewModel.removeFromCart(event.item)
-            }
-
-            is Event.InputPromo -> {
-                viewModel.inputPromo(event.input)
-            }
-
-            Event.ConfirmOrder -> {}
-            Event.Nothing -> {}
-            Event.LogOut -> {}
+        when (onEvent.value) {
+            Event.BackClick -> { navController.popBackStack() }
+            Event.ConfirmPromo, is Event.AddToCart, is Event.RemoveFromCart,
+            is Event.InputPromo, Event.ConfirmOrder, Event.Nothing, Event.LogOut,
             is Event.NavigateClick -> {}
         }
     }
@@ -119,9 +99,8 @@ fun CartScreenUI(
                 currentCart = currentCart.value,
                 inputPromo = inputPromo.value,
                 isPromoSuccess = isPromoSuccess.value,
-                onInputPromo = { onClick(Event.InputPromo(it)) },
-                confirmPromo = { onClick(Event.ConfirmPromo) },
-                onConfirmOrder = { onClick(Event.ConfirmOrder)}
+                onEvent = onClick
+
             )
         },
         floatingActionButton = {}
