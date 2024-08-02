@@ -10,6 +10,7 @@ import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.User
+import kk.domoRolls.ru.util.convertMillisToDateFormat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -40,13 +41,19 @@ class PersonalDataViewModel @Inject constructor(
         MutableStateFlow(PersonalDataEvent.Nothing)
     val onEvent = _onEvent.asStateFlow()
 
+    private val _currentDate: MutableStateFlow<String> = MutableStateFlow("")
+    val currentDate = _currentDate.asStateFlow()
+
     val confirmButtonEnable = combine(
         _inputUserPhone,
         inputUserName,
-        inputUserEmail
-    ) { inputPhone, inputName, inputEmail ->
-        inputPhone != dataStoreService.getUserData().phone || inputName != dataStoreService.getUserData().name ||
+        inputUserEmail,
+        _currentDate,
+    ) { inputPhone, inputName, inputEmail, currentDate ->
+        inputPhone != dataStoreService.getUserData().phone ||
+                inputName != dataStoreService.getUserData().name ||
                 inputEmail != dataStoreService.getUserData().email
+
     }
 
 
@@ -63,7 +70,8 @@ class PersonalDataViewModel @Inject constructor(
         val updates = hashMapOf<String, Any>(
             "username" to _inputUserName.value,
             "phone" to _inputUserPhone.value,
-            "email" to _inputUserEmail.value
+            "email" to _inputUserEmail.value,
+            "birthday" to _currentDate.value,
         )
 
         databaseReference.child("users").child(userId).updateChildren(updates)
@@ -101,7 +109,12 @@ class PersonalDataViewModel @Inject constructor(
 
             PersonalDataEvent.DeleteAccount,
             PersonalDataEvent.Nothing,
-            is PersonalDataEvent.OnNavigateClick -> {}
+            is PersonalDataEvent.OnNavigateClick -> {
+            }
+
+            is PersonalDataEvent.ConfirmBirthDay -> {
+                _currentDate.value = event.currentMillis.convertMillisToDateFormat()
+            }
         }
     }
 
@@ -116,6 +129,7 @@ class PersonalDataViewModel @Inject constructor(
                     _inputUserName.value = mapData["username"] ?: ""
                     _inputUserPhone.value = mapData["phone"] ?: ""
                     _inputUserEmail.value = mapData["email"] ?: ""
+                    _currentDate.value = mapData["birthday"] ?: ""
 
                     dataStoreService.setUserData(
                         User(

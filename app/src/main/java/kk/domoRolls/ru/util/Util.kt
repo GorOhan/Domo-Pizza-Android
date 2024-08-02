@@ -72,3 +72,21 @@ fun copyTextToClipboard(context: Context, text: String) {
     // Set the ClipData object as the primary clip
     clipboard.setPrimaryClip(clip)
 }
+
+fun Long.convertMillisToDateFormat(): String {
+    val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+    val date = Date(this)
+    return dateFormat.format(date)
+}
+
+fun String.formatToScreenType(): String {
+    // Define the input and output date formats
+    val inputFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+    val outputFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+
+    // Parse the input date string
+    val date = inputFormat.parse(this)
+
+    // Format the date into the output format
+    return outputFormat.format(date)
+}
