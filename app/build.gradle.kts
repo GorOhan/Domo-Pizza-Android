@@ -85,7 +85,7 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation(libs.coil.compose)
     implementation("io.coil-kt:coil-compose:2.7.0")
-    implementation("com.yandex.android:maps.mobile:4.7.0-lite")
+    implementation("com.yandex.android:maps.mobile:4.7.0-full")
 
 }
 
