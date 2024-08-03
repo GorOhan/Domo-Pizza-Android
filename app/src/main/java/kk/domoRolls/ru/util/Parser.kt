@@ -1,11 +1,13 @@
 package kk.domoRolls.ru.util
 
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.PromoStory
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.model.WorkingHoursWrapper
+import kk.domoRolls.ru.domain.model.map.Polygon
 
 fun String.parseToPromos(): List<PromoStory>? {
     try {
@@ -36,6 +38,7 @@ fun String.parseToPromoCodes(): List<PromoCode>? {
 
         val gson = Gson()
         val type = object : TypeToken<List<PromoCode>>() {}.type
+        Log.d("DOMO PROMO", gson.fromJson(this, type))
 
         return gson.fromJson(this, type)
     } catch (e: Exception) {
@@ -65,4 +68,8 @@ fun String.parseToGiftProduct(): GiftProduct? {
     } catch (e: Exception) {
         return null
     }
+}
+
+fun String.parseToMapData(): List<Polygon>? {
+    return Gson().fromJson(this, Array<Polygon>::class.java).toList()
 }

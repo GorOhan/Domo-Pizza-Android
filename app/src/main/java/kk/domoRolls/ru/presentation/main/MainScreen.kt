@@ -102,6 +102,9 @@ fun MainScreen(
         },
         onProfileClick = {
             navController.navigate(Screen.MyProfileScreen.route)
+        },
+        onAddressClick = {
+            navController.navigate(Screen.AddressMapScreen.route)
         }
     )
     val sheetState =
@@ -139,7 +142,8 @@ fun MainScreenUI(
     onProductClick: (MenuItem) -> Unit = {},
     isOpenState: StateFlow<Boolean> = MutableStateFlow(true),
     seeMenuClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onAddressClick: () -> Unit = {}
 ) {
     val menu by menuState.collectAsState()
     val showLoading by showLoadingState.collectAsState()
@@ -178,7 +182,8 @@ fun MainScreenUI(
             onCategoryCheck = onCategoryCheck,
             user = user,
             onProductClick = onProductClick,
-            onProfileClick = onProfileClick
+            onProfileClick = onProfileClick,
+            onAddressClick = onAddressClick,
         )
 
     }
@@ -208,7 +213,8 @@ fun ContentSection(
     onCategoryCheck: (ItemCategory) -> Unit = {},
     onProductClick: (MenuItem) -> Unit,
     user: User,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onAddressClick: () -> Unit,
 ) {
     val insets = WindowInsets.statusBars
     val statusBarHeight = insets.asPaddingValues().calculateTopPadding()
@@ -254,13 +260,16 @@ fun ContentSection(
             ) {
                 Column {
                     Text(text = "Привет ${user.name}")
-                    Text(text = "address")
+                    Text(
+                        modifier = Modifier.clickable { onAddressClick() },
+                        text = "address",
+
+                        )
                 }
                 Image(
                     modifier = Modifier
                         .size(32.dp)
-                        .clickable { onProfileClick() }
-                    ,
+                        .clickable { onProfileClick() },
                     painter = painterResource(id = R.drawable.ic_profile),
                     contentDescription = ""
                 )

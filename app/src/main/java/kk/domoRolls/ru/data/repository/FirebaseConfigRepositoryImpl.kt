@@ -5,9 +5,11 @@ import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.model.PromoStory
 import kk.domoRolls.ru.domain.model.TimeSlot
+import kk.domoRolls.ru.domain.model.map.Polygon
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.util.getCurrentWeekdayInRussian
 import kk.domoRolls.ru.util.parseToGiftProduct
+import kk.domoRolls.ru.util.parseToMapData
 import kk.domoRolls.ru.util.parseToPromoCodes
 import kk.domoRolls.ru.util.parseToPromos
 import kk.domoRolls.ru.util.parseToWorkingHours
@@ -25,8 +27,9 @@ class FirebaseConfigRepositoryImpl(
     private val _otpMessage: MutableStateFlow<String> = MutableStateFlow("")
     private val _otpLength: MutableStateFlow<Int> = MutableStateFlow(0)
     private val _termsMessage: MutableStateFlow<String> = MutableStateFlow("")
-    private val _offerText:MutableStateFlow<String> = MutableStateFlow("")
-    private val _giftProduct:MutableStateFlow<GiftProduct> = MutableStateFlow(GiftProduct())
+    private val _offerText: MutableStateFlow<String> = MutableStateFlow("")
+    private val _giftProduct: MutableStateFlow<GiftProduct> = MutableStateFlow(GiftProduct())
+    private val _mapData: MutableStateFlow<List<Polygon>> = MutableStateFlow(emptyList())
 
     init {
         firebaseRemoteConfig.fetch(1)
@@ -67,6 +70,13 @@ class FirebaseConfigRepositoryImpl(
                         firebaseRemoteConfig.getString("gift_roll")
                     val gift = giftProductJson.parseToGiftProduct() ?: GiftProduct()
                     _giftProduct.value = gift
+
+                    val mapData: String =
+                        firebaseRemoteConfig.getString("delivery_polygons")
+
+                    mapData.parseToMapData()?.let {
+                        _mapData.value = it
+                    }
                 }
             }
     }
@@ -80,4 +90,5 @@ class FirebaseConfigRepositoryImpl(
     override fun getTermsMessage() = _termsMessage.asStateFlow()
     override fun getOfferMessage() = _offerText.asStateFlow()
     override fun getGiftProduct() = _giftProduct.asStateFlow()
+    override fun getPolygons() = _mapData.asStateFlow()
 }

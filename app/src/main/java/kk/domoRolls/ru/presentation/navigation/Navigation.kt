@@ -11,6 +11,7 @@ import kk.domoRolls.ru.presentation.cart.CartScreen
 import kk.domoRolls.ru.presentation.html.HTMLScreenType
 import kk.domoRolls.ru.presentation.html.HtmlScreen
 import kk.domoRolls.ru.presentation.main.MainScreen
+import kk.domoRolls.ru.presentation.myAddress.AddressMapScreen
 import kk.domoRolls.ru.presentation.myaddresses.MyAddressesScreen
 import kk.domoRolls.ru.presentation.myprofile.MyProfileScreen
 import kk.domoRolls.ru.presentation.personaldata.PersonalDataScreen
@@ -32,7 +33,7 @@ sealed class Screen(val route: String) {
     data object MyProfileScreen : Screen("myProfileScreen")
     data object PersonalDataScreen: Screen("personalDataScreen")
     data object MyAddressesScreen: Screen("myAddressesScreen")
-
+    data object AddressMapScreen: Screen("addressMapScreen")
 }
 
 @Composable
@@ -110,6 +111,10 @@ internal fun NavMain(
             MyAddressesScreen(
                 navController = navController
             )
+        }
+
+        composable(route = Screen.AddressMapScreen.route) {
+            AddressMapScreen()
         }
     }
 }
