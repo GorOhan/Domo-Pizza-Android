@@ -4,6 +4,14 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.geometry.Polygon
+import com.yandex.mapkit.search.Response
+import com.yandex.mapkit.search.SearchFactory
+import com.yandex.mapkit.search.SearchManagerType
+import com.yandex.mapkit.search.SearchOptions
+import com.yandex.mapkit.search.Session
+import com.yandex.runtime.Error
 import kk.domoRolls.ru.domain.model.TimeSlot
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
@@ -90,3 +98,46 @@ fun String.formatToScreenType(): String {
     // Format the date into the output format
     return outputFormat.format(date)
 }
+
+fun performReverseGeocoding(point: Point, zoom: Int, onResult: (String) -> Unit) {
+    val searchManager = SearchFactory.getInstance().createSearchManager(SearchManagerType.ONLINE)
+    searchManager.submit(
+        point,
+        zoom,
+        SearchOptions(),
+        object : Session.SearchListener {
+            override fun onSearchResponse(p0: Response) {
+                val searchResult = p0.collection.children.firstOrNull()?.obj
+                val geoObjects = p0.collection.children.mapNotNull { it.obj }
+
+                val address = searchResult?.name
+                    ?: "No address found"
+                onResult(address)
+            }
+
+            override fun onSearchError(p0: Error) {
+                onResult("error address")
+            }
+
+        }
+    )
+}
+
+fun isPointInPolygon(point: Point, polygon: Polygon): Boolean {
+    var crossings = 0
+    val points = polygon.outerRing.points
+    for (i in points.indices) {
+        val a = points[i]
+        val j = (i + 1) % points.size
+        val b = points[j]
+        if ((a.latitude > point.latitude) != (b.latitude > point.latitude)) {
+            val atX =
+                (b.longitude - a.longitude) * (point.latitude - a.latitude) / (b.latitude - a.latitude) + a.longitude
+            if (point.longitude < atX) {
+                crossings++
+            }
+        }
+    }
+    return (crossings % 2 != 0)
+}
+

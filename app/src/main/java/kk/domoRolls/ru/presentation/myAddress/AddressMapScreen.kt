@@ -1,13 +1,14 @@
 package kk.domoRolls.ru.presentation.myAddress
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,166 +19,149 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.geometry.LinearRing
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.geometry.Polygon
+import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.mapview.MapView
-import com.yandex.mapkit.search.Response
-import com.yandex.mapkit.search.SearchFactory
-import com.yandex.mapkit.search.SearchManagerType
-import com.yandex.mapkit.search.SearchOptions
-import com.yandex.mapkit.search.Session.SearchListener
-import com.yandex.runtime.Error
-import kk.domoRolls.ru.R
-
+import kk.domoRolls.ru.presentation.components.DeliveryZonePointer
+import kk.domoRolls.ru.presentation.theme.DomoBlue
+import kk.domoRolls.ru.util.isPointInPolygon
+import kk.domoRolls.ru.util.performReverseGeocoding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddressMapScreen(
-    addressMapViewModel: AddressMapViewModel = hiltViewModel(),
+    addressMapViewModel: AddressMapViewModel = hiltViewModel()
 ) {
+    val sheetState = rememberBottomSheetScaffoldState()
     val mapData = addressMapViewModel.mapData.collectAsState()
     val context = LocalContext.current
+    val currentAddress = remember { mutableStateOf("") }
+    var inDeliveryZone by remember {
+        mutableStateOf(true)
+    }
+    val yandexCameraListener = CameraListener { _, cameraPosition, _, finished ->
+        val coordinates =
+            mapData.value.flatMap { it.coordinates }.map { Point(it.last(), it.first()) }
+        val polygon = Polygon(
+            LinearRing(coordinates),
+            emptyList()
+        )
 
-    val mapView = remember { MapView(context) }
-    var showBottomSheet by remember { mutableStateOf(true) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    var currentAddress by remember { mutableStateOf("") }
-    var placemarkPosition by remember {
-        mutableStateOf(
-            Point(
-                55.751244,
-                37.618423
+        if (finished) {
+            inDeliveryZone = isPointInPolygon(
+                Point(cameraPosition.target.latitude, cameraPosition.target.longitude),
+                polygon
             )
-        )
-    } // Initial position
 
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        AndroidView(
-            factory = {
-                mapView
-            },
-        ) {
-            val placeMark = mapView.mapWindow.map.mapObjects.addPlacemark(placemarkPosition)
-
-            mapView.mapWindow.map.addCameraListener { map, cameraPosition, cameraUpdateReason, b ->
-
-//                placeMark.geometry =
-//                    Point(cameraPosition.target.latitude, cameraPosition.target.longitude)
-
-
-                performReverseGeocoding(
-                    Point(
-                        cameraPosition.target.latitude,
-                        cameraPosition.target.longitude
-                    ), cameraPosition.zoom.toInt()
-                ) {
-                  //  placeMark.setText(it)
-                }
-
-            }
-
-            if (mapData.value.isNotEmpty()) {
-
-                mapData.value.forEach { currentPolygon ->
-                    val polylinePoints = currentPolygon.coordinates
-
-
-                    mapView.mapWindow.map.move(
-                        CameraPosition(
-                            Point(
-                                polylinePoints.last().last(),
-                                polylinePoints.last().first(),
-
-                                ), 10.0f, 0.0f, 0.0f
-                        ),
-                        Animation(Animation.Type.SMOOTH, 1F),
-                        null
-
-                    )
-
-                    val polygon = Polygon(
-                        LinearRing(polylinePoints.map { Point(it.last(), it.first()) }),
-                        emptyList()
-                    )
-
-                    mapView.mapWindow.map.mapObjects.addPolygon(polygon).apply {
-                        strokeWidth = 1f
-                        fillColor = ColorUtils.setAlphaComponent(android.graphics.Color.parseColor(currentPolygon.color),50)
-                        strokeColor = android.graphics.Color.parseColor(currentPolygon.stroke)
-
-                    }
-
-                }
-            }
-
-
-        }
-
-        Image(
-            painter = painterResource(id = R.drawable.ic_pointer),
-            contentDescription = "Center Marker",
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(32.dp)
-        )
-
-        if (showBottomSheet) {
-            ModalBottomSheet(
-                scrimColor = Color.Transparent,
-                containerColor = Color.White,
-                onDismissRequest = {
-                    showBottomSheet = false
-                },
-                sheetState = sheetState
+            performReverseGeocoding(
+                Point(
+                    cameraPosition.target.latitude,
+                    cameraPosition.target.longitude
+                ), cameraPosition.zoom.toInt()
             ) {
-                Box(
-                    modifier = Modifier.height(400.dp)
-                ) {
-
-                }
+                currentAddress.value = it
             }
         }
+    }
+
+    val mapView = remember {
+        MapView(context).apply {
+            mapWindow.map.addCameraListener(yandexCameraListener)
+        }
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        mapView.mapWindow.map.addCameraListener(yandexCameraListener)
 
     }
-}
 
-private fun performReverseGeocoding(point: Point, zoom: Int, onResult: (String) -> Unit) {
-    val searchManager = SearchFactory.getInstance().createSearchManager(SearchManagerType.COMBINED)
-    searchManager.submit(
-        point,
-        zoom,
-        SearchOptions(),
-        object : SearchListener {
-            override fun onSearchResponse(p0: Response) {
-                val searchResult = p0.collection.children.firstOrNull()?.obj
-                val geoObjects = p0.collection.children.mapNotNull { it.obj }
+    BottomSheetScaffold(
+        scaffoldState = sheetState,
+        containerColor = Color.White,
+        sheetContent = {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            ) {
+                Text(
+                    text = currentAddress.value,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = DomoBlue
+                )
+            }
+        },
+        sheetPeekHeight = 200.dp
+    ) {
 
-                val address = searchResult?.name
-                    ?: "No address found"
-                onResult(address)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            AndroidView(
+                factory = {
+                    mapView.mapWindow.map.addCameraListener(yandexCameraListener)
+
+
+                    if (mapData.value.isNotEmpty()) {
+
+                        mapData.value.forEach { currentPolygon ->
+                            val polylinePoints = currentPolygon.coordinates
+
+
+                            mapView.mapWindow.map.move(
+                                CameraPosition(
+                                    Point(
+                                        polylinePoints.last().last(),
+                                        polylinePoints.last().first(),
+
+                                        ), 10.0f, 0.0f, 0.0f
+                                ),
+                                Animation(Animation.Type.SMOOTH, 1F),
+                                null
+
+                            )
+
+                            val polygon = Polygon(
+                                LinearRing(polylinePoints.map { Point(it.last(), it.first()) }),
+                                emptyList()
+                            )
+
+
+
+                            mapView.mapWindow.map.mapObjects.addPolygon(polygon).apply {
+                                strokeWidth = 1f
+                                fillColor = ColorUtils.setAlphaComponent(
+                                    android.graphics.Color.parseColor(currentPolygon.color), 50
+                                )
+                                strokeColor =
+                                    android.graphics.Color.parseColor(currentPolygon.stroke)
+
+                            }
+
+                        }
+                    }
+                    mapView
+                },
+            ) {
+                it.mapWindow.map.addCameraListener(yandexCameraListener)
             }
 
-            override fun onSearchError(p0: Error) {
 
-            }
 
+           DeliveryZonePointer(
+               modifier = Modifier.align(Alignment.Center) ,
+               inDeliveryZone = inDeliveryZone)
         }
-    )
-
+    }
 }
-
-
-
