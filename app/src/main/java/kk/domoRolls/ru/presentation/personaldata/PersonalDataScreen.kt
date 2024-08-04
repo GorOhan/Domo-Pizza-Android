@@ -49,7 +49,6 @@ import kk.domoRolls.ru.presentation.theme.DomoRed
 import kk.domoRolls.ru.presentation.theme.DomoTheme
 import kk.domoRolls.ru.util.MaskVisualTransformation
 import kk.domoRolls.ru.util.formatToScreenType
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,7 +101,7 @@ fun PersonalDataUI(
     onEvent: (type: PersonalDataEvent) -> Unit = { _ -> },
 ) {
 
-    var showDatePicker = remember { mutableStateOf(false) }
+    val showDatePicker = remember { mutableStateOf(false) }
 
 
     Scaffold(
@@ -220,6 +219,7 @@ fun PersonalDataPreview() {
 
 @Composable
 fun PersonalDataItem(
+    modifier: Modifier = Modifier,
     label: String,
     value: String,
     placeHolder: String,
@@ -227,8 +227,9 @@ fun PersonalDataItem(
     onValueChange: (String) -> Unit = {},
     onClick: () -> Unit = {},
 ) {
+
     TextField(
-        modifier = Modifier
+        modifier = modifier
             .padding(start = 22.dp, end = 22.dp, top = 10.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))

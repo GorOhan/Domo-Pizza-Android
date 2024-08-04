@@ -1,5 +1,6 @@
 package kk.domoRolls.ru.presentation.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +26,8 @@ import kk.domoRolls.ru.presentation.theme.DomoBlue
 fun DeliveryZonePointer(
     modifier: Modifier,
     inDeliveryZone: Boolean,
-){
+    isDragFinished: Boolean
+) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -50,11 +52,14 @@ fun DeliveryZonePointer(
                 .height(4.dp),
             color = DomoBlue
         )
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .clip(CircleShape)
-                .background(DomoBlue)
-        )
+
+        AnimatedVisibility(visible = isDragFinished) {
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .clip(CircleShape)
+                    .background(DomoBlue)
+            )
+        }
     }
 }

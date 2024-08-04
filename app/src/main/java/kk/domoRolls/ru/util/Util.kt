@@ -6,6 +6,8 @@ import android.content.Context
 import android.widget.Toast
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.geometry.Polygon
+import com.yandex.mapkit.map.Map
+import com.yandex.mapkit.map.VisibleRegionUtils
 import com.yandex.mapkit.search.Response
 import com.yandex.mapkit.search.SearchFactory
 import com.yandex.mapkit.search.SearchManagerType
@@ -139,5 +141,28 @@ fun isPointInPolygon(point: Point, polygon: Polygon): Boolean {
         }
     }
     return (crossings % 2 != 0)
+}
+
+fun performGeocoding(search: String, map: Map, onResult: (Point?) -> Unit) {
+    val searchManager = SearchFactory.getInstance().createSearchManager(SearchManagerType.ONLINE)
+     searchManager.submit(
+        search,
+        VisibleRegionUtils.toPolygon(map.visibleRegion),
+        SearchOptions(),
+        object : Session.SearchListener {
+            override fun onSearchResponse(p0: Response) {
+                val searchResult = p0.collection.children.firstOrNull()?.obj
+                val coordinates = searchResult?.geometry?.firstOrNull()?.point
+
+                onResult(coordinates)
+            }
+
+            override fun onSearchError(p0: Error) {
+                onResult(null)
+            }
+
+        },
+    )
+
 }
 

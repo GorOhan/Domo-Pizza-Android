@@ -1,14 +1,25 @@
 package kk.domoRolls.ru.presentation.myAddress
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,9 +43,13 @@ import com.yandex.mapkit.geometry.Polygon
 import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.mapview.MapView
+import kk.domoRolls.ru.presentation.components.BaseButton
 import kk.domoRolls.ru.presentation.components.DeliveryZonePointer
+import kk.domoRolls.ru.presentation.personaldata.PersonalDataItem
 import kk.domoRolls.ru.presentation.theme.DomoBlue
+import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.util.isPointInPolygon
+import kk.domoRolls.ru.util.performGeocoding
 import kk.domoRolls.ru.util.performReverseGeocoding
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,26 +57,37 @@ import kk.domoRolls.ru.util.performReverseGeocoding
 fun AddressMapScreen(
     addressMapViewModel: AddressMapViewModel = hiltViewModel()
 ) {
-    val sheetState = rememberBottomSheetScaffoldState()
-    val mapData = addressMapViewModel.mapData.collectAsState()
     val context = LocalContext.current
-    val currentAddress = remember { mutableStateOf("") }
-    var inDeliveryZone by remember {
-        mutableStateOf(true)
-    }
-    val yandexCameraListener = CameraListener { _, cameraPosition, _, finished ->
-        val coordinates =
-            mapData.value.flatMap { it.coordinates }.map { Point(it.last(), it.first()) }
-        val polygon = Polygon(
-            LinearRing(coordinates),
-            emptyList()
+    val sheetState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberStandardBottomSheetState(
+            initialValue = SheetValue.Expanded
         )
 
-        if (finished) {
-            inDeliveryZone = isPointInPolygon(
-                Point(cameraPosition.target.latitude, cameraPosition.target.longitude),
-                polygon
+    )
+    val mapData = addressMapViewModel.mapData.collectAsState()
+    var inDeliveryZone by remember { mutableStateOf(true) }
+    var isMoveFinished by remember { mutableStateOf(true) }
+    val inOrderMode by addressMapViewModel.inOrderMode.collectAsState()
+    val currentAddress by addressMapViewModel.currentAddress.collectAsState()
+
+
+    val yandexCameraListener = CameraListener { _, cameraPosition, _, finished ->
+
+        val polygons = mapData.value.map {
+            Polygon(
+                LinearRing(it.coordinates.map { Point(it.last(), it.first()) }),
+                emptyList()
             )
+        }
+
+        isMoveFinished = finished
+        if (finished) {
+            inDeliveryZone = polygons.any {
+                isPointInPolygon(
+                    point = Point(cameraPosition.target.latitude, cameraPosition.target.longitude),
+                    polygon = it
+                )
+            }
 
             performReverseGeocoding(
                 Point(
@@ -69,7 +95,7 @@ fun AddressMapScreen(
                     cameraPosition.target.longitude
                 ), cameraPosition.zoom.toInt()
             ) {
-                currentAddress.value = it
+                addressMapViewModel.setCurrentAddress(it)
             }
         }
     }
@@ -80,32 +106,178 @@ fun AddressMapScreen(
         }
     }
 
+
+
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         mapView.mapWindow.map.addCameraListener(yandexCameraListener)
-
     }
-
     BottomSheetScaffold(
+
         scaffoldState = sheetState,
         containerColor = Color.White,
+        sheetContainerColor = Color.White,
         sheetContent = {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = currentAddress.value,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = DomoBlue
+                Row(
+                    modifier = Modifier.padding(bottom = 10.dp)
+                ) {
+                    BaseButton(
+                        buttonTitle = "Доставка",
+                        backgroundColor = if (inOrderMode) DomoBlue else DomoBorder,
+                        titleColor = if (inOrderMode) Color.White else Color.Black,
+                        modifier = Modifier
+                            .padding(start = 20.dp, end = 8.dp)
+                            .fillMaxWidth(0.5f),
+                        onClick = { addressMapViewModel.setOrderMode(true) }
+                    )
+
+                    BaseButton(
+                        buttonTitle = "Самовывоз",
+                        backgroundColor = if (inOrderMode) DomoBorder else DomoBlue,
+                        titleColor = if (inOrderMode) Color.Black else Color.White,
+                        modifier = Modifier
+                            .padding(end = 20.dp, start = 8.dp)
+                            .fillMaxWidth(),
+                        onClick = { addressMapViewModel.setOrderMode(false) }
+                    )
+
+                }
+                PersonalDataItem(
+                    label = "Доставим на адрес:",
+                    value = if (inOrderMode) currentAddress else "Артиллерийская улица, 10А, Саратов",
+                    placeHolder = "user name",
+                    readOnly = !inOrderMode,
+                    onValueChange = {input ->
+
+                        if (input.length> 10) {
+                            performGeocoding(
+                                input,
+                                mapView.mapWindow.map
+                            ) {
+
+                                it?.let {
+                                    mapView.mapWindow.map.move(
+                                        CameraPosition(
+                                            it,
+                                            mapView.mapWindow.map.cameraPosition.zoom
+                                            , 0.0f, 0.0f
+                                        ),
+                                        Animation(Animation.Type.SMOOTH, 1F),
+                                        null
+                                    )
+                                }
+
+                                addressMapViewModel.setCurrentAddress(input)
+                            }
+                        }
+                    })
+
+                Row(
+                    modifier = Modifier.padding(22.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(DomoBorder, RoundedCornerShape(20.dp))
+
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+                            text = "Доставка 0 ₽"
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .background(DomoBorder, RoundedCornerShape(20.dp))
+
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+                            text = "Заказ от 800 ₽"
+                        )
+                    }
+                }
+                var checked by remember { mutableStateOf(true) }
+
+                AnimatedVisibility(inOrderMode) {
+                    Column {
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 22.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "Частный дом")
+
+                            Switch(
+                                checked = checked,
+                                onCheckedChange = { checked = it },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = DomoBlue,
+                                    uncheckedThumbColor = DomoBlue,
+                                    uncheckedTrackColor = Color.White,
+                                )
+                            )
+                        }
+
+                        AnimatedVisibility(visible = checked) {
+                            Column {
+                                Row {
+                                    PersonalDataItem(
+                                        modifier = Modifier.fillMaxWidth(0.5f),
+                                        label = "Квартира",
+                                        value = "",
+                                        placeHolder = "",
+                                        onValueChange = { })
+                                    PersonalDataItem(
+                                        label = "Подъезд",
+                                        value = "",
+                                        placeHolder = "",
+                                        onValueChange = { })
+
+                                }
+
+                                Row {
+                                    PersonalDataItem(
+                                        modifier = Modifier.fillMaxWidth(0.5f),
+                                        label = "Этаж",
+                                        value = "",
+                                        placeHolder = "",
+                                        onValueChange = { })
+                                    PersonalDataItem(
+                                        label = "Домофон",
+                                        value = "",
+                                        placeHolder = "",
+                                        onValueChange = { })
+                                }
+                            }
+                        }
+                    }
+                }
+                BaseButton(
+                    buttonTitle = "Да, все верно",
+                    backgroundColor = DomoBlue,
+                    modifier = Modifier
+                        .padding(horizontal = 22.dp, vertical = 20.dp)
+                        .fillMaxWidth()
                 )
+
             }
+
         },
-        sheetPeekHeight = 200.dp
     ) {
+        val animateBottomPadding by animateDpAsState(
+            targetValue = if (sheetState.bottomSheetState.currentValue == SheetValue.Expanded) 250.dp else 50.dp,
+            animationSpec = tween(durationMillis = 250), label = ""
+        )
 
         Box(
             modifier = Modifier
+                .padding(bottom = animateBottomPadding)
                 .fillMaxSize()
         ) {
             AndroidView(
@@ -114,7 +286,6 @@ fun AddressMapScreen(
 
 
                     if (mapData.value.isNotEmpty()) {
-
                         mapData.value.forEach { currentPolygon ->
                             val polylinePoints = currentPolygon.coordinates
 
@@ -159,9 +330,11 @@ fun AddressMapScreen(
 
 
 
-           DeliveryZonePointer(
-               modifier = Modifier.align(Alignment.Center) ,
-               inDeliveryZone = inDeliveryZone)
+            DeliveryZonePointer(
+                modifier = Modifier.align(Alignment.Center),
+                inDeliveryZone = inDeliveryZone,
+                isDragFinished = isMoveFinished
+            )
         }
     }
 }

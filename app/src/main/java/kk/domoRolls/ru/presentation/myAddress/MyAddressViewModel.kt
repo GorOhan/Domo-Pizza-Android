@@ -26,6 +26,13 @@ class AddressMapViewModel @Inject constructor(
     private val _mapData: MutableStateFlow<List<Polygon>> = MutableStateFlow(emptyList())
     val mapData = _mapData.asStateFlow()
 
+    private val _inOrderMode: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    val inOrderMode = _inOrderMode.asStateFlow()
+
+    private val _currentAddress: MutableStateFlow<String> = MutableStateFlow("")
+    val currentAddress = _currentAddress.asStateFlow()
+
+
     init {
         viewModelScope.launch {
             firebaseConfigRepository.getPolygons()
@@ -34,5 +41,13 @@ class AddressMapViewModel @Inject constructor(
                 }
                 .collect()
         }
+    }
+
+    fun setOrderMode(inOrderMode: Boolean) {
+        _inOrderMode.value = inOrderMode
+    }
+
+    fun setCurrentAddress(inputAddress: String) {
+        _currentAddress.value = inputAddress
     }
 }
