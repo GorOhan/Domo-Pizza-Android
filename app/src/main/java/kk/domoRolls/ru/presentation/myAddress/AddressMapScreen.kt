@@ -55,6 +55,9 @@ import kk.domoRolls.ru.util.isPointInPolygon
 import kk.domoRolls.ru.util.performGeocoding
 import kk.domoRolls.ru.util.performReverseGeocoding
 
+const val RESTAURANT_ADDRESS = "Артиллерийская улица, 10А, Саратов."
+val RESTAURANT_COORDINATES = Pair(51.568985, 46.008870)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddressMapScreen(
@@ -117,8 +120,31 @@ fun AddressMapScreen(
             mapView.mapWindow.map.removeCameraListener(yandexCameraListener)
         }
     }
+    LaunchedEffect(inOrderMode) {
+        with(mapView.mapWindow.map) {
+            isRotateGesturesEnabled = inOrderMode
+            isZoomGesturesEnabled = inOrderMode
+            isScrollGesturesEnabled = inOrderMode
+        }
+
+        if (!inOrderMode){
+            mapView.mapWindow.map.move(
+                CameraPosition(
+                    Point(
+                        RESTAURANT_COORDINATES.first,
+                        RESTAURANT_COORDINATES.second,
+                    ), 20.0f, 0.0f, 0.0f
+                ),
+                Animation(Animation.Type.SMOOTH, 1F),
+                null
+
+            )
+        }
+
+    }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        mapView.onStart()
         mapView.mapWindow.map.addCameraListener(yandexCameraListener)
     }
     BottomSheetScaffold(
@@ -155,7 +181,7 @@ fun AddressMapScreen(
                 }
                 PersonalDataItem(
                     label = "Доставим на адрес:",
-                    value = if (inOrderMode) currentAddress else "Артиллерийская улица, 10А, Саратов",
+                    value = if (inOrderMode) currentAddress else RESTAURANT_ADDRESS,
                     placeHolder = "user name",
                     readOnly = !inOrderMode,
                     onDone = {
@@ -293,7 +319,6 @@ fun AddressMapScreen(
                 factory = {
                     mapView.mapWindow.map.addCameraListener(yandexCameraListener)
 
-
                     if (mapData.value.isNotEmpty()) {
                         mapData.value.forEach { currentPolygon ->
                             val polylinePoints = currentPolygon.coordinates
@@ -316,8 +341,6 @@ fun AddressMapScreen(
                                 LinearRing(polylinePoints.map { Point(it.last(), it.first()) }),
                                 emptyList()
                             )
-
-
 
                             mapView.mapWindow.map.mapObjects.addPolygon(polygon).apply {
                                 strokeWidth = 1f
