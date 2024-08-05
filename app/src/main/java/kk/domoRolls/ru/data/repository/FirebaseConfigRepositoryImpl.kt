@@ -1,10 +1,17 @@
 package kk.domoRolls.ru.data.repository
 
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.model.PromoStory
 import kk.domoRolls.ru.domain.model.TimeSlot
+import kk.domoRolls.ru.domain.model.address.Address
+import kk.domoRolls.ru.domain.model.address.UserFirebase
 import kk.domoRolls.ru.domain.model.map.Polygon
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.util.getCurrentWeekdayInRussian
@@ -16,8 +23,10 @@ import kk.domoRolls.ru.util.parseToWorkingHours
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+
 class FirebaseConfigRepositoryImpl(
     private val firebaseRemoteConfig: FirebaseRemoteConfig,
+    private val dataStoreService: DataStoreService,
 ) : FirebaseConfigRepository {
 
     private val _isAppAvailable: MutableStateFlow<Boolean> = MutableStateFlow(true)
@@ -30,6 +39,8 @@ class FirebaseConfigRepositoryImpl(
     private val _offerText: MutableStateFlow<String> = MutableStateFlow("")
     private val _giftProduct: MutableStateFlow<GiftProduct> = MutableStateFlow(GiftProduct())
     private val _mapData: MutableStateFlow<List<Polygon>> = MutableStateFlow(emptyList())
+    private val _addresses: MutableStateFlow<List<Address>> = MutableStateFlow(emptyList())
+
 
     init {
         firebaseRemoteConfig.fetch(1)
@@ -91,4 +102,43 @@ class FirebaseConfigRepositoryImpl(
     override fun getOfferMessage() = _offerText.asStateFlow()
     override fun getGiftProduct() = _giftProduct.asStateFlow()
     override fun getPolygons() = _mapData.asStateFlow()
+
+    override fun getAddresses() = _addresses.asStateFlow()
+
+    override fun fetchAddresses() {
+        fetchUserAddresses(dataStoreService.getUserData().id,
+            onSuccess = { addresses ->
+                _addresses.value = addresses
+            },
+            onFailure = { exception ->
+                // Handle the error here
+                println("Error: ${exception.message}")
+            }
+        )
+    }
+}
+
+private fun fetchUserAddresses(
+    userId: String,
+    onSuccess: (List<Address>) -> Unit,
+    onFailure: (Exception) -> Unit
+) {
+    val database = FirebaseDatabase.getInstance()
+    val userRef = database.getReference(userId)
+
+    userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            try {
+                val user = snapshot.getValue(UserFirebase::class.java)
+                val addresses = user?.addresses ?: emptyList()
+                onSuccess(addresses)
+            } catch (e: Exception) {
+                onFailure(e)
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            onFailure(error.toException())
+        }
+    })
 }

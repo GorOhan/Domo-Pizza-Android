@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -56,8 +57,8 @@ class AddressMapViewModel @Inject constructor(
         _currentAddressModel.value = inputAddress
     }
 
-    fun addAddress(
-        newAddress: Address,
+    fun updateAddress(
+        isAddMode: Boolean = false,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
@@ -73,11 +74,22 @@ class AddressMapViewModel @Inject constructor(
                             .toMutableList()
 
                     // Add the new address
-                    currentAddresses.add(newAddress)
+                    if (isAddMode){
+                        currentAddresses.add(currentAddressModel.value.copy(
+                            id = UUID.randomUUID().toString()
+                        ))
+
+                    } else {
+                        currentAddresses.removeIf { it.id == currentAddressModel.value.id }
+                        currentAddresses.add(currentAddressModel.value)
+                    }
+
+
 
                     // Update the addresses list in the database
                     userRef.child("addresses").setValue(currentAddresses)
                         .addOnSuccessListener {
+                            firebaseConfigRepository.fetchAddresses()
                             onSuccess()
                         }
                         .addOnFailureListener { exception ->

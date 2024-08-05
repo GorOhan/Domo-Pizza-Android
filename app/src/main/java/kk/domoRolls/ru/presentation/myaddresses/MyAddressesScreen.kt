@@ -1,6 +1,7 @@
 package kk.domoRolls.ru.presentation.myaddresses
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,9 +37,11 @@ import androidx.navigation.NavHostController
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.presentation.components.DomoToolbar
+import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
+import kk.domoRolls.ru.util.toJson
 
 
 @Composable
@@ -47,11 +50,17 @@ fun MyAddressesScreen(
     myAddressViewModel: MyAddressViewModel = hiltViewModel()
 ) {
 
-    val screenEvent = myAddressViewModel.event.collectAsState()
+    val screenEvent = myAddressViewModel.event.collectAsState(MyAddressesEvent.Nothing)
     LaunchedEffect(screenEvent.value) {
-        when(screenEvent.value){
-            MyAddressesEvent.BackClick -> { navController.popBackStack() }
+        when (val event = screenEvent.value) {
+            MyAddressesEvent.BackClick -> {
+                navController.popBackStack()
+            }
+
             MyAddressesEvent.Nothing -> {}
+            is MyAddressesEvent.NavigateClick ->  {
+                navController.navigate(event.route)
+            }
         }
     }
     MyAddressesScreenUI(
@@ -89,7 +98,12 @@ fun MyAddressesScreenUI(
         ) {
 
             address.value.forEach {
-                AddressItem(address = it)
+                AddressItem(
+                    address = it,
+                    onEditClick = {
+                      onEvent(MyAddressesEvent.NavigateClick("${Screen.AddressMapScreen.route}/${it.toJson()}"))
+                    }
+                )
             }
 
             Column(
@@ -117,7 +131,8 @@ fun MyAddressesScreenUI(
                     Icon(
                         tint = DomoBlue,
                         painter = painterResource(id = R.drawable.ic_plus),
-                        contentDescription = "")
+                        contentDescription = ""
+                    )
 
                 }
                 Divider(
@@ -134,7 +149,8 @@ fun MyAddressesScreenUI(
 
 @Composable
 fun AddressItem(
-    address: Address
+    address: Address,
+    onEditClick: () -> Unit = {},
 ) {
     var isChecked by remember { mutableStateOf(false) }
 
@@ -148,18 +164,20 @@ fun AddressItem(
     ) {
         Checkbox(
             modifier = Modifier.padding(start = 4.dp),
-            checked = isChecked, onCheckedChange = {
-            isChecked = it
-        },
+            checked = isChecked,
+            onCheckedChange = {
+                isChecked = it
+            },
             colors = CheckboxDefaults.colors(
                 checkedColor = DomoBlue,
                 uncheckedColor = Color.Gray,
                 checkmarkColor = Color.White
-            ),        )
+            ),
+        )
         Column(
             modifier = Modifier.fillMaxWidth(0.8f),
 
-        ) {
+            ) {
             Text(
                 modifier = Modifier.padding(top = 20.dp),
                 text = address.street,
@@ -178,15 +196,19 @@ fun AddressItem(
 
         Icon(
             tint = DomoGray,
-            modifier = Modifier.padding(end = 20.dp),
+            modifier = Modifier
+                .padding(end = 20.dp)
+                .clickable { onEditClick() },
             painter = painterResource(id = R.drawable.ic_edit),
-            contentDescription = "")
+            contentDescription = ""
+        )
 
     }
 
 }
 
 sealed class MyAddressesEvent {
+    data class NavigateClick(val route: String) : MyAddressesEvent()
     data object BackClick : MyAddressesEvent()
     data object Nothing : MyAddressesEvent()
 }

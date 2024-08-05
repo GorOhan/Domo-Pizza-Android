@@ -4,7 +4,9 @@ import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.model.PromoStory
 import kk.domoRolls.ru.domain.model.TimeSlot
+import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.domain.model.map.Polygon
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface FirebaseConfigRepository {
@@ -19,4 +21,6 @@ interface FirebaseConfigRepository {
     fun getOfferMessage():StateFlow<String>
     fun getGiftProduct():StateFlow<GiftProduct>
     fun getPolygons():StateFlow<List<Polygon>>
+    fun getAddresses(): Flow<List<Address>>
+    fun fetchAddresses()
 }

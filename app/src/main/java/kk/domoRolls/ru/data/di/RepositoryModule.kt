@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kk.domoRolls.ru.data.api.AuthApi
 import kk.domoRolls.ru.data.api.ServiceApi
+import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.data.repository.AuthRepositoryImpl
 import kk.domoRolls.ru.data.repository.FirebaseConfigRepositoryImpl
 import kk.domoRolls.ru.data.repository.ServiceRepositoryImpl
@@ -32,7 +33,7 @@ object RepositoryModule {
 
     @Singleton
     @Provides
-    fun provideFirebaseConfigRepository(firebaseRemoteConfig:FirebaseRemoteConfig): FirebaseConfigRepository {
-        return FirebaseConfigRepositoryImpl(firebaseRemoteConfig)
+    fun provideFirebaseConfigRepository(firebaseRemoteConfig:FirebaseRemoteConfig,dataStoreService: DataStoreService): FirebaseConfigRepository {
+        return FirebaseConfigRepositoryImpl(firebaseRemoteConfig,dataStoreService)
     }
 }

@@ -39,6 +39,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.navigation.NavHostController
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.geometry.LinearRing
 import com.yandex.mapkit.geometry.Point
@@ -46,6 +47,7 @@ import com.yandex.mapkit.geometry.Polygon
 import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.mapview.MapView
+import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.domain.model.address.Coordinate
 import kk.domoRolls.ru.presentation.components.BaseButton
 import kk.domoRolls.ru.presentation.components.DeliveryZonePointer
@@ -63,6 +65,8 @@ val RESTAURANT_COORDINATES = Pair(51.568985, 46.008870)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddressMapScreen(
+    navController: NavHostController,
+    address: Address? = null,
     addressMapViewModel: AddressMapViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -83,6 +87,10 @@ fun AddressMapScreen(
     val focusManager = LocalFocusManager.current
 
     val currentAddress by addressMapViewModel.currentAddressModel.collectAsState()
+
+    if (address != null) {
+        addressMapViewModel.setCurrentAddressModel(address)
+    }
 
     val yandexCameraListener = CameraListener { _, cameraPosition, _, finished ->
 
@@ -357,7 +365,13 @@ fun AddressMapScreen(
                     modifier = Modifier
                         .padding(horizontal = 22.dp, vertical = 20.dp)
                         .fillMaxWidth(),
-                    onClick = {}
+                    onClick = {
+                        addressMapViewModel.updateAddress(
+                            isAddMode = address==null,
+                            onSuccess = { navController.popBackStack() },
+                            onFailure = {}
+                        )
+                    }
                 )
 
             }
@@ -383,17 +397,20 @@ fun AddressMapScreen(
                             val polylinePoints = currentPolygon.coordinates
 
 
-                            mapView.mapWindow.map.move(
-                                CameraPosition(
-                                    Point(
-                                        polylinePoints.last().last(),
-                                        polylinePoints.last().first(),
+                            val point = address?.let { defaultAddress->
+                               Point(defaultAddress.coordinate.lat,defaultAddress.coordinate.lng)
+                            }?:run {
+                                Point(
+                                    polylinePoints.last().last(),
+                                    polylinePoints.last().first(),
+                                    )
+                            }
 
-                                        ), 10.0f, 0.0f, 0.0f
-                                ),
+                            val zoom = address?.let { 17.0f }?:run { 10.0f }
+
+                            mapView.mapWindow.map.move(CameraPosition(point, zoom, 0.0f, 0.0f),
                                 Animation(Animation.Type.SMOOTH, 1F),
                                 null
-
                             )
 
                             val polygon = Polygon(

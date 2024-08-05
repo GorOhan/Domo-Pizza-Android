@@ -11,6 +11,7 @@ import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.PromoStory
 import kk.domoRolls.ru.domain.model.User
+import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.isWorkingTime
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -50,9 +52,13 @@ class MainViewModel @Inject constructor(
     private val _isOpen: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val isOpen = _isOpen.asStateFlow()
 
+    private val _defaultAddress: MutableStateFlow<Address> = MutableStateFlow(Address())
+    val defaultAddress = _defaultAddress.asStateFlow()
+
     init {
 
         viewModelScope.launch {
+            firebaseConfigRepository.fetchAddresses()
             _showLoading.value = true
         }
 
@@ -80,6 +86,14 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             fetchMenu()
         }
+
+        firebaseConfigRepository.getAddresses()
+            .onEach {
+                if (it.isNotEmpty()) {
+                    _defaultAddress.value = it.find { it.isDefault } ?: it.first()
+                }
+            }
+            .launchIn(viewModelScope)
         getOrders()
 
     }
@@ -152,5 +166,6 @@ class MainViewModel @Inject constructor(
                 .collect()
         }
     }
+
 
 }

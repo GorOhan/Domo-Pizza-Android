@@ -54,6 +54,7 @@ import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.domain.model.PromoStory
 import kk.domoRolls.ru.domain.model.User
+import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.presentation.components.CartButton
 import kk.domoRolls.ru.presentation.components.DomoLoading
 import kk.domoRolls.ru.presentation.components.MenuItemComponent
@@ -63,6 +64,7 @@ import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.registration.gridItems
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoTheme
+import kk.domoRolls.ru.util.toJson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -79,6 +81,7 @@ fun MainScreen(
     var currentItem by remember { mutableStateOf(MenuItem()) }
 
     MainScreenUI(
+        defaultAddressState = mainViewModel.defaultAddress,
         menuState = mainViewModel.menu,
         promoStoryList = promo,
         onNavigationClick = {
@@ -104,7 +107,7 @@ fun MainScreen(
             navController.navigate(Screen.MyProfileScreen.route)
         },
         onAddressClick = {
-            navController.navigate(Screen.AddressMapScreen.route)
+            navController.navigate("${Screen.AddressMapScreen.route}/${mainViewModel.defaultAddress.value.toJson()}")
         }
     )
     val sheetState =
@@ -141,6 +144,7 @@ fun MainScreenUI(
     onCategoryCheck: (ItemCategory) -> Unit = {},
     onProductClick: (MenuItem) -> Unit = {},
     isOpenState: StateFlow<Boolean> = MutableStateFlow(true),
+    defaultAddressState: StateFlow<Address> = MutableStateFlow(Address()),
     seeMenuClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     onAddressClick: () -> Unit = {}
@@ -150,6 +154,7 @@ fun MainScreenUI(
     val user by userState.collectAsState()
     val categories by categoriesState.collectAsState()
     val isOpen by isOpenState.collectAsState()
+    val defaultAddress by defaultAddressState.collectAsState()
 
     Box(
         modifier = Modifier
@@ -175,6 +180,7 @@ fun MainScreenUI(
         ContentSection(
             promoStoryList = promoStoryList,
             menu = menu,
+            defaultAddress = defaultAddress,
             onPlusClick = onAddToCart,
             onMinusClick = onRemoveFromCart,
             onNavigationClick = onNavigationClick,
@@ -213,6 +219,7 @@ fun ContentSection(
     onCategoryCheck: (ItemCategory) -> Unit = {},
     onProductClick: (MenuItem) -> Unit,
     user: User,
+    defaultAddress: Address,
     onProfileClick: () -> Unit,
     onAddressClick: () -> Unit,
 ) {
@@ -262,9 +269,8 @@ fun ContentSection(
                     Text(text = "Привет ${user.name}")
                     Text(
                         modifier = Modifier.clickable { onAddressClick() },
-                        text = "address",
-
-                        )
+                        text = defaultAddress.street
+                    )
                 }
                 Image(
                     modifier = Modifier
