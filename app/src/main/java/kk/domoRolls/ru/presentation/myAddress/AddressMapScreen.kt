@@ -75,8 +75,8 @@ fun AddressMapScreen(
         bottomSheetState = rememberStandardBottomSheetState(
             initialValue = SheetValue.Expanded
         )
-
     )
+
     val mapData = addressMapViewModel.mapData.collectAsState()
     var inDeliveryZone by remember { mutableStateOf(true) }
     var isMoveFinished by remember { mutableStateOf(true) }
@@ -89,8 +89,10 @@ fun AddressMapScreen(
     val defaultAddress by addressMapViewModel.defaultAddress.collectAsState()
 
 
-    if (addressId != null) {
-        addressMapViewModel.setCurrentAddressId(addressId = addressId)
+    LaunchedEffect(key1 = true) {
+        if (addressId != null) {
+            addressMapViewModel.setCurrentAddressId(addressId = addressId)
+        }
     }
 
     val yandexCameraListener = CameraListener { _, cameraPosition, _, finished ->
@@ -181,6 +183,7 @@ fun AddressMapScreen(
             isZoomGesturesEnabled = inOrderMode
             isScrollGesturesEnabled = inOrderMode
         }
+
 
         if (!inOrderMode) {
             mapView.mapWindow.map.move(
@@ -300,7 +303,6 @@ fun AddressMapScreen(
                         )
                     }
                 }
-                var checked by remember { mutableStateOf(true) }
 
                 AnimatedVisibility(inOrderMode) {
                     Column {
@@ -314,12 +316,11 @@ fun AddressMapScreen(
                             Text(text = "Частный дом")
 
                             Switch(
-                                checked = checked,
+                                checked = currentAddress.privateHouse,
                                 onCheckedChange = {
-                                    checked = it
                                     addressMapViewModel.setCurrentAddressModel(
                                         currentAddress.copy(
-                                            isPrivateHouse = checked
+                                            privateHouse = it
                                         )
                                     )
                                 },
@@ -332,7 +333,7 @@ fun AddressMapScreen(
                             )
                         }
 
-                        AnimatedVisibility(visible = checked) {
+                        AnimatedVisibility(visible = !currentAddress.privateHouse) {
                             Column {
                                 Row {
                                     PersonalDataItem(

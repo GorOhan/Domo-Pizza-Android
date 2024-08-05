@@ -146,7 +146,7 @@ fun MainScreenUI(
     onCategoryCheck: (ItemCategory) -> Unit = {},
     onProductClick: (MenuItem) -> Unit = {},
     isOpenState: StateFlow<Boolean> = MutableStateFlow(true),
-    defaultAddressState: StateFlow<Address> = MutableStateFlow(Address()),
+    defaultAddressState: StateFlow<Address> = MutableStateFlow(Address(privateHouse = false)),
     seeMenuClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     onAddressClick: () -> Unit = {}

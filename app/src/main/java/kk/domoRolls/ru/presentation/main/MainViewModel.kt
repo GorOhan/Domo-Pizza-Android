@@ -52,7 +52,7 @@ class MainViewModel @Inject constructor(
     private val _isOpen: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val isOpen = _isOpen.asStateFlow()
 
-    private val _defaultAddress: MutableStateFlow<Address> = MutableStateFlow(Address())
+    private val _defaultAddress: MutableStateFlow<Address> = MutableStateFlow(Address(privateHouse = false))
     val defaultAddress = _defaultAddress.asStateFlow()
 
     init {

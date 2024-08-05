@@ -35,7 +35,7 @@ class AddressMapViewModel @Inject constructor(
     private val _inOrderMode: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val inOrderMode = _inOrderMode.asStateFlow()
 
-    private val _currentAddressModel: MutableStateFlow<Address> = MutableStateFlow(Address())
+    private val _currentAddressModel: MutableStateFlow<Address> = MutableStateFlow(Address(privateHouse = false))
     val currentAddressModel = _currentAddressModel.asStateFlow()
 
     private val _defaultAddress: MutableStateFlow<Address?> = MutableStateFlow(null)
@@ -52,6 +52,7 @@ class AddressMapViewModel @Inject constructor(
     }
 
     fun setOrderMode(inOrderMode: Boolean) {
+        _currentAddressModel.value = currentAddressModel.value.copy(type = if (inOrderMode) "Доставка" else "Самовывоз")
         _inOrderMode.value = inOrderMode
     }
 
@@ -72,7 +73,7 @@ class AddressMapViewModel @Inject constructor(
                     // Get the current list of addresses
                     val currentAddresses = snapshot.children.mapNotNull { it.getValue(Address::class.java) }.toMutableList()
 
-                         defaultAddress.value?.let {default ->
+                    defaultAddress.value?.let {default ->
                              currentAddresses.removeIf { it.id == default.id }
                              currentAddresses.add(currentAddressModel.value)
                          }?:run {
