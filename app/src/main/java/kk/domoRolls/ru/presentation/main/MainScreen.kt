@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -267,10 +269,25 @@ fun ContentSection(
             ) {
                 Column {
                     Text(text = "Привет ${user.name}")
-                    Text(
-                        modifier = Modifier.clickable { onAddressClick() },
-                        text = defaultAddress.street
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .clickable { onAddressClick() },
+                            text = defaultAddress.street,
+                            overflow = TextOverflow.Ellipsis,
+
+                            )
+                        Icon(
+                            modifier = Modifier
+                                .padding(start = 4.dp)
+                                .size(8.dp),
+                            painter = painterResource(id = R.drawable.ic_nav),
+                            contentDescription = "",
+                            tint = DomoBlue
+                        )
+                    }
                 }
                 Image(
                     modifier = Modifier

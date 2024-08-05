@@ -161,8 +161,8 @@ fun AddressMapScreen(
             )
         } ?: run {
             Point(
-                mapData.value.first().coordinates.first().last(),
-                mapData.value.first().coordinates.first().first(),
+                mapData.value.last().coordinates.last().last(),
+                mapData.value.last().coordinates.last().first(),
             )
         }
 

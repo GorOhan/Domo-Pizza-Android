@@ -22,10 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,9 +54,11 @@ fun MyAddressesScreen(
             }
 
             MyAddressesEvent.Nothing -> {}
-            is MyAddressesEvent.NavigateClick ->  {
+            is MyAddressesEvent.NavigateClick -> {
                 navController.navigate(event.route)
             }
+
+            is MyAddressesEvent.UpdateAddress -> {}
         }
     }
     MyAddressesScreenUI(
@@ -100,7 +99,10 @@ fun MyAddressesScreenUI(
                 AddressItem(
                     address = it,
                     onEditClick = {
-                      onEvent(MyAddressesEvent.NavigateClick("${Screen.AddressMapScreen.route}/${it.id.ifEmpty { null }}"))
+                        onEvent(MyAddressesEvent.NavigateClick("${Screen.AddressMapScreen.route}/${it.id.ifEmpty { null }}"))
+                    },
+                    onCheck = {
+                        onEvent(MyAddressesEvent.UpdateAddress(it))
                     }
                 )
             }
@@ -119,7 +121,10 @@ fun MyAddressesScreenUI(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
+                        .padding(20.dp)
+                        .clickable {
+                            onEvent(MyAddressesEvent.NavigateClick("${Screen.AddressMapScreen.route}/${null}"))
+                        },
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -150,8 +155,9 @@ fun MyAddressesScreenUI(
 fun AddressItem(
     address: Address,
     onEditClick: () -> Unit = {},
+    onCheck: (Address) -> Unit = {},
 ) {
-    var isChecked by remember { mutableStateOf(false) }
+    var isChecked = address.default
 
     Row(
         modifier = Modifier
@@ -165,6 +171,7 @@ fun AddressItem(
             modifier = Modifier.padding(start = 4.dp),
             checked = isChecked,
             onCheckedChange = {
+                onCheck(address.copy(default = it))
                 isChecked = it
             },
             colors = CheckboxDefaults.colors(
@@ -207,6 +214,7 @@ fun AddressItem(
 }
 
 sealed class MyAddressesEvent {
+    data class UpdateAddress(val address: Address) : MyAddressesEvent()
     data class NavigateClick(val route: String) : MyAddressesEvent()
     data object BackClick : MyAddressesEvent()
     data object Nothing : MyAddressesEvent()

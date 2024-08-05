@@ -70,20 +70,19 @@ class AddressMapViewModel @Inject constructor(
             override fun onDataChange(snapshot: DataSnapshot) {
                 try {
                     // Get the current list of addresses
-                    val currentAddresses = snapshot.children.mapNotNull { it.getValue(Address::class.java) }
-                            .toMutableList()
+                    val currentAddresses = snapshot.children.mapNotNull { it.getValue(Address::class.java) }.toMutableList()
 
-                       if (currentAddressModel.value.id.isEmpty()) {
-                           currentAddresses.add(
-                               currentAddressModel.value.copy(
-                                   id = UUID.randomUUID().toString()
-                               )
-                           )
-                       } else {
-                           currentAddresses.removeIf { it.id == currentAddressModel.value.id }
-                           currentAddresses.add(currentAddressModel.value)
+                         defaultAddress.value?.let {default ->
+                             currentAddresses.removeIf { it.id == default.id }
+                             currentAddresses.add(currentAddressModel.value)
+                         }?:run {
+                             currentAddresses.add(
+                                 currentAddressModel.value.copy(
+                                     id = UUID.randomUUID().toString()
+                                 )
+                             )
+                         }
 
-                       }
 
                     userRef.child("addresses").setValue(currentAddresses)
                         .addOnSuccessListener {

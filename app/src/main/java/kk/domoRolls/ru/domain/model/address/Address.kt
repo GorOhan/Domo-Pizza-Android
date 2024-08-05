@@ -15,7 +15,7 @@ data class Address(
     val floor: String = "",
     val id: String = "default_id",
     val intercom: String = "",
-    val isDefault: Boolean = false,
+    val default: Boolean = false,
     val isPrivateHouse: Boolean = false,
     val minDeliveryPrice: Int = 0,
     val street: String = "",

@@ -2,8 +2,10 @@ package kk.domoRolls.ru.presentation.myaddresses
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.User
@@ -23,7 +25,6 @@ class MyAddressViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
     private val firebaseConfigRepository: FirebaseConfigRepository,
 ) : ViewModel() {
-    private val databaseReference: DatabaseReference = FirebaseDatabase.getInstance().reference
 
     private val _user: MutableStateFlow<User> = MutableStateFlow(dataStoreService.getUserData())
     val user = _user.asStateFlow()
@@ -46,6 +47,53 @@ class MyAddressViewModel @Inject constructor(
         viewModelScope.launch {
             _event.emit(event)
         }
+
+        if (event is MyAddressesEvent.UpdateAddress){
+            makeDefaultAddress(
+                address = event.address,
+                onSuccess = {
+                    firebaseConfigRepository.fetchAddresses()
+                },
+                onFailure = {}
+                )
+        }
+    }
+
+    fun makeDefaultAddress(
+        address: Address,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val database = FirebaseDatabase.getInstance()
+        val userRef = database.getReference(dataStoreService.getUserData().id)
+
+        userRef.child("addresses").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                try {
+                    // Get the current list of addresses
+                    val currentAddresses = snapshot.children.mapNotNull { it.getValue(Address::class.java) }
+                        .toMutableList()
+
+                    val newAddresses = currentAddresses.map { it.copy(default = false) }.toMutableList()
+                    val index = newAddresses.indexOfFirst { it.id == address.id }
+                    newAddresses[index] = address
+
+                    userRef.child("addresses").setValue(newAddresses)
+                        .addOnSuccessListener {
+                            onSuccess()
+                        }
+                        .addOnFailureListener { exception ->
+                            onFailure(exception)
+                        }
+                } catch (e: Exception) {
+                    onFailure(e)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onFailure(error.toException())
+            }
+        })
     }
 
 }

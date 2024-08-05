@@ -90,7 +90,7 @@ class MainViewModel @Inject constructor(
         firebaseConfigRepository.getAddresses()
             .onEach {
                 if (it.isNotEmpty()) {
-                    _defaultAddress.value = it.find { it.isDefault } ?: it.first()
+                    _defaultAddress.value = it.find { it.default } ?: it.first()
                 }
             }
             .launchIn(viewModelScope)
