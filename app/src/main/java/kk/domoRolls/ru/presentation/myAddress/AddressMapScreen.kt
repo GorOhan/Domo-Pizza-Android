@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.ColorUtils
@@ -45,6 +47,7 @@ import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.mapview.MapView
 import kk.domoRolls.ru.presentation.components.BaseButton
 import kk.domoRolls.ru.presentation.components.DeliveryZonePointer
+import kk.domoRolls.ru.presentation.components.isKeyboardVisible
 import kk.domoRolls.ru.presentation.personaldata.PersonalDataItem
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
@@ -58,6 +61,8 @@ fun AddressMapScreen(
     addressMapViewModel: AddressMapViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val keyboardVisible = isKeyboardVisible()
+
     val sheetState = rememberBottomSheetScaffoldState(
         bottomSheetState = rememberStandardBottomSheetState(
             initialValue = SheetValue.Expanded
@@ -69,7 +74,7 @@ fun AddressMapScreen(
     var isMoveFinished by remember { mutableStateOf(true) }
     val inOrderMode by addressMapViewModel.inOrderMode.collectAsState()
     val currentAddress by addressMapViewModel.currentAddress.collectAsState()
-
+    val focusManager = LocalFocusManager.current
 
     val yandexCameraListener = CameraListener { _, cameraPosition, _, finished ->
 
@@ -106,13 +111,17 @@ fun AddressMapScreen(
         }
     }
 
-
+    LaunchedEffect(keyboardVisible) {
+        if (keyboardVisible.not()) focusManager.clearFocus()
+        if (keyboardVisible) {
+            mapView.mapWindow.map.removeCameraListener(yandexCameraListener)
+        }
+    }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         mapView.mapWindow.map.addCameraListener(yandexCameraListener)
     }
     BottomSheetScaffold(
-
         scaffoldState = sheetState,
         containerColor = Color.White,
         sheetContainerColor = Color.White,
@@ -149,29 +158,29 @@ fun AddressMapScreen(
                     value = if (inOrderMode) currentAddress else "Артиллерийская улица, 10А, Саратов",
                     placeHolder = "user name",
                     readOnly = !inOrderMode,
-                    onValueChange = {input ->
+                    onDone = {
+                        performGeocoding(
+                            currentAddress,
+                            mapView.mapWindow.map
+                        ) {
 
-                        if (input.length> 10) {
-                            performGeocoding(
-                                input,
-                                mapView.mapWindow.map
-                            ) {
-
-                                it?.let {
-                                    mapView.mapWindow.map.move(
-                                        CameraPosition(
-                                            it,
-                                            mapView.mapWindow.map.cameraPosition.zoom
-                                            , 0.0f, 0.0f
-                                        ),
-                                        Animation(Animation.Type.SMOOTH, 1F),
-                                        null
-                                    )
-                                }
-
-                                addressMapViewModel.setCurrentAddress(input)
+                            it?.let {
+                                mapView.mapWindow.map.move(
+                                    CameraPosition(
+                                        it,
+                                        mapView.mapWindow.map.cameraPosition.zoom,
+                                        0.0f,
+                                        0.0f
+                                    ),
+                                    Animation(Animation.Type.SMOOTH, 1F),
+                                    null
+                                )
                             }
+
                         }
+                    },
+                    onValueChange = { input ->
+                        addressMapViewModel.setCurrentAddress(input)
                     })
 
                 Row(
