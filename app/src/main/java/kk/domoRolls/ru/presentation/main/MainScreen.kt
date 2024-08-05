@@ -66,52 +66,78 @@ import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.registration.gridItems
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoTheme
-import kk.domoRolls.ru.util.toJson
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun MainScreen(
     navController: NavHostController,
     mainViewModel: MainViewModel = hiltViewModel(),
 ) {
     val promo by mainViewModel.promoList.collectAsState()
+    val menu by mainViewModel.menu.collectAsState()
+    val showLoading by mainViewModel.showLoading.collectAsState()
+    val user by mainViewModel.user.collectAsState()
+    val categories by mainViewModel.categories.collectAsState()
+    val isOpen by mainViewModel.isOpen.collectAsState()
+    val defaultAddress by mainViewModel.defaultAddress.collectAsState()
+
+        MainScreenUI(
+            isOpen = isOpen,
+            showLoading = showLoading,
+            promoStoryList = promo,
+            menu = menu,
+            defaultAddress = defaultAddress,
+            onPlusClick = { mainViewModel.addToCart(it) },
+            onMinusClick = { mainViewModel.removeFromCart(it) },
+            onNavigationClick = { navController.navigate(it) },
+            categories = categories,
+            onCategoryCheck = { mainViewModel.categoryCheck(it) },
+            user = user,
+            onProfileClick = { navController.navigate(Screen.MyProfileScreen.route) },
+            onAddressClick = { navController.navigate("${Screen.AddressMapScreen.route}/${mainViewModel.defaultAddress.value.id.ifEmpty { null }}") },
+            onToCartClick = {
+                navController.navigate(Screen.CartScreen.route)
+            },
+            onHideSleepView = {
+                mainViewModel.hideSleepView()
+            }
+        )
+}
+
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreenUI(
+    isOpen: Boolean = false,
+    showLoading: Boolean = false,
+    promoStoryList: List<PromoStory> = emptyList(),
+    menu: List<MenuItem> = emptyList(),
+    onMinusClick: (MenuItem) -> Unit = {},
+    onPlusClick: (MenuItem) -> Unit = {},
+    onNavigationClick: (String) -> Unit = {},
+    categories: List<ItemCategory> = emptyList(),
+    onCategoryCheck: (ItemCategory) -> Unit = {},
+    user: User = User(),
+    defaultAddress: Address = Address(),
+    onProfileClick: () -> Unit = {},
+    onAddressClick: () -> Unit = {},
+    onToCartClick: () -> Unit = {},
+    onHideSleepView: () -> Unit = {},
+) {
+    val insets = WindowInsets.statusBars
+    val statusBarHeight = insets.asPaddingValues().calculateTopPadding()
+
+    val menuState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val isCategoryClicked = remember {
+        mutableStateOf(false)
+    }
+
     var showBottomSheet by remember { mutableStateOf(false) }
     var currentItem by remember { mutableStateOf(MenuItem()) }
 
-    MainScreenUI(
-        defaultAddressState = mainViewModel.defaultAddress,
-        menuState = mainViewModel.menu,
-        promoStoryList = promo,
-        onNavigationClick = {
-            navController.navigate(it)
-        },
-        onAddToCart = { mainViewModel.addToCart(it) },
-        onRemoveFromCart = { mainViewModel.removeFromCart(it) },
-        showLoadingState = mainViewModel.showLoading,
-        userState = mainViewModel.user,
-        categoriesState = mainViewModel.categories,
-        onCategoryCheck = {
-            mainViewModel.categoryCheck(it)
-        },
-        onProductClick = {
-            showBottomSheet = true
-            currentItem = it
-        },
-        isOpenState = mainViewModel.isOpen,
-        seeMenuClick = {
-            mainViewModel.hideSleepView()
-        },
-        onProfileClick = {
-            navController.navigate(Screen.MyProfileScreen.route)
-        },
-        onAddressClick = {
-            navController.navigate("${Screen.AddressMapScreen.route}/${mainViewModel.defaultAddress.value.id.ifEmpty { null }}")
-        }
-    )
     val sheetState =
         rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -125,114 +151,13 @@ fun MainScreen(
         ) {
             ProductBottomSheet(
                 menuItem = currentItem,
-                menuState = mainViewModel.menu,
-                onMinusClick = { mainViewModel.removeFromCart(currentItem) },
-                onPlusClick = { mainViewModel.addToCart(currentItem) }
-            )
-        }
-    }
-}
-
-@Composable
-fun MainScreenUI(
-    promoStoryList: List<PromoStory> = emptyList(),
-    menuState: StateFlow<List<MenuItem>> = MutableStateFlow(emptyList()),
-    onNavigationClick: (String) -> Unit = {},
-    onAddToCart: (MenuItem) -> Unit = {},
-    onRemoveFromCart: (MenuItem) -> Unit = {},
-    showLoadingState: StateFlow<Boolean> = MutableStateFlow(false),
-    userState: StateFlow<User> = MutableStateFlow(User()),
-    categoriesState: StateFlow<List<ItemCategory>> = MutableStateFlow(emptyList()),
-    onCategoryCheck: (ItemCategory) -> Unit = {},
-    onProductClick: (MenuItem) -> Unit = {},
-    isOpenState: StateFlow<Boolean> = MutableStateFlow(true),
-    defaultAddressState: StateFlow<Address> = MutableStateFlow(Address(privateHouse = false)),
-    seeMenuClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {},
-    onAddressClick: () -> Unit = {}
-) {
-    val menu by menuState.collectAsState()
-    val showLoading by showLoadingState.collectAsState()
-    val user by userState.collectAsState()
-    val categories by categoriesState.collectAsState()
-    val isOpen by isOpenState.collectAsState()
-    val defaultAddress by defaultAddressState.collectAsState()
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        contentAlignment = Alignment.Center
-
-    ) {
-        if (menu.sumOf { it.countInCart } > 0) {
-            CartButton(
                 menu = menu,
-                modifier = Modifier
-                    .padding(horizontal = 22.dp, vertical = 64.dp)
-                    .zIndex(1f)
-                    .align(Alignment.BottomCenter),
-                backgroundColor = DomoBlue,
-                onClick = {
-                    onNavigationClick(Screen.CartScreen.route)
-                }
+                onMinusClick = { onMinusClick(currentItem) },
+                onPlusClick = { onPlusClick(currentItem) }
             )
         }
-
-        ContentSection(
-            promoStoryList = promoStoryList,
-            menu = menu,
-            defaultAddress = defaultAddress,
-            onPlusClick = onAddToCart,
-            onMinusClick = onRemoveFromCart,
-            onNavigationClick = onNavigationClick,
-            categories = categories,
-            onCategoryCheck = onCategoryCheck,
-            user = user,
-            onProductClick = onProductClick,
-            onProfileClick = onProfileClick,
-            onAddressClick = onAddressClick,
-        )
-
     }
 
-    if (showLoading) {
-        DomoLoading()
-    }
-
-    if (!isOpen) {
-        SleepView(
-            seeMenuClick = { seeMenuClick() }
-        )
-    }
-
-}
-
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun ContentSection(
-    promoStoryList: List<PromoStory>,
-    menu: List<MenuItem>,
-    onMinusClick: (MenuItem) -> Unit = {},
-    onPlusClick: (MenuItem) -> Unit = {},
-    onNavigationClick: (String) -> Unit,
-    categories: List<ItemCategory>,
-    onCategoryCheck: (ItemCategory) -> Unit = {},
-    onProductClick: (MenuItem) -> Unit,
-    user: User,
-    defaultAddress: Address,
-    onProfileClick: () -> Unit,
-    onAddressClick: () -> Unit,
-) {
-    val insets = WindowInsets.statusBars
-    val statusBarHeight = insets.asPaddingValues().calculateTopPadding()
-
-    val menuState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-    val isCategoryClicked = remember {
-        mutableStateOf(false)
-    }
 
     LaunchedEffect(key1 = menuState.firstVisibleItemIndex) {
         var accumulatedSize = 0
@@ -249,146 +174,178 @@ fun ContentSection(
         }
     }
 
-
-    LazyColumn(
+    Box(
         modifier = Modifier
-            .padding(top = statusBarHeight)
-            .fillMaxSize(),
-        state = menuState
+            .fillMaxSize()
+            .background(Color.White),
+        contentAlignment = Alignment.Center
 
     ) {
-
-        item {
-            Row(
+        if (menu.sumOf { it.countInCart } > 0) {
+            CartButton(
+                menu = menu,
                 modifier = Modifier
-                    .padding(horizontal = 22.dp)
-                    .fillMaxWidth()
-                    .padding(top = 22.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(text = "Привет ${user.name}")
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            modifier = Modifier
-                                .clickable { onAddressClick() },
-                            text = defaultAddress.street,
-                            overflow = TextOverflow.Ellipsis,
-
-                            )
-                        Icon(
-                            modifier = Modifier
-                                .padding(start = 4.dp)
-                                .size(8.dp),
-                            painter = painterResource(id = R.drawable.ic_nav),
-                            contentDescription = "",
-                            tint = DomoBlue
-                        )
-                    }
-                }
-                Image(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { onProfileClick() },
-                    painter = painterResource(id = R.drawable.ic_profile),
-                    contentDescription = ""
-                )
-            }
-        }
-
-        item {
-            StorySection(
-                promoStory = promoStoryList,
-                onNavigationClick = onNavigationClick
+                    .padding(horizontal = 22.dp, vertical = 64.dp)
+                    .zIndex(1f)
+                    .align(Alignment.BottomCenter),
+                backgroundColor = DomoBlue,
+                onClick = { onToCartClick() }
             )
         }
 
-        stickyHeader {
-            val rowState = rememberLazyListState()
+        LazyColumn(
+            modifier = Modifier
+                .padding(top = statusBarHeight)
+                .fillMaxSize(),
+            state = menuState
 
-            LaunchedEffect(key1 = categories) {
-                if (categories.any { it.isChecked }) {
-                    val indexOfItem = categories.indexOfFirst { it.isChecked }
-                    rowState.animateScrollToItem(indexOfItem)
+        ) {
+
+            item {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 22.dp)
+                        .fillMaxWidth()
+                        .padding(top = 22.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(text = "Привет ${user.name}")
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .clickable { onAddressClick() },
+                                text = defaultAddress.street,
+                                overflow = TextOverflow.Ellipsis,
+
+                                )
+                            Icon(
+                                modifier = Modifier
+                                    .padding(start = 4.dp)
+                                    .size(8.dp),
+                                painter = painterResource(id = R.drawable.ic_nav),
+                                contentDescription = "",
+                                tint = DomoBlue
+                            )
+                        }
+                    }
+                    Image(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable { onProfileClick() },
+                        painter = painterResource(id = R.drawable.ic_profile),
+                        contentDescription = ""
+                    )
                 }
             }
 
-            LazyRow(
-                state = rowState,
-                modifier = Modifier
-                    .background(Color.White)
-                    .fillMaxWidth()
-                    .padding(vertical = 12.dp)
-                    .zIndex(1f),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                itemsIndexed(items = categories, itemContent = { index, item ->
-                    Box(
-                        modifier = Modifier
-                            .padding(
-                                start = if (index == 0) 16.dp else 0.dp,
-                                end = if (index == categories.size - 1) 16.dp else 0.dp
-                            )
-                            .clickable {
-                                isCategoryClicked.value = true
-                                onCategoryCheck(item)
-                                coroutineScope.launch {
-                                    menuState.animateScrollToItem(
-                                        index = (menu.indexOfFirst {
-                                            it.categoryId == item.id
-                                        } / 2) + index + 2,
-                                    )
-                                    delay(500L)
-                                    isCategoryClicked.value = false
-                                }
-                            }
-                            .border(
-                                width = 1.dp,
-                                shape = RoundedCornerShape(24.dp),
-                                color = DomoBlue
-                            )
-                            .background(
-                                if (item.isChecked) MaterialTheme.colorScheme.secondary else Color.White,
-                                RoundedCornerShape(24.dp)
-                            ),
-
-                        ) {
-                        Text(
-                            modifier = Modifier.padding(8.dp),
-                            color = if (!item.isChecked) MaterialTheme.colorScheme.secondary
-                            else Color.White,
-                            text = item.name ?: "",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                })
-            }
-        }
-
-
-        categories.forEach { category ->
             item {
-                Text(
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(all = 16.dp),
-                    text = category.name ?: ""
+                StorySection(
+                    promoStory = promoStoryList,
+                    onNavigationClick = onNavigationClick
                 )
             }
-            gridItems(menu.filter { it.categoryId == category.id }, nColumns = 2) { item ->
-                MenuItemComponent(
-                    menuItem = item,
-                    onMinusClick = { onMinusClick(item) },
-                    onPlusClick = { onPlusClick(item) },
-                    onProductClick = { onProductClick(item) }
-                )
+
+            stickyHeader {
+                val rowState = rememberLazyListState()
+
+                LaunchedEffect(key1 = categories) {
+                    if (categories.any { it.isChecked }) {
+                        val indexOfItem = categories.indexOfFirst { it.isChecked }
+                        rowState.animateScrollToItem(indexOfItem)
+                    }
+                }
+
+                LazyRow(
+                    state = rowState,
+                    modifier = Modifier
+                        .background(Color.White)
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp)
+                        .zIndex(1f),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    itemsIndexed(items = categories, itemContent = { index, item ->
+                        Box(
+                            modifier = Modifier
+                                .padding(
+                                    start = if (index == 0) 16.dp else 0.dp,
+                                    end = if (index == categories.size - 1) 16.dp else 0.dp
+                                )
+                                .clickable {
+                                    isCategoryClicked.value = true
+                                    onCategoryCheck(item)
+                                    coroutineScope.launch {
+                                        menuState.animateScrollToItem(
+                                            index = (menu.indexOfFirst {
+                                                it.categoryId == item.id
+                                            } / 2) + index + 2,
+                                        )
+                                        delay(500L)
+                                        isCategoryClicked.value = false
+                                    }
+                                }
+                                .border(
+                                    width = 1.dp,
+                                    shape = RoundedCornerShape(24.dp),
+                                    color = DomoBlue
+                                )
+                                .background(
+                                    if (item.isChecked) MaterialTheme.colorScheme.secondary else Color.White,
+                                    RoundedCornerShape(24.dp)
+                                ),
+
+                            ) {
+                            Text(
+                                modifier = Modifier.padding(8.dp),
+                                color = if (!item.isChecked) MaterialTheme.colorScheme.secondary
+                                else Color.White,
+                                text = item.name ?: "",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    })
+                }
+            }
+
+
+            categories.forEach { category ->
+                item {
+                    Text(
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(all = 16.dp),
+                        text = category.name ?: ""
+                    )
+                }
+                gridItems(menu.filter { it.categoryId == category.id }, nColumns = 2) { item ->
+                    MenuItemComponent(
+                        menuItem = item,
+                        onMinusClick = { onMinusClick(item) },
+                        onPlusClick = { onPlusClick(item) },
+                        onProductClick = {
+                            showBottomSheet = true
+                            currentItem = item
+                        }
+                    )
+                }
+
             }
 
         }
 
+        if (showLoading) {
+            DomoLoading()
+        }
+
+        if (!isOpen) {
+            SleepView(
+                seeMenuClick = { onHideSleepView() }
+            )
+        }
     }
 }
 
@@ -424,6 +381,6 @@ fun StorySection(
 @Composable
 fun MainScreenPreview() {
     DomoTheme {
-        MainScreenUI()
+         MainScreenUI()
     }
 }

@@ -377,11 +377,10 @@ fun CartButton(
 @Composable
 fun ProductBottomSheet(
     menuItem: MenuItem = MenuItem(),
-    menuState: StateFlow<List<MenuItem>> = MutableStateFlow(emptyList()),
+    menu: List<MenuItem> = emptyList(),
     onPlusClick: () -> Unit = {},
     onMinusClick: () -> Unit = {},
 ) {
-    val menu by menuState.collectAsState()
     var countInCart by remember {
         mutableIntStateOf(0)
     }
