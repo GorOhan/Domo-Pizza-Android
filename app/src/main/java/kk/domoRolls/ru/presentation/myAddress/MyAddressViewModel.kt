@@ -2,9 +2,14 @@ package kk.domoRolls.ru.presentation.myAddress
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.User
+import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.domain.model.map.Polygon
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,8 +34,8 @@ class AddressMapViewModel @Inject constructor(
     private val _inOrderMode: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val inOrderMode = _inOrderMode.asStateFlow()
 
-    private val _currentAddress: MutableStateFlow<String> = MutableStateFlow("")
-    val currentAddress = _currentAddress.asStateFlow()
+    private val _currentAddressModel: MutableStateFlow<Address> = MutableStateFlow(Address())
+    val currentAddressModel = _currentAddressModel.asStateFlow()
 
 
     init {
@@ -47,7 +52,45 @@ class AddressMapViewModel @Inject constructor(
         _inOrderMode.value = inOrderMode
     }
 
-    fun setCurrentAddress(inputAddress: String) {
-        _currentAddress.value = inputAddress
+    fun setCurrentAddressModel(inputAddress: Address) {
+        _currentAddressModel.value = inputAddress
+    }
+
+    fun addAddress(
+        newAddress: Address,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val database = FirebaseDatabase.getInstance()
+        val userRef = database.getReference(dataStoreService.getUserData().id)
+
+        userRef.child("addresses").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                try {
+                    // Get the current list of addresses
+                    val currentAddresses =
+                        snapshot.children.mapNotNull { it.getValue(Address::class.java) }
+                            .toMutableList()
+
+                    // Add the new address
+                    currentAddresses.add(newAddress)
+
+                    // Update the addresses list in the database
+                    userRef.child("addresses").setValue(currentAddresses)
+                        .addOnSuccessListener {
+                            onSuccess()
+                        }
+                        .addOnFailureListener { exception ->
+                            onFailure(exception)
+                        }
+                } catch (e: Exception) {
+                    onFailure(e)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onFailure(error.toException())
+            }
+        })
     }
 }

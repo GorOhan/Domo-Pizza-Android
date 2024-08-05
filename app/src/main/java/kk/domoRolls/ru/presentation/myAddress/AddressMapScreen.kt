@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,6 +46,7 @@ import com.yandex.mapkit.geometry.Polygon
 import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.mapview.MapView
+import kk.domoRolls.ru.domain.model.address.Coordinate
 import kk.domoRolls.ru.presentation.components.BaseButton
 import kk.domoRolls.ru.presentation.components.DeliveryZonePointer
 import kk.domoRolls.ru.presentation.components.isKeyboardVisible
@@ -75,9 +77,12 @@ fun AddressMapScreen(
     val mapData = addressMapViewModel.mapData.collectAsState()
     var inDeliveryZone by remember { mutableStateOf(true) }
     var isMoveFinished by remember { mutableStateOf(true) }
+    var currentPrice by remember { mutableIntStateOf(0) }
+
     val inOrderMode by addressMapViewModel.inOrderMode.collectAsState()
-    val currentAddress by addressMapViewModel.currentAddress.collectAsState()
     val focusManager = LocalFocusManager.current
+
+    val currentAddress by addressMapViewModel.currentAddressModel.collectAsState()
 
     val yandexCameraListener = CameraListener { _, cameraPosition, _, finished ->
 
@@ -97,13 +102,32 @@ fun AddressMapScreen(
                 )
             }
 
+            currentPrice = mapData.value.find {
+                isPointInPolygon(
+                    point = Point(cameraPosition.target.latitude, cameraPosition.target.longitude),
+                    polygon = Polygon(
+                        LinearRing(it.coordinates.map { Point(it.last(), it.first()) }),
+                        emptyList()
+                    )
+                )
+            }?.cost?:0
+
             performReverseGeocoding(
                 Point(
                     cameraPosition.target.latitude,
                     cameraPosition.target.longitude
                 ), cameraPosition.zoom.toInt()
             ) {
-                addressMapViewModel.setCurrentAddress(it)
+
+                addressMapViewModel.setCurrentAddressModel(
+                    currentAddress.copy(
+                        street = it,
+                        coordinate = Coordinate(
+                            cameraPosition.target.latitude,
+                            cameraPosition.target.longitude
+                        )
+                    )
+                )
             }
         }
     }
@@ -127,7 +151,7 @@ fun AddressMapScreen(
             isScrollGesturesEnabled = inOrderMode
         }
 
-        if (!inOrderMode){
+        if (!inOrderMode) {
             mapView.mapWindow.map.move(
                 CameraPosition(
                     Point(
@@ -181,12 +205,12 @@ fun AddressMapScreen(
                 }
                 PersonalDataItem(
                     label = "Доставим на адрес:",
-                    value = if (inOrderMode) currentAddress else RESTAURANT_ADDRESS,
+                    value = if (inOrderMode) currentAddress.street else RESTAURANT_ADDRESS,
                     placeHolder = "user name",
                     readOnly = !inOrderMode,
                     onDone = {
                         performGeocoding(
-                            currentAddress,
+                            currentAddress.street,
                             mapView.mapWindow.map
                         ) {
 
@@ -201,12 +225,23 @@ fun AddressMapScreen(
                                     Animation(Animation.Type.SMOOTH, 1F),
                                     null
                                 )
+                                addressMapViewModel.setCurrentAddressModel(
+                                    currentAddress.copy(
+                                        coordinate = Coordinate(
+                                            it.latitude,
+                                            it.longitude
+                                        )
+                                    )
+                                )
                             }
+
 
                         }
                     },
                     onValueChange = { input ->
-                        addressMapViewModel.setCurrentAddress(input)
+                        addressMapViewModel.setCurrentAddressModel(
+                            currentAddress.copy(street = input)
+                        )
                     })
 
                 Row(
@@ -230,7 +265,7 @@ fun AddressMapScreen(
                     ) {
                         Text(
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
-                            text = "Заказ от 800 ₽"
+                            text = "Заказ от $currentPrice ₽"
                         )
                     }
                 }
@@ -249,7 +284,14 @@ fun AddressMapScreen(
 
                             Switch(
                                 checked = checked,
-                                onCheckedChange = { checked = it },
+                                onCheckedChange = {
+                                    checked = it
+                                    addressMapViewModel.setCurrentAddressModel(
+                                        currentAddress.copy(
+                                            isPrivateHouse = checked
+                                        )
+                                    )
+                                },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = Color.White,
                                     checkedTrackColor = DomoBlue,
@@ -265,14 +307,22 @@ fun AddressMapScreen(
                                     PersonalDataItem(
                                         modifier = Modifier.fillMaxWidth(0.5f),
                                         label = "Квартира",
-                                        value = "",
+                                        value = currentAddress.flat,
                                         placeHolder = "",
-                                        onValueChange = { })
+                                        onValueChange = {
+                                            addressMapViewModel.setCurrentAddressModel(
+                                                currentAddress.copy(flat = it)
+                                            )
+                                        })
                                     PersonalDataItem(
                                         label = "Подъезд",
-                                        value = "",
+                                        value = currentAddress.entrance,
                                         placeHolder = "",
-                                        onValueChange = { })
+                                        onValueChange = {
+                                            addressMapViewModel.setCurrentAddressModel(
+                                                currentAddress.copy(entrance = it)
+                                            )
+                                        })
 
                                 }
 
@@ -280,14 +330,22 @@ fun AddressMapScreen(
                                     PersonalDataItem(
                                         modifier = Modifier.fillMaxWidth(0.5f),
                                         label = "Этаж",
-                                        value = "",
+                                        value = currentAddress.floor,
                                         placeHolder = "",
-                                        onValueChange = { })
+                                        onValueChange = {
+                                            addressMapViewModel.setCurrentAddressModel(
+                                                currentAddress.copy(floor = it)
+                                            )
+                                        })
                                     PersonalDataItem(
                                         label = "Домофон",
-                                        value = "",
+                                        value = currentAddress.intercom,
                                         placeHolder = "",
-                                        onValueChange = { })
+                                        onValueChange = {
+                                            addressMapViewModel.setCurrentAddressModel(
+                                                currentAddress.copy(intercom = it)
+                                            )
+                                        })
                                 }
                             }
                         }
@@ -298,7 +356,8 @@ fun AddressMapScreen(
                     backgroundColor = DomoBlue,
                     modifier = Modifier
                         .padding(horizontal = 22.dp, vertical = 20.dp)
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    onClick = {}
                 )
 
             }

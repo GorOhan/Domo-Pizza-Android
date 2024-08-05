@@ -129,6 +129,7 @@ class MainViewModel @Inject constructor(
                         token = token.token
                     )
                 }
+                .catch {  }
                 .collect { menuItems ->
                     _menu.value = menuItems
                     _showLoading.value = false
@@ -148,9 +149,7 @@ class MainViewModel @Inject constructor(
                     )
                 }
                 .catch { }
-                .collect { it ->
-
-                }
+                .collect()
         }
     }
 

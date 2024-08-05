@@ -25,7 +25,6 @@ class MyAddressViewModel @Inject constructor(
     private val _user: MutableStateFlow<User> = MutableStateFlow(dataStoreService.getUserData())
     val user = _user.asStateFlow()
 
-
     private val _myAddresses: MutableStateFlow<List<Address>> = MutableStateFlow(emptyList())
     val myAddresses = _myAddresses.asStateFlow()
 
@@ -102,44 +101,6 @@ class MyAddressViewModel @Inject constructor(
         })
     }
 
-    fun addAddress(
-        userId: String,
-        newAddress: Address,
-        onSuccess: () -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        val database = FirebaseDatabase.getInstance()
-        val userRef = database.getReference(userId)
-
-        userRef.child("addresses").addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                try {
-                    // Get the current list of addresses
-                    val currentAddresses =
-                        snapshot.children.mapNotNull { it.getValue(Address::class.java) }
-                            .toMutableList()
-
-                    // Add the new address
-                    currentAddresses.add(newAddress)
-
-                    // Update the addresses list in the database
-                    userRef.child("addresses").setValue(currentAddresses)
-                        .addOnSuccessListener {
-                            onSuccess()
-                        }
-                        .addOnFailureListener { exception ->
-                            onFailure(exception)
-                        }
-                } catch (e: Exception) {
-                    onFailure(e)
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                onFailure(error.toException())
-            }
-        })
-    }
 
     fun setEvent(event: MyAddressesEvent){
         _event.value = event

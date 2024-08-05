@@ -54,9 +54,7 @@ class SplashViewModel @Inject constructor(
                                 token = token.token
                             )
                         }
-                    }.catch {
-
-                    }
+                    }.catch {}
                     .collect()
             }
             val firebase = async {
