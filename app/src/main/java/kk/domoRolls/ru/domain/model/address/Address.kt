@@ -13,7 +13,7 @@ data class Address(
     val entrance: String = "",
     val flat: String = "",
     val floor: String = "",
-    val id: String = "",
+    val id: String = "default_id",
     val intercom: String = "",
     val isDefault: Boolean = false,
     val isPrivateHouse: Boolean = false,

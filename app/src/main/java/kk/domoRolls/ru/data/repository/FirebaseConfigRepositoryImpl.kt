@@ -116,6 +116,10 @@ class FirebaseConfigRepositoryImpl(
             }
         )
     }
+
+    override fun getAddressById(id: String): Address? {
+        return _addresses.value.find { it.id == id }
+    }
 }
 
 private fun fetchUserAddresses(

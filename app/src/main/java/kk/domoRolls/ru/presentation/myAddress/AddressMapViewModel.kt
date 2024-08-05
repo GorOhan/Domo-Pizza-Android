@@ -38,6 +38,8 @@ class AddressMapViewModel @Inject constructor(
     private val _currentAddressModel: MutableStateFlow<Address> = MutableStateFlow(Address())
     val currentAddressModel = _currentAddressModel.asStateFlow()
 
+    private val _defaultAddress: MutableStateFlow<Address?> = MutableStateFlow(null)
+    val defaultAddress = _defaultAddress.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -57,8 +59,7 @@ class AddressMapViewModel @Inject constructor(
         _currentAddressModel.value = inputAddress
     }
 
-    fun updateAddress(
-        isAddMode: Boolean = false,
+    fun addAddress(
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
@@ -69,24 +70,21 @@ class AddressMapViewModel @Inject constructor(
             override fun onDataChange(snapshot: DataSnapshot) {
                 try {
                     // Get the current list of addresses
-                    val currentAddresses =
-                        snapshot.children.mapNotNull { it.getValue(Address::class.java) }
+                    val currentAddresses = snapshot.children.mapNotNull { it.getValue(Address::class.java) }
                             .toMutableList()
 
-                    // Add the new address
-                    if (isAddMode){
-                        currentAddresses.add(currentAddressModel.value.copy(
-                            id = UUID.randomUUID().toString()
-                        ))
+                       if (currentAddressModel.value.id.isEmpty()) {
+                           currentAddresses.add(
+                               currentAddressModel.value.copy(
+                                   id = UUID.randomUUID().toString()
+                               )
+                           )
+                       } else {
+                           currentAddresses.removeIf { it.id == currentAddressModel.value.id }
+                           currentAddresses.add(currentAddressModel.value)
 
-                    } else {
-                        currentAddresses.removeIf { it.id == currentAddressModel.value.id }
-                        currentAddresses.add(currentAddressModel.value)
-                    }
+                       }
 
-
-
-                    // Update the addresses list in the database
                     userRef.child("addresses").setValue(currentAddresses)
                         .addOnSuccessListener {
                             firebaseConfigRepository.fetchAddresses()
@@ -104,5 +102,12 @@ class AddressMapViewModel @Inject constructor(
                 onFailure(error.toException())
             }
         })
+    }
+
+    fun setCurrentAddressId(addressId: String) {
+        _defaultAddress.value = firebaseConfigRepository.getAddressById(addressId)
+        _defaultAddress.value?.let {
+            _currentAddressModel.value = it
+        }
     }
 }

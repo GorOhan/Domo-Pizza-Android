@@ -20,7 +20,6 @@ import kk.domoRolls.ru.presentation.registration.RegistrationScreen
 import kk.domoRolls.ru.presentation.registration.RegistrationViewModel
 import kk.domoRolls.ru.presentation.splash.SplashScreen
 import kk.domoRolls.ru.presentation.story.StoryScreen
-import kk.domoRolls.ru.util.parseToAddress
 
 sealed class Screen(val route: String) {
     data object SplashScreen : Screen("splashScreen")
@@ -114,15 +113,13 @@ internal fun NavMain(
             )
         }
 
-        composable(route = "${Screen.AddressMapScreen.route}/{address}",) { backStackEntry ->
+        composable(route = "${Screen.AddressMapScreen.route}/{addressId}",) { backStackEntry ->
             /* Extracting the user object json from the route */
-            val userJson = backStackEntry.arguments?.getString("address")
-            // Convert json string to the User data class object
-            val address = userJson?.parseToAddress()
+            val addressId = backStackEntry.arguments?.getString("addressId")
 
             AddressMapScreen(
                 navController = navController,
-                address = address
+                addressId = addressId
             )
         }
     }

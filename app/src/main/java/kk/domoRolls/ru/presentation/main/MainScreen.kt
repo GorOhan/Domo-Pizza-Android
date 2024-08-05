@@ -107,7 +107,7 @@ fun MainScreen(
             navController.navigate(Screen.MyProfileScreen.route)
         },
         onAddressClick = {
-            navController.navigate("${Screen.AddressMapScreen.route}/${mainViewModel.defaultAddress.value.toJson()}")
+            navController.navigate("${Screen.AddressMapScreen.route}/${mainViewModel.defaultAddress.value.id}")
         }
     )
     val sheetState =

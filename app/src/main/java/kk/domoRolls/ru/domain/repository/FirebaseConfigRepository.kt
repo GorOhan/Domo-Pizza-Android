@@ -23,4 +23,5 @@ interface FirebaseConfigRepository {
     fun getPolygons():StateFlow<List<Polygon>>
     fun getAddresses(): Flow<List<Address>>
     fun fetchAddresses()
+    fun getAddressById(id: String):Address?
 }

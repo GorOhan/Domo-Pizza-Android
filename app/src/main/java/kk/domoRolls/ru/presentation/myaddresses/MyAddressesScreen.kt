@@ -41,7 +41,6 @@ import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
-import kk.domoRolls.ru.util.toJson
 
 
 @Composable
@@ -101,7 +100,7 @@ fun MyAddressesScreenUI(
                 AddressItem(
                     address = it,
                     onEditClick = {
-                      onEvent(MyAddressesEvent.NavigateClick("${Screen.AddressMapScreen.route}/${it.toJson()}"))
+                      onEvent(MyAddressesEvent.NavigateClick("${Screen.AddressMapScreen.route}/${it.id.ifEmpty { null }}"))
                     }
                 )
             }

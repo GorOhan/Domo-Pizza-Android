@@ -47,7 +47,6 @@ import com.yandex.mapkit.geometry.Polygon
 import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.mapview.MapView
-import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.domain.model.address.Coordinate
 import kk.domoRolls.ru.presentation.components.BaseButton
 import kk.domoRolls.ru.presentation.components.DeliveryZonePointer
@@ -66,7 +65,7 @@ val RESTAURANT_COORDINATES = Pair(51.568985, 46.008870)
 @Composable
 fun AddressMapScreen(
     navController: NavHostController,
-    address: Address? = null,
+    addressId: String? = null,
     addressMapViewModel: AddressMapViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -87,9 +86,11 @@ fun AddressMapScreen(
     val focusManager = LocalFocusManager.current
 
     val currentAddress by addressMapViewModel.currentAddressModel.collectAsState()
+    val defaultAddress by addressMapViewModel.defaultAddress.collectAsState()
 
-    if (address != null) {
-        addressMapViewModel.setCurrentAddressModel(address)
+
+    if (addressId != null) {
+        addressMapViewModel.setCurrentAddressId(addressId = addressId)
     }
 
     val yandexCameraListener = CameraListener { _, cameraPosition, _, finished ->
@@ -118,7 +119,7 @@ fun AddressMapScreen(
                         emptyList()
                     )
                 )
-            }?.cost?:0
+            }?.cost ?: 0
 
             performReverseGeocoding(
                 Point(
@@ -152,6 +153,28 @@ fun AddressMapScreen(
             mapView.mapWindow.map.removeCameraListener(yandexCameraListener)
         }
     }
+
+    LaunchedEffect(defaultAddress) {
+        val point = defaultAddress?.let { defaultAddress ->
+            Point(
+                defaultAddress.coordinate.lat, defaultAddress.coordinate.lng
+            )
+        } ?: run {
+            Point(
+                mapData.value.first().coordinates.first().last(),
+                mapData.value.first().coordinates.first().first(),
+            )
+        }
+
+        val zoom = addressId?.let { 17.0f } ?: run { 10.0f }
+
+        mapView.mapWindow.map.move(
+            CameraPosition(point, zoom, 0.0f, 0.0f),
+            Animation(Animation.Type.SMOOTH, 1F),
+            null
+        )
+    }
+
     LaunchedEffect(inOrderMode) {
         with(mapView.mapWindow.map) {
             isRotateGesturesEnabled = inOrderMode
@@ -366,8 +389,7 @@ fun AddressMapScreen(
                         .padding(horizontal = 22.dp, vertical = 20.dp)
                         .fillMaxWidth(),
                     onClick = {
-                        addressMapViewModel.updateAddress(
-                            isAddMode = address==null,
+                        addressMapViewModel.addAddress(
                             onSuccess = { navController.popBackStack() },
                             onFailure = {}
                         )
@@ -395,23 +417,6 @@ fun AddressMapScreen(
                     if (mapData.value.isNotEmpty()) {
                         mapData.value.forEach { currentPolygon ->
                             val polylinePoints = currentPolygon.coordinates
-
-
-                            val point = address?.let { defaultAddress->
-                               Point(defaultAddress.coordinate.lat,defaultAddress.coordinate.lng)
-                            }?:run {
-                                Point(
-                                    polylinePoints.last().last(),
-                                    polylinePoints.last().first(),
-                                    )
-                            }
-
-                            val zoom = address?.let { 17.0f }?:run { 10.0f }
-
-                            mapView.mapWindow.map.move(CameraPosition(point, zoom, 0.0f, 0.0f),
-                                Animation(Animation.Type.SMOOTH, 1F),
-                                null
-                            )
 
                             val polygon = Polygon(
                                 LinearRing(polylinePoints.map { Point(it.last(), it.first()) }),
