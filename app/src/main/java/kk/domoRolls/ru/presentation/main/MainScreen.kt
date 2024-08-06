@@ -61,7 +61,6 @@ import kk.domoRolls.ru.presentation.components.CartButton
 import kk.domoRolls.ru.presentation.components.DomoLoading
 import kk.domoRolls.ru.presentation.components.MenuItemComponent
 import kk.domoRolls.ru.presentation.components.ProductBottomSheet
-import kk.domoRolls.ru.presentation.components.SleepView
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.registration.gridItems
 import kk.domoRolls.ru.presentation.theme.DomoBlue
@@ -80,7 +79,6 @@ fun MainScreen(
     val showLoading by mainViewModel.showLoading.collectAsState()
     val user by mainViewModel.user.collectAsState()
     val categories by mainViewModel.categories.collectAsState()
-    val isOpen by mainViewModel.isOpen.collectAsState()
     val defaultAddress by mainViewModel.defaultAddress.collectAsState()
     val toProfile by mainViewModel.toProfile.collectAsState(initial = false)
     val toAuth by mainViewModel.toAuth.collectAsState(initial = false)
@@ -94,25 +92,39 @@ fun MainScreen(
         if (toAuth) navController.popBackStack()
     }
     MainScreenUI(
-        isOpen = isOpen,
         showLoading = showLoading,
         promoStoryList = promo,
         menu = menu,
         defaultAddress = defaultAddress,
-        onPlusClick = { mainViewModel.addToCart(it) },
-        onMinusClick = { mainViewModel.removeFromCart(it) },
-        onNavigationClick = { navController.navigate(it) },
         categories = categories,
-        onCategoryCheck = { mainViewModel.categoryCheck(it) },
         user = user,
-        onProfileClick = { mainViewModel.handleProfileClick() },
-        onAddressClick = { navController.navigate("${Screen.AddressMapScreen.route}/${mainViewModel.defaultAddress.value.id.ifEmpty { null }}") },
-        onToCartClick = {
-            if (user.id.isNotEmpty()) navController.navigate(Screen.CartScreen.route)
-            else navController.popBackStack()
-        },
-        onHideSleepView = {
-            mainViewModel.hideSleepView()
+        onEvent = {
+            when (it) {
+                MainScreenEvent.BackClick -> {
+                    navController.popBackStack()
+                }
+
+                is MainScreenEvent.NavigateClick -> {
+                    navController.navigate(it.route)
+                }
+
+                MainScreenEvent.Nothing -> {}
+                is MainScreenEvent.AddToCart -> {
+                    mainViewModel.addToCart(it.menuItem)
+                }
+
+                is MainScreenEvent.RemoveFromCart -> {
+                    mainViewModel.removeFromCart(it.menuItem)
+                }
+
+                is MainScreenEvent.CategoryCheck -> {
+                    mainViewModel.categoryCheck(it.category)
+                }
+
+                MainScreenEvent.ProfileClick -> {
+                    mainViewModel.handleProfileClick()
+                }
+            }
         }
     )
 }
@@ -121,21 +133,13 @@ fun MainScreen(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreenUI(
-    isOpen: Boolean = false,
     showLoading: Boolean = false,
     promoStoryList: List<PromoStory> = emptyList(),
     menu: List<MenuItem> = emptyList(),
-    onMinusClick: (MenuItem) -> Unit = {},
-    onPlusClick: (MenuItem) -> Unit = {},
-    onNavigationClick: (String) -> Unit = {},
     categories: List<ItemCategory> = emptyList(),
-    onCategoryCheck: (ItemCategory) -> Unit = {},
     user: User = User(),
     defaultAddress: Address = Address(),
-    onProfileClick: () -> Unit = {},
-    onAddressClick: () -> Unit = {},
-    onToCartClick: () -> Unit = {},
-    onHideSleepView: () -> Unit = {},
+    onEvent: (MainScreenEvent) -> Unit = {},
 ) {
     val insets = WindowInsets.statusBars
     val statusBarHeight = insets.asPaddingValues().calculateTopPadding()
@@ -163,8 +167,8 @@ fun MainScreenUI(
             ProductBottomSheet(
                 menuItem = currentItem,
                 menu = menu,
-                onMinusClick = { onMinusClick(currentItem) },
-                onPlusClick = { onPlusClick(currentItem) }
+                onMinusClick = { onEvent(MainScreenEvent.RemoveFromCart(currentItem)) },
+                onPlusClick = { onEvent(MainScreenEvent.AddToCart(currentItem)) }
             )
         }
     }
@@ -178,7 +182,7 @@ fun MainScreenUI(
             val thresholdIndex = index + (accumulatedSize + categorySize) / 2
 
             if (menuState.firstVisibleItemIndex == thresholdIndex && !isCategoryClicked.value) {
-                onCategoryCheck.invoke(category)
+                onEvent(MainScreenEvent.CategoryCheck(category))
             }
 
             accumulatedSize += categorySize
@@ -200,7 +204,10 @@ fun MainScreenUI(
                     .zIndex(1f)
                     .align(Alignment.BottomCenter),
                 backgroundColor = DomoBlue,
-                onClick = { onToCartClick() }
+                onClick = {
+                    if (user.id.isNotEmpty()) onEvent(MainScreenEvent.NavigateClick(Screen.CartScreen.route))
+                    else onEvent(MainScreenEvent.BackClick)
+                }
             )
         }
 
@@ -228,7 +235,9 @@ fun MainScreenUI(
                         ) {
                             Text(
                                 modifier = Modifier
-                                    .clickable { onAddressClick() },
+                                    .clickable {
+                                        onEvent(MainScreenEvent.NavigateClick("${Screen.AddressMapScreen.route}/${defaultAddress.id.ifEmpty { null }}"))
+                                    },
                                 text = defaultAddress.street,
                                 overflow = TextOverflow.Ellipsis,
 
@@ -248,7 +257,7 @@ fun MainScreenUI(
                     Image(
                         modifier = Modifier
                             .size(32.dp)
-                            .clickable { onProfileClick() },
+                            .clickable { onEvent(MainScreenEvent.ProfileClick) },
                         painter = painterResource(id = R.drawable.ic_profile),
                         contentDescription = ""
                     )
@@ -258,7 +267,7 @@ fun MainScreenUI(
             item {
                 StorySection(
                     promoStory = promoStoryList,
-                    onNavigationClick = onNavigationClick
+                    onNavigationClick = { onEvent(MainScreenEvent.NavigateClick(it)) }
                 )
             }
 
@@ -290,7 +299,7 @@ fun MainScreenUI(
                                 )
                                 .clickable {
                                     isCategoryClicked.value = true
-                                    onCategoryCheck(item)
+                                    onEvent(MainScreenEvent.CategoryCheck(item))
                                     coroutineScope.launch {
                                         menuState.animateScrollToItem(
                                             index = (menu.indexOfFirst {
@@ -337,8 +346,8 @@ fun MainScreenUI(
                 gridItems(menu.filter { it.categoryId == category.id }, nColumns = 2) { item ->
                     MenuItemComponent(
                         menuItem = item,
-                        onMinusClick = { onMinusClick(item) },
-                        onPlusClick = { onPlusClick(item) },
+                        onMinusClick = { onEvent(MainScreenEvent.RemoveFromCart(item)) },
+                        onPlusClick = { onEvent(MainScreenEvent.AddToCart(item)) },
                         onProductClick = {
                             showBottomSheet = true
                             currentItem = item
@@ -354,11 +363,6 @@ fun MainScreenUI(
             DomoLoading()
         }
 
-        if (!isOpen) {
-            SleepView(
-                seeMenuClick = { onHideSleepView() }
-            )
-        }
     }
 }
 
@@ -396,4 +400,14 @@ fun MainScreenPreview() {
     DomoTheme {
         MainScreenUI()
     }
+}
+
+sealed class MainScreenEvent {
+    data class CategoryCheck(val category: ItemCategory) : MainScreenEvent()
+    data class RemoveFromCart(val menuItem: MenuItem) : MainScreenEvent()
+    data class AddToCart(val menuItem: MenuItem) : MainScreenEvent()
+    data class NavigateClick(val route: String) : MainScreenEvent()
+    data object ProfileClick : MainScreenEvent()
+    data object BackClick : MainScreenEvent()
+    data object Nothing : MainScreenEvent()
 }
