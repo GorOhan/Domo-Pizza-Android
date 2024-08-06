@@ -73,7 +73,12 @@ fun String.parseToGiftProduct(): GiftProduct? {
 }
 
 fun String.parseToMapData(): List<Polygon>? {
-    return Gson().fromJson(this, Array<Polygon>::class.java).toList()
+    return try {
+        Gson().fromJson(this, Array<Polygon>::class.java).toList()
+
+    } catch (e: Exception) {
+        null
+    }
 }
 
 
