@@ -111,6 +111,9 @@ fun MyAddressesScreenUI(
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .fillMaxWidth()
+                    .clickable {
+                        onEvent(MyAddressesEvent.NavigateClick("${Screen.AddressMapScreen.route}/${null}"))
+                    },
             ) {
                 Divider(
                     modifier = Modifier
@@ -121,10 +124,7 @@ fun MyAddressesScreenUI(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp)
-                        .clickable {
-                            onEvent(MyAddressesEvent.NavigateClick("${Screen.AddressMapScreen.route}/${null}"))
-                        },
+                        .padding(20.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
