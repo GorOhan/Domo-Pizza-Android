@@ -41,7 +41,7 @@ fun OTPScreen(
     navController: NavController,
     registrationViewModel: RegistrationViewModel,
 ) {
-    val loginUser by registrationViewModel.navigateToMain.collectAsState()
+    val loginUser by registrationViewModel.navigateToMain.collectAsState(false)
 
     LaunchedEffect(loginUser) {
         if (loginUser) navController.navigate(Screen.NotifyPermissionScreen.route)

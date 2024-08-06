@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -25,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,7 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import kk.domoRolls.ru.data.model.order.MenuItem
+import kk.domoRolls.ru.R
 import kk.domoRolls.ru.presentation.components.BaseButton
 import kk.domoRolls.ru.presentation.html.HTMLScreenType
 import kk.domoRolls.ru.presentation.navigation.Screen
@@ -68,6 +70,9 @@ fun RegistrationScreen(
         onUserPhoneInput = { viewModel.onUserPhoneInput(it) },
         onTermsNav = {
             navController.navigate("${Screen.HTMLScreen.route}/${HTMLScreenType.TERMS.name}")
+        },
+        onMainNav = {
+            navController.navigate(Screen.MainScreen.route)
         }
     )
 }
@@ -81,6 +86,7 @@ fun RegistrationScreenUI(
     onUserNameInput: (String) -> Unit = {},
     onUserPhoneInput: (String) -> Unit = {},
     onTermsNav: () -> Unit = {},
+    onMainNav: () -> Unit = {}
 ) {
     val userName by userNameState.collectAsState()
     val phone by userPhoneState.collectAsState()
@@ -92,8 +98,20 @@ fun RegistrationScreenUI(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(22.dp)
+        ) {
+            Icon(
+                tint = DomoGray,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .clickable { onMainNav.invoke() },
+                painter = painterResource(id = R.drawable.ic_close),
+                contentDescription = "")
+        }
         Text(
-            modifier = Modifier.padding(top = 70.dp),
             text = "Регистрация",
             fontSize = 20.sp,
             fontFamily = InterFont
@@ -157,7 +175,7 @@ fun RegistrationScreenUI(
                 unfocusedPlaceholderColor = DomoGray,
                 focusedTextColor = Color.Black,
                 focusedPlaceholderColor = DomoGray,
-                ),
+            ),
             textStyle = MaterialTheme.typography.titleSmall,
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             singleLine = true,

@@ -16,7 +16,9 @@ import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.isWorkingTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -54,6 +56,12 @@ class MainViewModel @Inject constructor(
 
     private val _defaultAddress: MutableStateFlow<Address> = MutableStateFlow(Address(privateHouse = false))
     val defaultAddress = _defaultAddress.asStateFlow()
+
+    private val _toProfile: MutableSharedFlow<Boolean> = MutableSharedFlow()
+    val toProfile = _toProfile.asSharedFlow()
+
+    private val _toAuth: MutableSharedFlow<Boolean> = MutableSharedFlow()
+    val toAuth = _toAuth.asSharedFlow()
 
     init {
 
@@ -167,5 +175,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
-
+    fun handleProfileClick(){
+        viewModelScope.launch {
+            _toProfile.emit(dataStoreService.getUserData().id.isNotEmpty())
+            _toAuth.emit(dataStoreService.getUserData().id.isEmpty())
+        }
+    }
 }

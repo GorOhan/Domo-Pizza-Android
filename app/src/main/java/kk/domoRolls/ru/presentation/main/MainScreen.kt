@@ -82,28 +82,39 @@ fun MainScreen(
     val categories by mainViewModel.categories.collectAsState()
     val isOpen by mainViewModel.isOpen.collectAsState()
     val defaultAddress by mainViewModel.defaultAddress.collectAsState()
+    val toProfile by mainViewModel.toProfile.collectAsState(initial = false)
+    val toAuth by mainViewModel.toAuth.collectAsState(initial = false)
 
-        MainScreenUI(
-            isOpen = isOpen,
-            showLoading = showLoading,
-            promoStoryList = promo,
-            menu = menu,
-            defaultAddress = defaultAddress,
-            onPlusClick = { mainViewModel.addToCart(it) },
-            onMinusClick = { mainViewModel.removeFromCart(it) },
-            onNavigationClick = { navController.navigate(it) },
-            categories = categories,
-            onCategoryCheck = { mainViewModel.categoryCheck(it) },
-            user = user,
-            onProfileClick = { navController.navigate(Screen.MyProfileScreen.route) },
-            onAddressClick = { navController.navigate("${Screen.AddressMapScreen.route}/${mainViewModel.defaultAddress.value.id.ifEmpty { null }}") },
-            onToCartClick = {
-                navController.navigate(Screen.CartScreen.route)
-            },
-            onHideSleepView = {
-                mainViewModel.hideSleepView()
-            }
-        )
+
+    LaunchedEffect(toProfile) {
+        if (toProfile) navController.navigate(Screen.MyProfileScreen.route)
+    }
+
+    LaunchedEffect(toAuth) {
+        if (toAuth) navController.popBackStack()
+    }
+    MainScreenUI(
+        isOpen = isOpen,
+        showLoading = showLoading,
+        promoStoryList = promo,
+        menu = menu,
+        defaultAddress = defaultAddress,
+        onPlusClick = { mainViewModel.addToCart(it) },
+        onMinusClick = { mainViewModel.removeFromCart(it) },
+        onNavigationClick = { navController.navigate(it) },
+        categories = categories,
+        onCategoryCheck = { mainViewModel.categoryCheck(it) },
+        user = user,
+        onProfileClick = { mainViewModel.handleProfileClick() },
+        onAddressClick = { navController.navigate("${Screen.AddressMapScreen.route}/${mainViewModel.defaultAddress.value.id.ifEmpty { null }}") },
+        onToCartClick = {
+            if (user.id.isNotEmpty()) navController.navigate(Screen.CartScreen.route)
+            else navController.popBackStack()
+        },
+        onHideSleepView = {
+            mainViewModel.hideSleepView()
+        }
+    )
 }
 
 
@@ -222,14 +233,16 @@ fun MainScreenUI(
                                 overflow = TextOverflow.Ellipsis,
 
                                 )
-                            Icon(
-                                modifier = Modifier
-                                    .padding(start = 4.dp)
-                                    .size(8.dp),
-                                painter = painterResource(id = R.drawable.ic_nav),
-                                contentDescription = "",
-                                tint = DomoBlue
-                            )
+                            if (user.id.isNotEmpty()) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(start = 4.dp)
+                                        .size(8.dp),
+                                    painter = painterResource(id = R.drawable.ic_nav),
+                                    contentDescription = "",
+                                    tint = DomoBlue
+                                )
+                            }
                         }
                     }
                     Image(
@@ -381,6 +394,6 @@ fun StorySection(
 @Composable
 fun MainScreenPreview() {
     DomoTheme {
-         MainScreenUI()
+        MainScreenUI()
     }
 }

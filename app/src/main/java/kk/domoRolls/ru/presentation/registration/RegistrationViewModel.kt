@@ -13,8 +13,10 @@ import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.AuthRepository
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -48,8 +50,8 @@ class RegistrationViewModel @Inject constructor(
     private val _otpLength: MutableStateFlow<Int> = MutableStateFlow(6)
     val otpLength = _otpLength.asStateFlow()
 
-    private val _navigateToMain: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val navigateToMain = _navigateToMain.asStateFlow()
+    private val _navigateToMain: MutableSharedFlow<Boolean> = MutableSharedFlow()
+    val navigateToMain = _navigateToMain.asSharedFlow()
 
     private val _isOtpError: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isOtpError = _isOtpError.asStateFlow()
@@ -74,6 +76,7 @@ class RegistrationViewModel @Inject constructor(
                 .collect()
         }
     }
+
     val isReadyToSendOtp =
         combine(
             _userName,
@@ -117,9 +120,7 @@ class RegistrationViewModel @Inject constructor(
                 .onEach {
                     _token.value = it.token
                 }
-                .catch {
-
-                }
+                .catch {}
                 .collect()
         }
     }
@@ -165,11 +166,15 @@ class RegistrationViewModel @Inject constructor(
                 isExistUser(phone = _phoneNumber.value) { id ->
                     if (id == null) {
                         saveUser {
-                            _navigateToMain.value = true
+                            viewModelScope.launch {
+                                _navigateToMain.emit(true)
+                            }
                         }
                     } else {
                         fillUser(id) {
-                            _navigateToMain.value = true
+                            viewModelScope.launch {
+                                _navigateToMain.emit(true)
+                            }
                         }
                     }
                 }
