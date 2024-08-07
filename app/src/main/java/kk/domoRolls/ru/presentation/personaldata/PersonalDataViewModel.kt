@@ -62,7 +62,7 @@ class PersonalDataViewModel @Inject constructor(
 
     }
 
-    fun saveChanges() {
+    private fun saveChanges() {
         // Reference to the user's data
 
         val userId = dataStoreService.getUserData().id

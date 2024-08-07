@@ -148,11 +148,8 @@ class CartViewModel @Inject constructor(
                 inputPromo(event.input)
             }
 
-            Event.BackClick,
-            Event.ConfirmOrder,
-            Event.Nothing,
-            Event.LogOut,
-            is Event.NavigateClick -> {}
+            Event.BackClick, Event.ConfirmOrder, Event.Nothing,
+            Event.LogOut, is Event.NavigateClick -> {}
         }
     }
 }

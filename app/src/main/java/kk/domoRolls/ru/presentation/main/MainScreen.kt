@@ -31,6 +31,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,7 +69,6 @@ import kk.domoRolls.ru.presentation.theme.DomoTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun MainScreen(
     navController: NavHostController,
@@ -83,7 +83,6 @@ fun MainScreen(
     val toProfile by mainViewModel.toProfile.collectAsState(initial = false)
     val toAuth by mainViewModel.toAuth.collectAsState(initial = false)
 
-
     LaunchedEffect(toProfile) {
         if (toProfile) navController.navigate(Screen.MyProfileScreen.route)
     }
@@ -91,6 +90,7 @@ fun MainScreen(
     LaunchedEffect(toAuth) {
         if (toAuth) navController.popBackStack()
     }
+
     MainScreenUI(
         showLoading = showLoading,
         promoStoryList = promo,
@@ -174,7 +174,7 @@ fun MainScreenUI(
     }
 
 
-    LaunchedEffect(key1 = menuState.firstVisibleItemIndex) {
+    LaunchedEffect(key1 = remember { derivedStateOf { menuState.firstVisibleItemIndex } }) {
         var accumulatedSize = 0
 
         categories.forEachIndexed { index, category ->

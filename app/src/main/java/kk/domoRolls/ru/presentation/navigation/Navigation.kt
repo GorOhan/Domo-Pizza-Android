@@ -114,7 +114,6 @@ internal fun NavMain(
         }
 
         composable(route = "${Screen.AddressMapScreen.route}/{addressId}",) { backStackEntry ->
-            /* Extracting the user object json from the route */
             val addressId = backStackEntry.arguments?.getString("addressId")
 
             AddressMapScreen(
