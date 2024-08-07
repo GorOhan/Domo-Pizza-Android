@@ -50,6 +50,14 @@ fun MyOrdersScreen(
 
     MyOrdersScreenUI(
         orders = orders.value,
+        onEvent = {
+            when(it){
+                MyOrdersEvent.BackClick -> {
+                    navController.popBackStack()
+                }
+                else -> {}
+            }
+        },
         findImages = { ids ->
             myOrdersViewModel.getImagesUrls(ids)
         }
@@ -59,6 +67,7 @@ fun MyOrdersScreen(
 @Composable
 fun MyOrdersScreenUI(
     orders: List<Order>,
+    onEvent:(MyOrdersEvent)->Unit = {},
     findImages:(List<String?>)->List<String> = {_-> emptyList() }
 ) {
 
@@ -67,7 +76,9 @@ fun MyOrdersScreenUI(
         topBar = {
             DomoToolbar(
                 title = "Мои заказы",
-                onBackClick = {}
+                onBackClick = {
+                    onEvent(MyOrdersEvent.BackClick)
+                }
             )
         },
         bottomBar = {},
@@ -211,9 +222,9 @@ fun OrderItem(
 
 }
 
-sealed class MyAddressesEvent {
-    data class UpdateAddress(val address: Address) : MyAddressesEvent()
-    data class NavigateClick(val route: String) : MyAddressesEvent()
-    data object BackClick : MyAddressesEvent()
-    data object Nothing : MyAddressesEvent()
+sealed class MyOrdersEvent {
+    data class UpdateAddress(val address: Address) : MyOrdersEvent()
+    data class NavigateClick(val route: String) : MyOrdersEvent()
+    data object BackClick : MyOrdersEvent()
+    data object Nothing : MyOrdersEvent()
 }

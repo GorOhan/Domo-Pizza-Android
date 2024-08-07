@@ -174,7 +174,7 @@ fun MainScreenUI(
     }
 
 
-    LaunchedEffect(key1 = remember { derivedStateOf { menuState.firstVisibleItemIndex } }) {
+    LaunchedEffect(key1 =   menuState.firstVisibleItemIndex) {
         var accumulatedSize = 0
 
         categories.forEachIndexed { index, category ->
