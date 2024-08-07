@@ -113,7 +113,9 @@ fun MyProfileScreenUI(
         )
         MyOrdersAndAddresses(
             addressCount = addressCount.value,
-            onClick = { onClick(Event.NavigateClick(Screen.MyAddressesScreen.route))}
+            onMyAddressClick = { onClick(Event.NavigateClick(Screen.MyAddressesScreen.route)) },
+            onMyOrdersClick = { onClick(Event.NavigateClick(Screen.MyOrdersScreen.route)) }
+
         )
         MyGiftsView(
             modifier = Modifier.padding(horizontal = 22.dp, vertical = 20.dp),
@@ -295,19 +297,17 @@ fun MyInfo(
 
 @Composable
 fun MyOrdersAndAddresses(
-    addressCount:Int,
-    onClick: () -> Unit,
+    addressCount: Int,
+    onMyAddressClick: () -> Unit = {},
+    onMyOrdersClick: () -> Unit = {}
+
 ) {
 
     val buttonInteractionSource = remember { MutableInteractionSource() }
-    val buttonPressed by buttonInteractionSource.collectIsPressedAsState()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 22.dp, end = 22.dp, top = 10.dp)
-            .clickable {
-                onClick()
-            },
+            .padding(start = 22.dp, end = 22.dp, top = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween
 
     ) {
@@ -321,7 +321,10 @@ fun MyOrdersAndAddresses(
                 }
                 .padding(end = 8.dp)
                 .fillMaxWidth(0.5f)
-                .background(DomoBorder, RoundedCornerShape(20.dp)),
+                .background(DomoBorder, RoundedCornerShape(20.dp))
+                .clickable {
+                    onMyOrdersClick()
+                },
         ) {
             Text(
                 modifier = Modifier.padding(start = 20.dp, top = 20.dp),
@@ -340,7 +343,10 @@ fun MyOrdersAndAddresses(
             modifier = Modifier
                 .padding(start = 8.dp)
                 .fillMaxWidth()
-                .background(DomoBorder, RoundedCornerShape(20.dp)),
+                .background(DomoBorder, RoundedCornerShape(20.dp))
+                .clickable {
+                    onMyAddressClick()
+                },
         ) {
             Text(
                 modifier = Modifier.padding(start = 20.dp, top = 20.dp),

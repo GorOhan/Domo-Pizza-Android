@@ -19,5 +19,4 @@ interface AuthApi {
         @Body sendOTPRequest: SendOTPRequest,
         @Header("Authorization") token: String,
         ): SendOTPResponse
-
 }

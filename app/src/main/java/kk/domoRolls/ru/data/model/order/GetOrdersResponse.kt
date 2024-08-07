@@ -1,58 +1,59 @@
 package kk.domoRolls.ru.data.model.order
 
 import com.google.gson.annotations.SerializedName
+import kk.domoRolls.ru.domain.model.address.Address
 
 data class GetOrdersResponse(
     @SerializedName("correlationId")
-    val correlationId: String,
+    val correlationId: String?,
     @SerializedName("ordersByOrganizations")
-    val ordersByOrganizations: List<OrdersByOrganizations>
+    val ordersByOrganizations: List<OrdersByOrganizations>?
 )
 
 data class OrdersByOrganizations(
     @SerializedName("organizationId")
-    val organizationId: String,
+    val organizationId: String?,
     @SerializedName("orders")
-    val orders: List<Order>
+    val orders: List<Order>?
 )
 
 data class Order(
     @SerializedName("id")
-    val id: String,
+    val id: String?,
     @SerializedName("order")
-    val orderItem: OrderItem
+    val orderItem: OrderItem?
 )
 
 data class OrderItem(
     @SerializedName("items")
-    val id: List<OrderMenuItem>,
+    val items: List<OrderMenuItem>?,
     @SerializedName("deliveryPoint")
-    val deliveryPoint: DeliveryPoint,
+    val deliveryPoint: DeliveryPoint?,
     @SerializedName("status")
-    val status: String,
+    val status: String?,
     @SerializedName("sum")
-    val sum: Double,
+    val sum: Double?,
     )
 
 data class OrderMenuItem(
     @SerializedName("product")
-    val product: Product,
+    val product: Product?,
     @SerializedName("amount")
-    val amount: Double,
+    val amount: Double?,
 
 
     )
 
 data class DeliveryPoint(
     @SerializedName("coordinates")
-    val coordinates: Coordinates,
+    val coordinates: Coordinates?,
 )
 
 data class Coordinates(
     @SerializedName("latitude")
-    val latitude: Double,
+    val latitude: Double?,
     @SerializedName("longitude")
-    val longitude: Double,
+    val longitude: Double?,
 )
 
 data class Product(

@@ -1,5 +1,6 @@
 package kk.domoRolls.ru.presentation.navigation
 
+import MyOrdersScreen
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
@@ -34,6 +35,8 @@ sealed class Screen(val route: String) {
     data object PersonalDataScreen: Screen("personalDataScreen")
     data object MyAddressesScreen: Screen("myAddressesScreen")
     data object AddressMapScreen: Screen("addressMapScreen")
+    data object MyOrdersScreen: Screen("myOrdersScreen")
+
 }
 
 @Composable
@@ -119,6 +122,12 @@ internal fun NavMain(
             AddressMapScreen(
                 navController = navController,
                 addressId = addressId
+            )
+        }
+
+        composable(route = Screen.MyOrdersScreen.route) {
+            MyOrdersScreen(
+                navController = navController
             )
         }
     }
