@@ -31,7 +31,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,10 +54,12 @@ import coil.compose.AsyncImage
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
+import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.domain.model.PromoStory
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.presentation.components.CartButton
+import kk.domoRolls.ru.presentation.components.CurrentOrder
 import kk.domoRolls.ru.presentation.components.DomoLoading
 import kk.domoRolls.ru.presentation.components.MenuItemComponent
 import kk.domoRolls.ru.presentation.components.ProductBottomSheet
@@ -82,6 +83,7 @@ fun MainScreen(
     val defaultAddress by mainViewModel.defaultAddress.collectAsState()
     val toProfile by mainViewModel.toProfile.collectAsState(initial = false)
     val toAuth by mainViewModel.toAuth.collectAsState(initial = false)
+    val currentOrders by mainViewModel.myOrders.collectAsState()
 
     LaunchedEffect(toProfile) {
         if (toProfile) navController.navigate(Screen.MyProfileScreen.route)
@@ -93,6 +95,7 @@ fun MainScreen(
 
     MainScreenUI(
         showLoading = showLoading,
+        currentOrders = currentOrders,
         promoStoryList = promo,
         menu = menu,
         defaultAddress = defaultAddress,
@@ -134,6 +137,7 @@ fun MainScreen(
 @Composable
 fun MainScreenUI(
     showLoading: Boolean = false,
+    currentOrders: List<Order> = emptyList(),
     promoStoryList: List<PromoStory> = emptyList(),
     menu: List<MenuItem> = emptyList(),
     categories: List<ItemCategory> = emptyList(),
@@ -271,6 +275,15 @@ fun MainScreenUI(
                 )
             }
 
+            if (currentOrders.isNotEmpty()) {
+                currentOrders.forEach { it->
+                    item {
+                        CurrentOrder(it){
+                            onEvent(MainScreenEvent.NavigateClick("${Screen.OrderStatusScreen.route}/${it.id}"))
+                        }
+                    }
+                }
+            }
             stickyHeader {
                 val rowState = rememberLazyListState()
 

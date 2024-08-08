@@ -7,6 +7,7 @@ import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.GetOrdersRequest
 import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
+import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.PromoStory
@@ -54,7 +55,8 @@ class MainViewModel @Inject constructor(
     private val _isOpen: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val isOpen = _isOpen.asStateFlow()
 
-    private val _defaultAddress: MutableStateFlow<Address> = MutableStateFlow(Address(privateHouse = false))
+    private val _defaultAddress: MutableStateFlow<Address> =
+        MutableStateFlow(Address(privateHouse = false))
     val defaultAddress = _defaultAddress.asStateFlow()
 
     private val _toProfile: MutableSharedFlow<Boolean> = MutableSharedFlow()
@@ -62,6 +64,9 @@ class MainViewModel @Inject constructor(
 
     private val _toAuth: MutableSharedFlow<Boolean> = MutableSharedFlow()
     val toAuth = _toAuth.asSharedFlow()
+
+    private val _myOrders: MutableStateFlow<List<Order>> = MutableStateFlow(emptyList())
+    val myOrders = _myOrders.asStateFlow()
 
     init {
 
@@ -151,7 +156,7 @@ class MainViewModel @Inject constructor(
                         token = token.token
                     )
                 }
-                .catch {  }
+                .catch { }
                 .collect { menuItems ->
                     _menu.value = menuItems
                     _showLoading.value = false
@@ -165,17 +170,23 @@ class MainViewModel @Inject constructor(
                 .flatMapConcat { token ->
                     serviceRepository.getOrders(
                         getOrdersRequest = GetOrdersRequest(
-                            phone = "+7${_user.value.phone}"
+                            phone = "+79271266306"
+//                                    phone = "+7${_user.value.phone}"
                         ),
                         token = token.token
                     )
+                }
+                .onEach {
+                    it?.ordersByOrganizations?.first()?.orders?.let {
+                        _myOrders.value = it
+                    }
                 }
                 .catch { }
                 .collect()
         }
     }
 
-    fun handleProfileClick(){
+    fun handleProfileClick() {
         viewModelScope.launch {
             _toProfile.emit(dataStoreService.getUserData().id.isNotEmpty())
             _toAuth.emit(dataStoreService.getUserData().id.isEmpty())

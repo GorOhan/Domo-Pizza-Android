@@ -18,9 +18,9 @@ data class OrdersByOrganizations(
 
 data class Order(
     @SerializedName("id")
-    val id: String?,
+    val id: String? = null,
     @SerializedName("order")
-    val orderItem: OrderItem?
+    val orderItem: OrderItem? = null
 )
 
 data class OrderItem(

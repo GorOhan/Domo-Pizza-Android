@@ -74,7 +74,7 @@ class MyProfileViewModel @Inject constructor(
                         token = token.token
                     )
                 }.onEach { it ->
-                    it.ordersByOrganizations?.first()?.orders?.let {
+                    it?.ordersByOrganizations?.first()?.orders?.let {
                         _myOrdersCount.value = it.size
                     }
                 }

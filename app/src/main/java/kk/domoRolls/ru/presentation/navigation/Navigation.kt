@@ -15,6 +15,7 @@ import kk.domoRolls.ru.presentation.main.MainScreen
 import kk.domoRolls.ru.presentation.myAddress.AddressMapScreen
 import kk.domoRolls.ru.presentation.myaddresses.MyAddressesScreen
 import kk.domoRolls.ru.presentation.myprofile.MyProfileScreen
+import kk.domoRolls.ru.presentation.orderstatus.OrderStatusScreen
 import kk.domoRolls.ru.presentation.personaldata.PersonalDataScreen
 import kk.domoRolls.ru.presentation.registration.OTPScreen
 import kk.domoRolls.ru.presentation.registration.RegistrationScreen
@@ -32,11 +33,11 @@ sealed class Screen(val route: String) {
     data object StoryScreen : Screen("storyScreen")
     data object CartScreen : Screen("cartScreen")
     data object MyProfileScreen : Screen("myProfileScreen")
-    data object PersonalDataScreen: Screen("personalDataScreen")
-    data object MyAddressesScreen: Screen("myAddressesScreen")
-    data object AddressMapScreen: Screen("addressMapScreen")
-    data object MyOrdersScreen: Screen("myOrdersScreen")
-
+    data object PersonalDataScreen : Screen("personalDataScreen")
+    data object MyAddressesScreen : Screen("myAddressesScreen")
+    data object AddressMapScreen : Screen("addressMapScreen")
+    data object MyOrdersScreen : Screen("myOrdersScreen")
+    data object OrderStatusScreen : Screen("orderStatusScreen")
 }
 
 @Composable
@@ -64,14 +65,16 @@ internal fun NavMain(
             )
         }
 
-        composable(route = "${Screen.HTMLScreen.route}/{screenType}",
+        composable(
+            route = "${Screen.HTMLScreen.route}/{screenType}",
             arguments = listOf(
-                navArgument("screenType") { type = NavType.StringType}),
-            ) {backStackEntry ->
+                navArgument("screenType") { type = NavType.StringType }),
+        ) { backStackEntry ->
             val enumArgument = backStackEntry.arguments?.getString("screenType")
 
             HtmlScreen(
-                htmlScreenType = enumArgument?.let { HTMLScreenType.valueOf(it) }?:run { HTMLScreenType.TERMS }
+                htmlScreenType = enumArgument?.let { HTMLScreenType.valueOf(it) }
+                    ?: run { HTMLScreenType.TERMS }
             )
         }
 
@@ -116,7 +119,7 @@ internal fun NavMain(
             )
         }
 
-        composable(route = "${Screen.AddressMapScreen.route}/{addressId}",) { backStackEntry ->
+        composable(route = "${Screen.AddressMapScreen.route}/{addressId}") { backStackEntry ->
             val addressId = backStackEntry.arguments?.getString("addressId")
 
             AddressMapScreen(
@@ -127,6 +130,15 @@ internal fun NavMain(
 
         composable(route = Screen.MyOrdersScreen.route) {
             MyOrdersScreen(
+                navController = navController
+            )
+        }
+
+        composable(route = "${Screen.OrderStatusScreen.route}/{orderId}") { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getString("orderId")
+
+            OrderStatusScreen(
+                orderId = orderId ?: "",
                 navController = navController
             )
         }

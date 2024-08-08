@@ -8,6 +8,7 @@ import kk.domoRolls.ru.data.model.order.GetStreetsRequest
 import kk.domoRolls.ru.data.model.order.GetStreetsResponse
 import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
+import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.model.order.ServiceTokenResponse
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +30,9 @@ interface ServiceRepository {
     fun removeFromCart(menuItem: MenuItem)
     fun getCategories(): Flow<List<ItemCategory>>
 
-    fun getOrders(getOrdersRequest: GetOrdersRequest, token: String): Flow<GetOrdersResponse>
+    fun getOrders(getOrdersRequest: GetOrdersRequest, token: String): Flow<GetOrdersResponse?>
+
+    fun getOrderById(id: String):Order?
 
 
 }

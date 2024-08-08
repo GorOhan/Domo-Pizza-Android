@@ -10,13 +10,10 @@ import kk.domoRolls.ru.data.model.order.GetStreetsRequest
 import kk.domoRolls.ru.data.model.order.GetStreetsResponse
 import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
+import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.domain.repository.ServiceRepository
-import kk.domoRolls.ru.util.getCurrentWeekdayInRussian
-import kk.domoRolls.ru.util.isWorkingTime
 import kk.domoRolls.ru.util.parseToListString
-import kk.domoRolls.ru.util.parseToPromos
-import kk.domoRolls.ru.util.parseToWorkingHours
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -31,6 +28,7 @@ class ServiceRepositoryImpl(
 
     private val hotItems: MutableList<String> = mutableListOf()
     private val newItems: MutableList<String> = mutableListOf()
+    private val currentOrders:MutableStateFlow<GetOrdersResponse?> = MutableStateFlow(null)
 
 
     init {
@@ -131,9 +129,19 @@ class ServiceRepositoryImpl(
     override fun getOrders(
         getOrdersRequest: GetOrdersRequest,
         token: String
-    ): Flow<GetOrdersResponse> = emitFlow {
-        val orders = serviceApi.getOrders(getOrdersRequest, token = "Bearer $token")
-        return@emitFlow orders
+    ): Flow<GetOrdersResponse?> = emitFlow {
+
+        return@emitFlow currentOrders.value?.let {
+            currentOrders.value
+        }?:run {
+            val orders = serviceApi.getOrders(getOrdersRequest, token = "Bearer $token")
+            currentOrders.value = orders
+            currentOrders.value
+        }
+    }
+
+    override fun getOrderById(id: String): Order? {
+        return currentOrders.value?.ordersByOrganizations?.first()?.orders?.find { it.id == id }
     }
 
 

@@ -61,7 +61,7 @@ class MyOrdersViewModel @Inject constructor(
                         token = token.token
                     )
                 }.onEach { it ->
-                    it.ordersByOrganizations?.first()?.orders?.let {
+                    it?.ordersByOrganizations?.first()?.orders?.let {
                         _myOrders.value = it
                     }
                 }
