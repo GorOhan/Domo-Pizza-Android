@@ -166,3 +166,15 @@ fun performGeocoding(search: String, map: Map, onResult: (Point?) -> Unit) {
 
 }
 
+fun String.formatToOrderType(): String {
+    // Define the input and output date formats
+    val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+    val outputFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+
+    // Parse the input date string
+    val date = inputFormat.parse(this)
+
+    // Format the date into the output format
+    return outputFormat.format(date)
+}
+

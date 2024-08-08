@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
-import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.presentation.components.BaseButton
@@ -39,6 +38,7 @@ import kk.domoRolls.ru.presentation.myorders.MyOrdersViewModel
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
+import kk.domoRolls.ru.util.formatToOrderType
 
 
 @Composable
@@ -138,7 +138,7 @@ fun OrderItem(
                 )
 
                 Text(
-                    text = "01 Апреля 2024",
+                    text = order.orderItem?.whenCreated?.formatToOrderType()?:"",
                     style = MaterialTheme.typography.titleSmall,
                     color = Color.Black
                 )
@@ -152,7 +152,7 @@ fun OrderItem(
                 )
 
                 Text(
-                    text = "Мичурина 82/84",
+                    text = order.orderItem?.deliveryPoint?.deliveryAddress?.street?.name.toString(),
                     style = MaterialTheme.typography.titleSmall,
                     color = Color.Black
                 )

@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,6 +65,7 @@ fun MyProfileScreen(
 ) {
 
     MyProfileScreenUI(
+        ordersCount = viewModel.myOrdersCount.collectAsState(),
         addressCount = viewModel.myAddressesCount.collectAsState(),
         promoCode = viewModel.promoCodes.collectAsState(),
         user = viewModel.user.collectAsState(),
@@ -93,6 +94,7 @@ fun MyProfileScreen(
 
 @Composable
 fun MyProfileScreenUI(
+    ordersCount:State<Int> = mutableIntStateOf(0),
     promoCode: State<List<PromoCode>> = mutableStateOf(emptyList()),
     user: State<User> = mutableStateOf(User()),
     addressCount: State<Int> = mutableStateOf(0),
@@ -112,6 +114,7 @@ fun MyProfileScreenUI(
             onPersonalDataClick = { onClick(Event.NavigateClick(Screen.PersonalDataScreen.route)) }
         )
         MyOrdersAndAddresses(
+            ordersCount = ordersCount.value,
             addressCount = addressCount.value,
             onMyAddressClick = { onClick(Event.NavigateClick(Screen.MyAddressesScreen.route)) },
             onMyOrdersClick = { onClick(Event.NavigateClick(Screen.MyOrdersScreen.route)) }
@@ -297,6 +300,7 @@ fun MyInfo(
 
 @Composable
 fun MyOrdersAndAddresses(
+    ordersCount: Int,
     addressCount: Int,
     onMyAddressClick: () -> Unit = {},
     onMyOrdersClick: () -> Unit = {}
@@ -335,7 +339,7 @@ fun MyOrdersAndAddresses(
             Text(
                 modifier = Modifier.padding(start = 20.dp, bottom = 20.dp, top = 6.dp),
                 style = MaterialTheme.typography.bodyMedium,
-                text = "2 заказа"
+                text = "$ordersCount заказа"
             )
         }
 

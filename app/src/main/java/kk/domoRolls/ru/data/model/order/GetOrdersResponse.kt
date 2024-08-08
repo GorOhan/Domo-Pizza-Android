@@ -1,7 +1,6 @@
 package kk.domoRolls.ru.data.model.order
 
 import com.google.gson.annotations.SerializedName
-import kk.domoRolls.ru.domain.model.address.Address
 
 data class GetOrdersResponse(
     @SerializedName("correlationId")
@@ -31,6 +30,8 @@ data class OrderItem(
     val deliveryPoint: DeliveryPoint?,
     @SerializedName("status")
     val status: String?,
+    @SerializedName("whenCreated")
+    val whenCreated: String?,
     @SerializedName("sum")
     val sum: Double?,
     )
@@ -47,6 +48,20 @@ data class OrderMenuItem(
 data class DeliveryPoint(
     @SerializedName("coordinates")
     val coordinates: Coordinates?,
+    @SerializedName("address")
+    val deliveryAddress: DeliveryAddress?,
+)
+
+data class DeliveryAddress(
+    @SerializedName("house")
+    val house: String?,
+    @SerializedName("street")
+    val street: DeliveryStreet?,
+)
+
+data class DeliveryStreet(
+    @SerializedName("name")
+    val name: String?,
 )
 
 data class Coordinates(
