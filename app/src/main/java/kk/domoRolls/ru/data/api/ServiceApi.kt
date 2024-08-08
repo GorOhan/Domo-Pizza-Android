@@ -5,10 +5,8 @@ import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.GetMenuResponse
 import kk.domoRolls.ru.data.model.order.GetOrdersRequest
 import kk.domoRolls.ru.data.model.order.GetOrdersResponse
-import kk.domoRolls.ru.data.model.order.GetStopListResponse
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
-import kk.domoRolls.ru.data.model.order.GetStreetsRequest
-import kk.domoRolls.ru.data.model.order.GetStreetsResponse
+import kk.domoRolls.ru.data.model.order.GetStopListResponse
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.model.order.ServiceTokenResponse
 import retrofit2.http.Body
@@ -33,12 +31,6 @@ interface ServiceApi {
         @Body getStopListRequest: GetStopListRequest,
         @Header("Authorization") token: String,
     ): GetStopListResponse
-
-    @POST("api/1/streets/by_city")
-    suspend fun getStreets(
-        @Body getStreetsRequest: GetStreetsRequest,
-        @Header("Authorization") token: String,
-    ): GetStreetsResponse
 
     @POST("api/1/deliveries/by_delivery_date_and_phone")
     suspend fun getOrders(

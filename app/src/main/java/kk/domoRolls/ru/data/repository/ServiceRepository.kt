@@ -6,8 +6,6 @@ import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.GetOrdersRequest
 import kk.domoRolls.ru.data.model.order.GetOrdersResponse
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
-import kk.domoRolls.ru.data.model.order.GetStreetsRequest
-import kk.domoRolls.ru.data.model.order.GetStreetsResponse
 import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.Order
@@ -114,13 +112,6 @@ class ServiceRepositoryImpl(
         return@emitFlow products
     }
 
-    override fun getStreets(
-        getStreetsRequest: GetStreetsRequest,
-        token: String
-    ): Flow<GetStreetsResponse> = emitFlow {
-        val streets = serviceApi.getStreets(getStreetsRequest, token = "Bearer $token")
-        return@emitFlow streets
-    }
 
     override fun getCategories(): Flow<List<ItemCategory>> {
         return currentCategories
