@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.MenuItem
+import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.presentation.cart.Event
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
@@ -62,6 +63,7 @@ import kk.domoRolls.ru.presentation.theme.DomoGreen
 import kk.domoRolls.ru.presentation.theme.DomoRed
 import kk.domoRolls.ru.presentation.theme.DomoSub
 import kk.domoRolls.ru.presentation.theme.DomoTheme
+import kotlin.math.roundToInt
 
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
@@ -264,7 +266,7 @@ fun CartMenuItem(
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 fun Devices(
-    currentCount: Int
+    currentCount:Int
 ) {
     val devicesCount = remember { mutableIntStateOf(currentCount) }
 
@@ -295,7 +297,9 @@ fun Devices(
                         .clickable(
                             interactionSource = MutableInteractionSource(),
                             indication = rememberRipple(),
-                            onClick = { devicesCount.intValue-- }
+                            onClick = {
+                                if (devicesCount.intValue>0) devicesCount.intValue--
+                            }
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -570,13 +574,23 @@ fun PromoInput(
     currentCart: List<MenuItem>,
     inputPromo: String,
     isPromoSuccess: Boolean?,
+    usedPromoCode: PromoCode?,
     onEvent:(Event) -> Unit = {}
 ) {
     val countOfItems = currentCart.sumOf { it.countInCart }
     var cartPrice = currentCart.filter { menuItem -> menuItem.countInCart > 0 }
         .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
         .sumOf { it.second * it.first }
-    cartPrice = if (isPromoSuccess == true) cartPrice * (1 - 0.15) else cartPrice
+
+    var discount by remember {
+        mutableIntStateOf(0)
+    }
+
+    usedPromoCode?.let {
+        discount = (cartPrice*usedPromoCode.discount).roundToInt()
+        cartPrice *= (1 - usedPromoCode.discount)
+    }
+
 
     Column(
         modifier = modifier
@@ -664,7 +678,7 @@ fun PromoInput(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(text = "Скидка")
-            Text(text = "0 ₽")
+            Text(text = "$discount ₽")
         }
 
         Divider(
@@ -676,7 +690,7 @@ fun PromoInput(
         )
 
         BaseButton(
-            buttonTitle = "Оформить заказ на ${cartPrice.toInt()} ₽",
+            buttonTitle = "Оформить заказ на ${cartPrice.roundToInt()} ₽",
             backgroundColor = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
                 .imePadding()

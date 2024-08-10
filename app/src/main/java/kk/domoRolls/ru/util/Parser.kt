@@ -36,15 +36,10 @@ fun String.parseToWorkingHours(): WorkingHoursWrapper? {
 }
 
 fun String.parseToPromoCodes(): List<PromoCode>? {
-    try {
-
-        val gson = Gson()
-        val type = object : TypeToken<List<PromoCode>>() {}.type
-        Log.d("DOMO PROMO", gson.fromJson(this, type))
-
-        return gson.fromJson(this, type)
+    return try {
+        Gson().fromJson(this, Array<PromoCode>::class.java).toList()
     } catch (e: Exception) {
-        return null
+        null
     }
 }
 
@@ -94,7 +89,7 @@ fun String.parseToAddress(): Address? {
     }
 }
 
-fun Address.toJson():String {
+fun Address.toJson(): String {
     val gson: Gson = GsonBuilder().create()
     val userJson = gson.toJson(this)
     return userJson

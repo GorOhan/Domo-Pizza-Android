@@ -242,7 +242,7 @@ fun MainScreenUI(
                                     .clickable {
                                         onEvent(MainScreenEvent.NavigateClick("${Screen.AddressMapScreen.route}/${defaultAddress.id.ifEmpty { null }}"))
                                     },
-                                text = defaultAddress.street,
+                                text = defaultAddress.street.ifBlank { "добавить адрес" },
                                 overflow = TextOverflow.Ellipsis,
 
                                 )

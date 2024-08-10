@@ -8,10 +8,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -21,12 +25,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.domain.model.GiftProduct
+import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.presentation.components.CartMenuItem
 import kk.domoRolls.ru.presentation.components.Devices
 import kk.domoRolls.ru.presentation.components.DomoToolbar
@@ -35,6 +44,9 @@ import kk.domoRolls.ru.presentation.components.PromoInput
 import kk.domoRolls.ru.presentation.components.SleepView
 import kk.domoRolls.ru.presentation.components.SpicesSection
 import kk.domoRolls.ru.presentation.components.isKeyboardVisible
+import kk.domoRolls.ru.presentation.navigation.Screen
+import kk.domoRolls.ru.presentation.theme.DomoGreen
+import kk.domoRolls.ru.presentation.theme.DomoRed
 import kk.domoRolls.ru.presentation.theme.DomoTheme
 
 @Composable
@@ -43,34 +55,44 @@ fun CartScreen(
     viewModel: CartViewModel = hiltViewModel()
 ) {
     val isWorkingTime = viewModel.isWorkingTime.collectAsState()
-    val onEvent = viewModel.onEvent.collectAsState()
+    val onEvent = viewModel.onEvent.collectAsState(initial = Event.Nothing)
 
     LaunchedEffect(onEvent.value) {
         when (onEvent.value) {
-            Event.BackClick -> { navController.popBackStack() }
+            Event.BackClick -> {
+                navController.popBackStack()
+            }
+
+            Event.ConfirmOrder -> {
+                navController.navigate(Screen.PayOrderScreen.route)
+            }
+
             Event.ConfirmPromo, is Event.AddToCart, is Event.RemoveFromCart,
-            is Event.InputPromo, Event.ConfirmOrder, Event.Nothing, Event.LogOut,
-            is Event.NavigateClick -> {}
+            is Event.InputPromo, Event.Nothing, Event.LogOut,
+            is Event.NavigateClick -> {
+            }
         }
     }
 
     CartScreenUI(
+        usedPromoCode = viewModel.usedPromoCode.collectAsState(),
         isPromoSuccess = viewModel.isPromoSuccess.collectAsState(),
         inputPromo = viewModel.inputPromo.collectAsState(),
         gift = viewModel.gift.collectAsState(),
         currentCart = viewModel.currentCart.collectAsState(),
         giftProduct = viewModel.giftProduct.collectAsState(),
         spices = viewModel.spices.collectAsState(),
-        onClick = { viewModel.setEvent(it)}
+        onClick = { viewModel.setEvent(it) }
     )
 
-    if (onEvent.value is Event.ConfirmOrder && isWorkingTime.value.not()){
+    if (onEvent.value is Event.ConfirmOrder && isWorkingTime.value.not()) {
         SleepView()
     }
 }
 
 @Composable
 fun CartScreenUI(
+    usedPromoCode: State<PromoCode?> = mutableStateOf(null),
     isPromoSuccess: State<Boolean?> = mutableStateOf(null),
     inputPromo: State<String> = mutableStateOf(""),
     gift: State<GiftProduct> = mutableStateOf(GiftProduct()),
@@ -85,6 +107,32 @@ fun CartScreenUI(
         targetValue = if (keyboardVisible) 220.dp else 0.dp,
         animationSpec = tween(durationMillis = 200), label = ""
     )
+
+    isPromoSuccess.value?.let {
+        Dialog(
+            onDismissRequest = { }) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    modifier = Modifier.fillMaxWidth(.5f),
+                    tint = if (it) DomoGreen else DomoRed,
+                    painter = painterResource(id = if (it) R.drawable.ic_success else R.drawable.ic_error),
+                    contentDescription = ""
+                )
+                Text(
+                    modifier = Modifier.padding(top = 16.dp),
+                    text = if (it) "Промокод успешно применен" else "ошибка неправильный промокод ",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (it) DomoGreen else DomoRed,
+                )
+            }
+        }
+    }
+
+
     Scaffold(
         topBar = {
             DomoToolbar(
@@ -93,12 +141,12 @@ fun CartScreenUI(
         },
         bottomBar = {
             PromoInput(
+                usedPromoCode = usedPromoCode.value,
                 modifier = Modifier.padding(bottom = animatedIconDp),
                 currentCart = currentCart.value,
                 inputPromo = inputPromo.value,
                 isPromoSuccess = isPromoSuccess.value,
                 onEvent = onClick
-
             )
         },
         floatingActionButton = {}
@@ -108,7 +156,11 @@ fun CartScreenUI(
         var cartPrice = currentCart.value.filter { menuItem -> menuItem.countInCart > 0 }
             .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
             .sumOf { it.second * it.first }
-        cartPrice = if (isPromoSuccess.value == true) cartPrice * (1 - 0.15) else cartPrice
+
+        usedPromoCode.value?.let {
+            cartPrice *= (1 - it.discount)
+        }
+
 
         Column(
             modifier = Modifier
@@ -133,7 +185,7 @@ fun CartScreenUI(
                     )
                 }
             }
-            AnimatedVisibility (giftProduct.value.itemId?.isNotBlank() == true && (cartPrice > gift.value.sum)) {
+            AnimatedVisibility(giftProduct.value.itemId?.isNotBlank() == true && (cartPrice > gift.value.sum)) {
                 GiftProductItem(menuItem = giftProduct.value)
             }
 

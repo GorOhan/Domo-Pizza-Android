@@ -17,8 +17,10 @@ import kk.domoRolls.ru.presentation.theme.DomoTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
 
         MapKitFactory.initialize(this)
         MapKitFactory.getInstance().onStart()

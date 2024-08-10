@@ -12,10 +12,11 @@ import kk.domoRolls.ru.presentation.cart.CartScreen
 import kk.domoRolls.ru.presentation.html.HTMLScreenType
 import kk.domoRolls.ru.presentation.html.HtmlScreen
 import kk.domoRolls.ru.presentation.main.MainScreen
-import kk.domoRolls.ru.presentation.myAddress.AddressMapScreen
+import kk.domoRolls.ru.presentation.mapAddress.AddressMapScreen
 import kk.domoRolls.ru.presentation.myaddresses.MyAddressesScreen
 import kk.domoRolls.ru.presentation.myprofile.MyProfileScreen
 import kk.domoRolls.ru.presentation.orderstatus.OrderStatusScreen
+import kk.domoRolls.ru.presentation.payorder.PayOrderScreen
 import kk.domoRolls.ru.presentation.personaldata.PersonalDataScreen
 import kk.domoRolls.ru.presentation.registration.OTPScreen
 import kk.domoRolls.ru.presentation.registration.RegistrationScreen
@@ -38,6 +39,8 @@ sealed class Screen(val route: String) {
     data object AddressMapScreen : Screen("addressMapScreen")
     data object MyOrdersScreen : Screen("myOrdersScreen")
     data object OrderStatusScreen : Screen("orderStatusScreen")
+    data object PayOrderScreen : Screen("payOrderScreen")
+
 }
 
 @Composable
@@ -139,6 +142,12 @@ internal fun NavMain(
 
             OrderStatusScreen(
                 orderId = orderId ?: "",
+                navController = navController
+            )
+        }
+
+        composable(route = Screen.PayOrderScreen.route) {
+            PayOrderScreen(
                 navController = navController
             )
         }

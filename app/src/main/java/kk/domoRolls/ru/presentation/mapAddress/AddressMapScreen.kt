@@ -1,4 +1,4 @@
-package kk.domoRolls.ru.presentation.myAddress
+package kk.domoRolls.ru.presentation.mapAddress
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
@@ -131,12 +131,13 @@ fun AddressMapScreen(
             ) {
 
                 addressMapViewModel.setCurrentAddressModel(
-                    currentAddress.copy(
+                    inputAddress = currentAddress.copy(
                         street = it,
                         coordinate = Coordinate(
                             cameraPosition.target.latitude,
                             cameraPosition.target.longitude
-                        )
+                        ),
+                        minDeliveryPrice = currentPrice
                     )
                 )
             }

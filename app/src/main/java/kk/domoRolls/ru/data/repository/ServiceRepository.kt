@@ -10,10 +10,12 @@ import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
+import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.parseToListString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class ServiceRepositoryImpl(
     private val serviceApi: ServiceApi,
@@ -27,6 +29,8 @@ class ServiceRepositoryImpl(
     private val hotItems: MutableList<String> = mutableListOf()
     private val newItems: MutableList<String> = mutableListOf()
     private val currentOrders:MutableStateFlow<GetOrdersResponse?> = MutableStateFlow(null)
+    private var usedPromoCode:PromoCode? = null
+
 
 
     init {
@@ -134,6 +138,15 @@ class ServiceRepositoryImpl(
     override fun getOrderById(id: String): Order? {
         return currentOrders.value?.ordersByOrganizations?.first()?.orders?.find { it.id == id }
     }
+
+    override fun setPromoCode(promoCode: PromoCode) {
+        usedPromoCode = promoCode
+    }
+
+    override fun getPromoCode() = usedPromoCode
+
+    override fun getCart(): List<MenuItem> = currentMenu.value.filter { it.countInCart>0 }
+
 
 
 }

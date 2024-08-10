@@ -1,4 +1,4 @@
-package kk.domoRolls.ru.presentation.myAddress
+package kk.domoRolls.ru.presentation.mapAddress
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

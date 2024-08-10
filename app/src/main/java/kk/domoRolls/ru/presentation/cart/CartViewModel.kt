@@ -2,6 +2,7 @@ package kk.domoRolls.ru.presentation.cart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.ItemCategory
@@ -13,7 +14,10 @@ import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.isWorkingTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -62,8 +66,11 @@ class CartViewModel @Inject constructor(
     private val _isWorkingTime: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isWorkingTime = _isWorkingTime.asStateFlow()
 
-    private val _onEvent: MutableStateFlow<Event> = MutableStateFlow(Event.Nothing)
-    val onEvent = _onEvent.asStateFlow()
+    private val _onEvent: MutableSharedFlow<Event> = MutableSharedFlow()
+    val onEvent = _onEvent.asSharedFlow()
+
+    val usedPromoCode = MutableStateFlow<PromoCode?>(null)
+
 
     init {
         viewModelScope.launch {
@@ -74,14 +81,16 @@ class CartViewModel @Inject constructor(
                         token = token.token
                     )
                 }
-                .catch {  }
+                .catch { }
                 .collect { menuItems ->
                     _menu.value = menuItems
                     _currentCart.value = menuItems.filter { it.countInCart > 0 }
                     _showLoading.value = false
                     _spices.value =
                         menuItems.filter { it.categoryId == _categories.value.last().id }
-                    if (menuItems.none { it.countInCart > 0 }) _onEvent.value = Event.BackClick
+                    if (menuItems.none { it.countInCart > 0 }) {
+                        _onEvent.emit(Event.BackClick)
+                    }
                 }
         }
 
@@ -128,14 +137,35 @@ class CartViewModel @Inject constructor(
     }
 
     private fun confirmPromo() {
-        _isPromoSuccess.value = promoCodes.value.any { it.value == _inputPromo.value }
+        val cartPrice = currentCart.value.filter { menuItem -> menuItem.countInCart > 0 }
+            .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
+            .sumOf { it.second * it.first }
+
+        if (cartPrice > (promoCodes.value.find { it.value == _inputPromo.value }?.minPrice ?: 0)) {
+            usedPromoCode.value = promoCodes.value.find { it.value == _inputPromo.value }
+            _isPromoSuccess.value = promoCodes.value.any { it.value == _inputPromo.value }
+            serviceRepository.setPromoCode(usedPromoCode = usedPromoCode.value?:PromoCode())
+        } else {
+
+        }
+
+        viewModelScope.launch {
+            delay(1000)
+            _isPromoSuccess.value = null
+        }
     }
 
     fun setEvent(event: Event) {
-        _onEvent.value = event
+        viewModelScope.launch {
+            _onEvent.emit(event)
+
+        }
 
         when (event) {
-            Event.ConfirmPromo -> { confirmPromo() }
+            Event.ConfirmPromo -> {
+                confirmPromo()
+            }
+
             is Event.AddToCart -> {
                 addToCart(event.item)
             }
@@ -149,7 +179,8 @@ class CartViewModel @Inject constructor(
             }
 
             Event.BackClick, Event.ConfirmOrder, Event.Nothing,
-            Event.LogOut, is Event.NavigateClick -> {}
+            Event.LogOut, is Event.NavigateClick -> {
+            }
         }
     }
 }

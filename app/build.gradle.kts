@@ -88,6 +88,10 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("com.yandex.android:maps.mobile:4.7.0-full")
 
+    implementation("ru.tinkoff.acquiring:ui:3.0.0")
+    implementation("ru.tinkoff.acquiring:threeds-sdk:3.0.0")
+    implementation("ru.tinkoff.acquiring:threeds-wrapper:3.0.0")
+
 }
 
 kapt {
