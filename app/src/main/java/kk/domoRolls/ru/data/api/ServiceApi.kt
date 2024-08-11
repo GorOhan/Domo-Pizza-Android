@@ -3,12 +3,14 @@ package kk.domoRolls.ru.data.api
 
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.GetMenuResponse
+import kk.domoRolls.ru.data.model.order.GetOrderByIdRequest
 import kk.domoRolls.ru.data.model.order.GetOrdersRequest
 import kk.domoRolls.ru.data.model.order.GetOrdersResponse
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
 import kk.domoRolls.ru.data.model.order.GetStopListResponse
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.model.order.ServiceTokenResponse
+import kk.domoRolls.ru.data.model.sendorder.SendOrderRequest
 import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -24,7 +26,7 @@ interface ServiceApi {
     suspend fun getMenuById(
         @Body tokenRequest: GetMenuRequest,
         @Header("Authorization") token: String,
-        ): GetMenuResponse
+    ): GetMenuResponse
 
     @POST("api/1/stop_lists")
     suspend fun getStopLists(
@@ -35,6 +37,18 @@ interface ServiceApi {
     @POST("api/1/deliveries/by_delivery_date_and_phone")
     suspend fun getOrders(
         @Body getOrdersRequest: GetOrdersRequest,
+        @Header("Authorization") token: String,
+    ): GetOrdersResponse
+
+    @POST("/api/1/deliveries/create")
+    suspend fun sendOrder(
+        @Body sendOrderRequest: @JvmSuppressWildcards Map<String, Any>,
+        @Header("Authorization") token: String,
+    ):Unit
+
+    @POST("api/1/deliveries/by_id")
+    suspend fun getOrderById(
+        @Body getOrderByIdRequest: GetOrderByIdRequest,
         @Header("Authorization") token: String,
     ): GetOrdersResponse
 

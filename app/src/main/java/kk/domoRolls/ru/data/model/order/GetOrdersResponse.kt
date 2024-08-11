@@ -20,7 +20,9 @@ data class Order(
     @SerializedName("id")
     val id: String? = null,
     @SerializedName("order")
-    val orderItem: OrderItem? = null
+    val orderItem: OrderItem? = null,
+    @SerializedName("creationStatus")
+    val creationStatus: String? = null
 )
 
 data class OrderItem(
@@ -108,3 +110,28 @@ val OrderStatus.OrderStepCount: Int
         OrderStatus.DELIVERED -> 4
         OrderStatus.UNCONFIRMED, OrderStatus.CANCELLED, OrderStatus.CLOSED, OrderStatus.DELAYED -> 0
     }
+
+
+fun iikoBody(additionalComment: String?): Map<String, Any> {
+    val body = mutableMapOf<String, Any>(
+        "organizationId" to ("03a1584e-1c80-4071-829d-997688b68cba"),
+        "terminalGroupId" to ("terminalGroupId" ?: ""),
+        "order" to mutableMapOf(
+            "phone" to ("+79378852905"),
+            "orderTypeId" to ("DOSTAVKA" ?: ""),
+            "deliveryPoint" to (DeliveryPoint(null,null)),
+            "customer" to mapOf(
+                "name" to (" ТЕСТ! НЕ ГОТОВИТЬ!")
+            ),
+            "items" to emptyList<MenuItem>(),
+            "guests" to mapOf("count" to 4),
+
+        )
+    )
+
+    additionalComment?.let {
+        (body["order"] as MutableMap<String, Any>)["comment"] = it
+    }
+    return body
+
+}

@@ -21,6 +21,7 @@ import kk.domoRolls.ru.util.parseToPromoCodes
 import kk.domoRolls.ru.util.parseToPromos
 import kk.domoRolls.ru.util.parseToWorkingHours
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 
@@ -40,12 +41,14 @@ class FirebaseConfigRepositoryImpl(
     private val _giftProduct: MutableStateFlow<GiftProduct> = MutableStateFlow(GiftProduct())
     private val _mapData: MutableStateFlow<List<Polygon>> = MutableStateFlow(emptyList())
     private val _addresses: MutableStateFlow<List<Address>> = MutableStateFlow(emptyList())
+    private val _deliveryTime: MutableStateFlow<String> = MutableStateFlow("")
 
 
     init {
         firebaseRemoteConfig.fetch(1)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    _deliveryTime.value = firebaseRemoteConfig.getString("delivery_time")
                     _isAppAvailable.value =
                         firebaseRemoteConfig.getBoolean("isAppAvailable")
 
@@ -119,6 +122,10 @@ class FirebaseConfigRepositoryImpl(
 
     override fun getAddressById(id: String): Address? {
         return _addresses.value.find { it.id == id }
+    }
+
+    override fun getDeliveryTime(): StateFlow<String> {
+        return _deliveryTime
     }
 }
 

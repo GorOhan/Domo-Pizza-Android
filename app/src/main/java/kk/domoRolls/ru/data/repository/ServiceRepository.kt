@@ -3,6 +3,7 @@ package kk.domoRolls.ru.data.repository
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import kk.domoRolls.ru.data.api.ServiceApi
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
+import kk.domoRolls.ru.data.model.order.GetOrderByIdRequest
 import kk.domoRolls.ru.data.model.order.GetOrdersRequest
 import kk.domoRolls.ru.data.model.order.GetOrdersResponse
 import kk.domoRolls.ru.data.model.order.GetStopListRequest
@@ -10,6 +11,7 @@ import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
+import kk.domoRolls.ru.data.model.sendorder.SendOrderRequest
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.parseToListString
@@ -147,6 +149,12 @@ class ServiceRepositoryImpl(
 
     override fun getCart(): List<MenuItem> = currentMenu.value.filter { it.countInCart>0 }
 
+    override fun sendOrder(getOrdersRequest:
+                           Map<String, Any>, token: String)  = emitFlow {
+        serviceApi.sendOrder(getOrdersRequest,"Bearer $token")
+    }
 
-
+    override fun getOrderCreationStatus(getOrderByIdRequest: GetOrderByIdRequest, token: String): Flow<String?> = emitFlow {
+            return@emitFlow serviceApi.getOrderById(getOrderByIdRequest,"Bearer $token").ordersByOrganizations?.first()?.orders?.first()?.creationStatus
+        }
 }
