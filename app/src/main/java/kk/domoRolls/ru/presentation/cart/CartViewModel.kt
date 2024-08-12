@@ -69,10 +69,17 @@ class CartViewModel @Inject constructor(
     private val _onEvent: MutableSharedFlow<Event> = MutableSharedFlow()
     val onEvent = _onEvent.asSharedFlow()
 
+    private val _deviceCount: MutableStateFlow<Int> = MutableStateFlow(0)
+    val deviceCount = _deviceCount.asStateFlow()
+
     val usedPromoCode = MutableStateFlow<PromoCode?>(null)
 
 
     init {
+        serviceRepository.getDeviceCount()
+            .onEach { _deviceCount.value = it }
+            .launchIn(viewModelScope)
+
         viewModelScope.launch {
             serviceRepository.getToken(ServiceTokenRequest())
                 .flatMapConcat { token ->
@@ -91,6 +98,8 @@ class CartViewModel @Inject constructor(
                     if (menuItems.none { it.countInCart > 0 }) {
                         _onEvent.emit(Event.BackClick)
                     }
+
+                    serviceRepository.setDeviceCount(_currentCart.value.sumOf { it.countInCart })
                 }
         }
 
@@ -176,6 +185,10 @@ class CartViewModel @Inject constructor(
 
             is Event.InputPromo -> {
                 inputPromo(event.input)
+            }
+
+            is Event.SetDeviceCount -> {
+                serviceRepository.setDeviceCount(event.count)
             }
 
             Event.BackClick, Event.ConfirmOrder, Event.Nothing,

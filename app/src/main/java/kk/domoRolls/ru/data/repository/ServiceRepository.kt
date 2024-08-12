@@ -31,7 +31,7 @@ class ServiceRepositoryImpl(
     private val newItems: MutableList<String> = mutableListOf()
     private val currentOrders:MutableStateFlow<GetOrdersResponse?> = MutableStateFlow(null)
     private var usedPromoCode:PromoCode? = null
-
+    private var deviceCount: MutableStateFlow<Int> = MutableStateFlow(0)
 
 
     init {
@@ -155,4 +155,12 @@ class ServiceRepositoryImpl(
     override fun getOrderCreationStatus(getOrderByIdRequest: GetOrderByIdRequest, token: String): Flow<String?> = emitFlow {
             return@emitFlow serviceApi.getOrderById(getOrderByIdRequest,"Bearer $token").orders?.first()?.creationStatus
         }
+
+    override fun setDeviceCount(count: Int){
+        deviceCount.value= count
+    }
+
+    override fun getDeviceCount(): Flow<Int> {
+        return deviceCount
+    }
 }

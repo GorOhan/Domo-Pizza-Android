@@ -33,6 +33,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -266,9 +267,9 @@ fun CartMenuItem(
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 fun Devices(
-    currentCount:Int
+    deviceCount: Int,
+    onEvent: (Int) -> Unit,
 ) {
-    val devicesCount = remember { mutableIntStateOf(currentCount) }
 
     Box {
         Row(
@@ -298,7 +299,7 @@ fun Devices(
                             interactionSource = MutableInteractionSource(),
                             indication = rememberRipple(),
                             onClick = {
-                                if (devicesCount.intValue>0) devicesCount.intValue--
+                                if (deviceCount>0) onEvent(deviceCount-1)
                             }
                         ),
                     contentAlignment = Alignment.Center
@@ -311,7 +312,7 @@ fun Devices(
                 }
 
                 Text(
-                    text = devicesCount.intValue.toString(),
+                    text = deviceCount.toString(),
                     style = MaterialTheme.typography.bodyMedium,
                     fontSize = 16.sp,
                 )
@@ -324,7 +325,7 @@ fun Devices(
                         .clickable(
                             interactionSource = MutableInteractionSource(),
                             indication = rememberRipple(),
-                            onClick = { devicesCount.intValue++ }
+                            onClick = { onEvent(deviceCount+1) }
                         ),
                     contentAlignment = Alignment.Center,
                 ) {

@@ -65,6 +65,8 @@ class PayOrderViewModel @Inject constructor(
     private var user: User? = null
     private var currentCart: List<MenuItem>? = null
     private var usedPromoCode: PromoCode? = null
+    private var deviceCount: Int = 0
+
 
 
     private val _enableToPay: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -73,13 +75,18 @@ class PayOrderViewModel @Inject constructor(
 
 
     init {
+        user = dataStoreService.getUserData()
+
+        serviceRepository.getDeviceCount()
+            .onEach {  deviceCount = it  }
+            .launchIn(viewModelScope)
+
         combine(cartPrice,defaultAddress) { cartPrice,defaultAddress ->
           _enableToPay.value = cartPrice != 0.0 &&
                   defaultAddress.minDeliveryPrice != 0 &&
                   cartPrice > defaultAddress.minDeliveryPrice
         }.launchIn(viewModelScope)
 
-        user = dataStoreService.getUserData()
         paymentResponseBody.onEach {
             if (it.contains("Got server response:")) {
 
@@ -157,7 +164,8 @@ class PayOrderViewModel @Inject constructor(
             currentCart = currentCart?: emptyList(),
             defaultAddress = defaultAddress.value,
             additionalComment = _comment.value,
-            usedPromoCode = usedPromoCode?:PromoCode()
+            usedPromoCode = usedPromoCode?:PromoCode(),
+            deviceCount = deviceCount,
             )
         if (cartPrice.value != 0.0 &&
             defaultAddress.value.minDeliveryPrice != 0 &&

@@ -4,6 +4,7 @@ import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.model.address.Address
+import kk.domoRolls.ru.presentation.cart.Event
 
 
 data class SendOrderData(
@@ -60,7 +61,8 @@ fun createSendOrderData(
     currentCart:List<MenuItem>,
     defaultAddress:Address,
     additionalComment: String,
-    usedPromoCode: PromoCode
+    usedPromoCode: PromoCode,
+    deviceCount: Int
 )=
  SendOrderData(
     terminalGroupId = "dbd89055-96a1-4223-81ba-40afe53bbd04",
@@ -94,7 +96,7 @@ fun createSendOrderData(
             )
         ),
         guests = SendGuests(
-            count = 1
+            count = deviceCount
         )
     )
 )

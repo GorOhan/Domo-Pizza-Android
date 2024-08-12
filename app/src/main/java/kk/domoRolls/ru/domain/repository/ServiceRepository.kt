@@ -46,5 +46,9 @@ interface ServiceRepository {
         token: String
     ): Flow<String?>
 
+    fun setDeviceCount(count:Int)
+    fun getDeviceCount():Flow<Int>
+
+
 
 }

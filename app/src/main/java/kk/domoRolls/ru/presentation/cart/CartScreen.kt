@@ -64,17 +64,18 @@ fun CartScreen(
             }
 
             Event.ConfirmOrder -> {
-                navController.navigate(Screen.PayOrderScreen.route)
+                if (isWorkingTime.value) navController.navigate(Screen.PayOrderScreen.route)
             }
 
             Event.ConfirmPromo, is Event.AddToCart, is Event.RemoveFromCart,
             is Event.InputPromo, Event.Nothing, Event.LogOut,
-            is Event.NavigateClick -> {
+            is Event.NavigateClick, is Event.SetDeviceCount -> {
             }
         }
     }
 
     CartScreenUI(
+        deviceCount = viewModel.deviceCount.collectAsState(),
         usedPromoCode = viewModel.usedPromoCode.collectAsState(),
         isPromoSuccess = viewModel.isPromoSuccess.collectAsState(),
         inputPromo = viewModel.inputPromo.collectAsState(),
@@ -86,12 +87,15 @@ fun CartScreen(
     )
 
     if (onEvent.value is Event.ConfirmOrder && isWorkingTime.value.not()) {
-        SleepView()
+        SleepView(
+            seeMenuClick = { viewModel.setEvent(Event.BackClick)}
+        )
     }
 }
 
 @Composable
 fun CartScreenUI(
+    deviceCount: State<Int> = mutableStateOf(0),
     usedPromoCode: State<PromoCode?> = mutableStateOf(null),
     isPromoSuccess: State<Boolean?> = mutableStateOf(null),
     inputPromo: State<String> = mutableStateOf(""),
@@ -191,7 +195,8 @@ fun CartScreenUI(
 
 
             Devices(
-                currentCount = currentCart.value.sumOf { it.countInCart },
+                deviceCount = deviceCount.value,
+                onEvent = { onClick(Event.SetDeviceCount(it)) }
             )
 
             SpicesSection(
@@ -214,6 +219,7 @@ sealed class Event {
     data class NavigateClick(val route: String) : Event()
     data object LogOut : Event()
     data object ConfirmOrder : Event()
+    data class SetDeviceCount(val count: Int) : Event()
 
 }
 
