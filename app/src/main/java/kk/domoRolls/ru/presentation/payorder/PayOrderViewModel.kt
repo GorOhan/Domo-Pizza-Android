@@ -5,15 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetOrderByIdRequest
+import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
-import kk.domoRolls.ru.data.model.sendorder.SendAddress
-import kk.domoRolls.ru.data.model.sendorder.SendCustomer
-import kk.domoRolls.ru.data.model.sendorder.SendDeliveryPoint
-import kk.domoRolls.ru.data.model.sendorder.SendGuests
-import kk.domoRolls.ru.data.model.sendorder.SendItem
-import kk.domoRolls.ru.data.model.sendorder.SendOrder
-import kk.domoRolls.ru.data.model.sendorder.SendOrderData
-import kk.domoRolls.ru.data.model.sendorder.SendStreet
+import kk.domoRolls.ru.data.model.sendorder.createSendOrderData
+import kk.domoRolls.ru.data.prefs.DataStoreService
+import kk.domoRolls.ru.domain.model.PromoCode
+import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
@@ -23,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -36,6 +34,7 @@ import kotlin.math.roundToInt
 class PayOrderViewModel @Inject constructor(
     val serviceRepository: ServiceRepository,
     firebaseConfigRepository: FirebaseConfigRepository,
+    val dataStoreService: DataStoreService,
 ) : ViewModel() {
 
     private val _cartCount: MutableStateFlow<Int> = MutableStateFlow(0)
@@ -50,8 +49,7 @@ class PayOrderViewModel @Inject constructor(
     private val _deliveryTime: MutableStateFlow<String> = MutableStateFlow("45")
     val deliveryTime = _deliveryTime.asStateFlow()
 
-    private val _defaultAddress: MutableStateFlow<Address> =
-        MutableStateFlow(Address(privateHouse = false))
+    private val _defaultAddress: MutableStateFlow<Address> = MutableStateFlow(Address(privateHouse = false))
     val defaultAddress = _defaultAddress.asStateFlow()
 
     private val _paymentResponseBody: MutableStateFlow<String> = MutableStateFlow("")
@@ -59,15 +57,34 @@ class PayOrderViewModel @Inject constructor(
 
     private val _paymentAlreadyConfirmed: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val paymentAlreadyConfirmed = _paymentAlreadyConfirmed.asStateFlow()
+
+    private val _comment: MutableStateFlow<String> = MutableStateFlow("")
+    val comment = _comment.asStateFlow()
+
     var activeOrderStatus = ""
+    private var user: User? = null
+    private var currentCart: List<MenuItem>? = null
+    private var usedPromoCode: PromoCode? = null
+
+
+    private val _enableToPay: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val enableToPay = _enableToPay.asStateFlow()
+
 
 
     init {
+        combine(cartPrice,defaultAddress) { cartPrice,defaultAddress ->
+          _enableToPay.value = cartPrice != 0.0 &&
+                  defaultAddress.minDeliveryPrice != 0 &&
+                  cartPrice > defaultAddress.minDeliveryPrice
+        }.launchIn(viewModelScope)
+
+        user = dataStoreService.getUserData()
         paymentResponseBody.onEach {
             if (it.contains("Got server response:")) {
 
                 try {
-                    Log.i("TINKOFF BODY", it )
+                    Log.i("TINKOFF BODY", it)
                     val new = it.sliceJsonFromResponse()
                     val isSuccess = new?.let { it1 -> JSONObject(it1).getBoolean("Success") }
                     val errorCode = new?.let { it1 -> JSONObject(it1).getInt("ErrorCode") }
@@ -81,6 +98,7 @@ class PayOrderViewModel @Inject constructor(
                     Log.i("TINKOFF BODY", errorCode.toString())
                     if (status == "CONFIRMED") {
                         _paymentAlreadyConfirmed.value = true
+                        sendOrderToIIKO()
                     }
 
                 } catch (e: Exception) {
@@ -105,7 +123,10 @@ class PayOrderViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         val cart = serviceRepository.getCart()
-        val promo = serviceRepository.getPromoCode()
+        currentCart = cart
+
+        val promo = serviceRepository.getUsedPromoCode()
+        usedPromoCode = promo
 
         _cartPrice.value = cart.filter { menuItem -> menuItem.countInCart > 0 }
             .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
@@ -130,68 +151,40 @@ class PayOrderViewModel @Inject constructor(
     }
 
     fun sendOrderToIIKO() {
-        val sendOrderData = SendOrderData(
-            terminalGroupId = "dbd89055-96a1-4223-81ba-40afe53bbd04",
-            organizationId = "03a1584e-1c80-4071-829d-997688b68cba",
-            order = SendOrder(
-                phone = "+7 937 885-29-05",
-                orderTypeId = "76067ea3-356f-eb93-9d14-1fa00d082c4e",
-                items = listOf(
-                    SendItem(
-                        type = "Product",
-                        amount = 4,
-                        productId = "ce4e3db9-0fdb-49e7-b49c-81339923c631",
-                        price = 550,
-                        productSizeId = ""
-                    ),
-                    SendItem(
-                        type = "Product",
-                        amount = 1,
-                        productId = "ce4e3db9-0fdb-49e7-b49c-81339923c631",
-                        price = 0,
-                        productSizeId = ""
-                    )
-                ),
-                customer = SendCustomer(
-                    name = "ТЕСТ! НЕ ГОТОВИТЬ"
-                ),
-                deliveryPoint = SendDeliveryPoint(
-                    comment = "проспект Кирова, дом 3",
-                    address = SendAddress(
-                        flat = "",
-                        house = "3",
-                        entrance = "",
-                        floor = "",
-                        street = SendStreet(
-                            id = ""
-                        ),
-                        doorphone = ""
-                    )
-                ),
-                guests = SendGuests(
-                    count = 1
-                )
+
+        val sendOrderData = createSendOrderData(
+            user = user?:User(),
+            currentCart = currentCart?: emptyList(),
+            defaultAddress = defaultAddress.value,
+            additionalComment = _comment.value,
+            usedPromoCode = usedPromoCode?:PromoCode()
             )
-        )
+        if (cartPrice.value != 0.0 &&
+            defaultAddress.value.minDeliveryPrice != 0 &&
+            cartPrice.value > defaultAddress.value.minDeliveryPrice
+        ) {
+            viewModelScope.launch {
+                serviceRepository.getToken(ServiceTokenRequest())
+                    .flatMapConcat { tokenResponse ->
 
-        viewModelScope.launch {
-            serviceRepository.getToken(ServiceTokenRequest())
-                .flatMapConcat { tokenResponse ->
-
-                    serviceRepository.sendOrder(
-                        sendOrderData,
-                        token = tokenResponse.token
-                    )
-                }
-                .onEach { paymentId ->
-                    paymentId.orderInfo.id.let {
-                        checkPaymentCreationStatus(it, Date())
+                        serviceRepository.sendOrder(
+                            sendOrderData,
+                            token = tokenResponse.token
+                        )
                     }
-                }
-                .catch {
-                    Log.d("SENDORDER", it.localizedMessage)
-                }
-                .collect()
+                    .onEach { paymentId ->
+                        paymentId.orderInfo.id.let {
+                            checkPaymentCreationStatus(it, Date())
+                        }
+                    }
+                    .catch {
+                        Log.d("SENDORDER", it.localizedMessage)
+                    }
+                    .collect()
+            }
+        } else {
+            //todo show min price error
+            //   "Минимальная сумма заказа для доставки на ваш адрес составляет ${minDeliveryPrice ?: 800}₽
         }
     }
 
@@ -202,7 +195,7 @@ class PayOrderViewModel @Inject constructor(
     private fun checkPaymentCreationStatus(paymentId: String, startDate: Date) {
         viewModelScope.launch {
             while (Date().time - startDate.time < 5000) {
-                if (activeOrderStatus  == "Success") return@launch
+                if (activeOrderStatus == "Success") return@launch
                 serviceRepository.getToken(ServiceTokenRequest())
                     .flatMapConcat { tokenResponse ->
 
@@ -225,5 +218,9 @@ class PayOrderViewModel @Inject constructor(
                 delay(300L)
             }
         }
+    }
+
+    fun inputComment(comment:String){
+        _comment.value = comment
     }
 }

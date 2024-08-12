@@ -2,6 +2,7 @@ package kk.domoRolls.ru.presentation.payorder
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,12 +38,12 @@ import androidx.navigation.NavHostController
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.presentation.components.BaseButton
 import kk.domoRolls.ru.presentation.components.DomoToolbar
+import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
 import kk.domoRolls.ru.presentation.theme.DomoRed
 import ru.tinkoff.acquiring.sdk.AcquiringSdk
-import ru.tinkoff.acquiring.sdk.loggers.Logger
 import ru.tinkoff.acquiring.sdk.models.enums.CheckType
 import ru.tinkoff.acquiring.sdk.models.options.screen.PaymentOptions
 import ru.tinkoff.acquiring.sdk.redesign.mainform.MainFormLauncher
@@ -55,6 +56,8 @@ fun PayOrderScreen(
     navController: NavHostController,
     payOrderViewModel: PayOrderViewModel = hiltViewModel()
 ) {
+
+    val enableToPay = payOrderViewModel.enableToPay.collectAsState()
 
     AcquiringSdk.isDebug = true
     AcquiringSdk.logger = TinkoffLogger {
@@ -111,6 +114,7 @@ fun PayOrderScreen(
     val discount = payOrderViewModel.discount.collectAsState()
     val defaultAddress = payOrderViewModel.defaultAddress.collectAsState()
     val deliveryTime = payOrderViewModel.deliveryTime.collectAsState()
+    val comment = payOrderViewModel.comment.collectAsState()
 
     Scaffold(
         containerColor = Color.White,
@@ -143,10 +147,16 @@ fun PayOrderScreen(
 
             Row(
                 modifier = Modifier
+
                     .padding(horizontal = 22.dp, vertical = 16.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(20.dp))
-                    .background(DomoBorder),
+                    .background(DomoBorder)
+                    .clickable(
+                    ) {
+                        navController.navigate(Screen.MyAddressesScreen.route)
+
+                    },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
 
@@ -171,7 +181,7 @@ fun PayOrderScreen(
                             modifier = Modifier.padding(start = 6.dp),
                             color = DomoRed,
                             style = MaterialTheme.typography.bodySmall,
-                            text = "Для самовывоза выберите адрес ресторана"
+                            text = if (defaultAddress.value.type.lowercase() != "самовывоз") "Для самовывоза выберите адрес ресторана" else "самовывоз"
                         )
                     }
                 }
@@ -253,7 +263,7 @@ fun PayOrderScreen(
                     .padding(22.dp),
                 shape = RoundedCornerShape(24.dp),
                 minLines = 5,
-                value = "",
+                value = comment.value,
                 colors = OutlinedTextFieldDefaults.colors(
                     cursorColor = DomoBlue,
                     unfocusedBorderColor = DomoGray,
@@ -263,7 +273,7 @@ fun PayOrderScreen(
                     unfocusedPlaceholderColor = DomoGray,
                     focusedPlaceholderColor = DomoGray,
                 ),
-                onValueChange = {},
+                onValueChange = { payOrderViewModel.inputComment(it) },
                 placeholder = {
                     Text(
                         text = "Например: Не звоните в домофон," + "дома спит ребенок.",
@@ -329,7 +339,12 @@ fun PayOrderScreen(
                     .fillMaxWidth()
                     .padding(all = 22.dp),
                 onClick = {
-                    byMainFormPayment.launch(payment)
+                    if (enableToPay.value) {
+                       // byMainFormPayment.launch(payment)
+                        payOrderViewModel.sendOrderToIIKO()
+                    } else {
+
+                    }
                 }
             )
         }

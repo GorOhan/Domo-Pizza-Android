@@ -144,7 +144,7 @@ class ServiceRepositoryImpl(
         usedPromoCode = promoCode
     }
 
-    override fun getPromoCode() = usedPromoCode
+    override fun getUsedPromoCode() = usedPromoCode
 
     override fun getCart(): List<MenuItem> = currentMenu.value.filter { it.countInCart>0 }
 

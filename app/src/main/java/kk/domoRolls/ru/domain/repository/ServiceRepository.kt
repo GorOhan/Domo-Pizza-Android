@@ -35,7 +35,7 @@ interface ServiceRepository {
     fun getOrderById(id: String): Order?
     fun setPromoCode(usedPromoCode: PromoCode)
 
-    fun getPromoCode(): PromoCode?
+    fun getUsedPromoCode(): PromoCode?
 
     fun getCart(): List<MenuItem>
 
