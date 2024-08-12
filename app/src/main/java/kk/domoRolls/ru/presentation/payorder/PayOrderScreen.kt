@@ -1,7 +1,5 @@
 package kk.domoRolls.ru.presentation.payorder
 
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,16 +23,11 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,11 +42,10 @@ import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
 import kk.domoRolls.ru.presentation.theme.DomoRed
 import ru.tinkoff.acquiring.sdk.AcquiringSdk
-import ru.tinkoff.acquiring.sdk.TinkoffAcquiring
+import ru.tinkoff.acquiring.sdk.loggers.Logger
 import ru.tinkoff.acquiring.sdk.models.enums.CheckType
 import ru.tinkoff.acquiring.sdk.models.options.screen.PaymentOptions
 import ru.tinkoff.acquiring.sdk.redesign.mainform.MainFormLauncher
-import ru.tinkoff.acquiring.sdk.requests.performSuspendRequest
 import ru.tinkoff.acquiring.sdk.utils.Money
 import java.util.UUID
 
@@ -63,34 +55,25 @@ fun PayOrderScreen(
     navController: NavHostController,
     payOrderViewModel: PayOrderViewModel = hiltViewModel()
 ) {
-    val acquiringSdk = AcquiringSdk(
-        "1713117993164",
-        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv5yse9ka3ZQE0feuGtemYv3IqOlLck8zHUM7lTr0za6lXTszRSXfUO7jMb+L5C7e2QNFs+7sIX2OQJ6a+HG8kr+jwJ4tS3cVsWtd9NXpsU40PE4MeNr5RqiNXjcDxA+L4OsEm/BlyFOEOh2epGyYUd5/iO3OiQFRNicomT2saQYAeqIwuELPs1XpLk9HLx5qPbm8fRrQhjeUD5TLO8b+4yCnObe8vy/BMUwBfq+ieWADIjwWCMp2KTpMGLz48qnaD9kdrYJ0iyHqzb2mkDhdIzkim24A3lWoYitJCBrrB2xM05sm9+OdCI1f7nPNJbl5URHobSwR94IRGT7CJcUjvwIDAQAB"
-    )
 
+    AcquiringSdk.isDebug = true
+    AcquiringSdk.logger = TinkoffLogger {
+        payOrderViewModel.onLog(it)
+    }
 
-
-
-    val context = LocalContext.current
     val byMainFormPayment = rememberLauncherForActivityResult(MainFormLauncher.Contract,
 
         onResult = { result ->
-
             when (result) {
                 is MainFormLauncher.Success -> {
-
-                    Log.i("TINKOFF", "${result.toString()}  SUCCESS")
+                    payOrderViewModel.setPaymentAlreadyConfirmed()
                 }
 
                 is MainFormLauncher.Error -> {
-                    Log.i("TINKOFF", result.error.message.toString())
-
-                    Toast.makeText(context, result.error.message, Toast.LENGTH_SHORT).show()
-
+                    //todo show error
                 }
 
                 MainFormLauncher.Canceled -> {
-                    Toast.makeText(context, "  njbjhj ", Toast.LENGTH_SHORT).show()
 
                 }
             }
@@ -347,7 +330,6 @@ fun PayOrderScreen(
                     .padding(all = 22.dp),
                 onClick = {
                     byMainFormPayment.launch(payment)
-
                 }
             )
         }

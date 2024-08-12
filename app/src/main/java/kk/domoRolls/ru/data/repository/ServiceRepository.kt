@@ -11,13 +11,12 @@ import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
-import kk.domoRolls.ru.data.model.sendorder.SendOrderRequest
+import kk.domoRolls.ru.data.model.sendorder.SendOrderData
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.parseToListString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 class ServiceRepositoryImpl(
     private val serviceApi: ServiceApi,
@@ -149,12 +148,11 @@ class ServiceRepositoryImpl(
 
     override fun getCart(): List<MenuItem> = currentMenu.value.filter { it.countInCart>0 }
 
-    override fun sendOrder(getOrdersRequest:
-                           Map<String, Any>, token: String)  = emitFlow {
-        serviceApi.sendOrder(getOrdersRequest,"Bearer $token")
+    override fun sendOrder(sendOrderData: SendOrderData, token: String)  = emitFlow {
+        serviceApi.sendOrder(sendOrderData,"Bearer $token")
     }
 
     override fun getOrderCreationStatus(getOrderByIdRequest: GetOrderByIdRequest, token: String): Flow<String?> = emitFlow {
-            return@emitFlow serviceApi.getOrderById(getOrderByIdRequest,"Bearer $token").ordersByOrganizations?.first()?.orders?.first()?.creationStatus
+            return@emitFlow serviceApi.getOrderById(getOrderByIdRequest,"Bearer $token").orders?.first()?.creationStatus
         }
 }

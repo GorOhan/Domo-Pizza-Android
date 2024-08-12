@@ -178,3 +178,15 @@ fun String.formatToOrderType(): String {
     return outputFormat.format(date)
 }
 
+
+fun String.sliceJsonFromResponse(): String? {
+    val startIndex = this.indexOf('{') // Find the first occurrence of '{'
+    val endIndex = this.lastIndexOf('}') // Find the last occurrence of '}'
+
+    // Check if both '{' and '}' exist in the string
+    return if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+        this.substring(startIndex, endIndex + 1) // Extract the substring
+    } else {
+        null // Return null if the format is incorrect
+    }
+}

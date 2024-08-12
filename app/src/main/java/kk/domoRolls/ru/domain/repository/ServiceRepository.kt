@@ -10,7 +10,8 @@ import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.model.order.ServiceTokenResponse
-import kk.domoRolls.ru.data.model.sendorder.SendOrderRequest
+import kk.domoRolls.ru.data.model.sendorder.SendOrderData
+import kk.domoRolls.ru.data.model.sendorder.SendOrderResponse
 import kk.domoRolls.ru.domain.model.PromoCode
 import kotlinx.coroutines.flow.Flow
 
@@ -38,7 +39,7 @@ interface ServiceRepository {
 
     fun getCart(): List<MenuItem>
 
-    fun sendOrder(getOrdersRequest: Map<String, Any>, token: String): Flow<Unit>
+    fun sendOrder(sendOrderData: SendOrderData, token: String): Flow<SendOrderResponse>
 
     fun getOrderCreationStatus(
         getOrderByIdRequest: GetOrderByIdRequest,
