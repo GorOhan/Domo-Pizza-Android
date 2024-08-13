@@ -62,9 +62,10 @@ fun createSendOrderData(
     defaultAddress:Address,
     additionalComment: String,
     usedPromoCode: PromoCode,
-    deviceCount: Int
-)=
- SendOrderData(
+    deviceCount: Int,
+    pickedTime:String,
+
+)= SendOrderData(
     terminalGroupId = "dbd89055-96a1-4223-81ba-40afe53bbd04",
     organizationId = "03a1584e-1c80-4071-829d-997688b68cba",
     order = SendOrder(
@@ -83,7 +84,7 @@ fun createSendOrderData(
             name = "ТЕСТ! НЕ ГОТОВИТЬ"
         ),
         deliveryPoint = SendDeliveryPoint(
-            comment = "${defaultAddress.street}\n  $additionalComment\n ${usedPromoCode.value}",
+            comment = "${defaultAddress.street}\n  $additionalComment\n ${usedPromoCode.value}\n $pickedTime",
             address = SendAddress(
                 flat = defaultAddress.flat,
                 house = defaultAddress.privateHouse.toString(),

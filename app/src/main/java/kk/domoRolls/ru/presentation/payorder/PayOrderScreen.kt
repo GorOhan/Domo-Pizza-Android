@@ -28,6 +28,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,16 +44,19 @@ import androidx.navigation.NavHostController
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.presentation.components.BaseButton
 import kk.domoRolls.ru.presentation.components.DomoToolbar
+import kk.domoRolls.ru.presentation.components.InfiniteCircularList
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
 import kk.domoRolls.ru.presentation.theme.DomoRed
+import kk.domoRolls.ru.util.generateTimeItems
 import ru.tinkoff.acquiring.sdk.AcquiringSdk
 import ru.tinkoff.acquiring.sdk.models.enums.CheckType
 import ru.tinkoff.acquiring.sdk.models.options.screen.PaymentOptions
 import ru.tinkoff.acquiring.sdk.redesign.mainform.MainFormLauncher
 import ru.tinkoff.acquiring.sdk.utils.Money
+import java.util.Calendar
 import java.util.UUID
 
 
@@ -124,6 +130,11 @@ fun PayOrderScreen(
     val defaultAddress = payOrderViewModel.defaultAddress.collectAsState()
     val deliveryTime = payOrderViewModel.deliveryTime.collectAsState()
     val comment = payOrderViewModel.comment.collectAsState()
+    var showPickTime by remember {
+        mutableStateOf(false)
+    }
+    val pickedTime = payOrderViewModel.pickedTime.collectAsState()
+
 
     Scaffold(
         containerColor = Color.White,
@@ -133,7 +144,19 @@ fun PayOrderScreen(
                 onBackClick = { navController.popBackStack() }
             )
         },
-        bottomBar = {},
+        bottomBar = {
+            if (showPickTime) {
+                InfiniteCircularList(
+                    modifier = Modifier,
+                    items = generateTimeItems(Calendar.getInstance()),
+                    initialItem = generateTimeItems(Calendar.getInstance()).first(),
+                    onItemClick = {
+                        payOrderViewModel.setPickedTime(it)
+                        showPickTime = false
+                    }
+                )
+            }
+        },
         floatingActionButton = {}
 
     ) { innerPadding ->
@@ -220,8 +243,12 @@ fun PayOrderScreen(
                 Box(
                     modifier = Modifier
                         .padding(top = 20.dp, start = 4.dp, end = 4.dp)
-                        .background(DomoBorder, RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(DomoBorder)
                         .weight(0.5f)
+                        .clickable(pickedTime.value.isNotEmpty()) {
+                            payOrderViewModel.setPickedTime("")
+                        }
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -231,29 +258,36 @@ fun PayOrderScreen(
                         Icon(
                             modifier = Modifier.size(18.dp),
                             painter = painterResource(id = R.drawable.ic_delivery),
-                            contentDescription = ""
+                            contentDescription = "",
+                            tint = if (pickedTime.value.isEmpty()) Color.Black else DomoGray
+
                         )
                         Text(
                             textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .padding(horizontal = 8.dp, vertical = 10.dp),
-                            text = "${deliveryTime.value} мин"
+                            text = "${deliveryTime.value} мин",
+                            color = if (pickedTime.value.isEmpty()) Color.Black else DomoGray
                         )
                     }
                 }
                 Box(
                     modifier = Modifier
                         .padding(top = 20.dp, start = 4.dp, end = 4.dp)
-                        .background(DomoBorder, RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(DomoBorder)
                         .weight(0.5f)
+                        .clickable {
+                            showPickTime = showPickTime.not()
+                        }
                 ) {
                     Text(
-                        color = DomoGray,
+                        color = if (pickedTime.value.isEmpty()) DomoGray else Color.Black,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 10.dp),
-                        text = "Ко времени"
+                        text = pickedTime.value.ifEmpty { "Ко времени" }
                     )
                 }
 

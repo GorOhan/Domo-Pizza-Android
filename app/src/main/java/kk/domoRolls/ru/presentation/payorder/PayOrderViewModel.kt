@@ -72,10 +72,11 @@ class PayOrderViewModel @Inject constructor(
     private var usedPromoCode: PromoCode? = null
     private var deviceCount: Int = 0
 
-
-
     private val _enableToPay: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val enableToPay = _enableToPay.asStateFlow()
+
+    private val _pickedTime: MutableStateFlow<String> = MutableStateFlow("")
+    val pickedTime = _pickedTime.asStateFlow()
 
 
 
@@ -171,6 +172,7 @@ class PayOrderViewModel @Inject constructor(
             additionalComment = _comment.value,
             usedPromoCode = usedPromoCode?:PromoCode(),
             deviceCount = deviceCount,
+            pickedTime = _pickedTime.value
             )
         if (cartPrice.value != 0.0 &&
             defaultAddress.value.minDeliveryPrice != 0 &&
@@ -236,5 +238,9 @@ class PayOrderViewModel @Inject constructor(
 
     fun inputComment(comment:String){
         _comment.value = comment
+    }
+
+    fun setPickedTime(time:String){
+        _pickedTime.value = time
     }
 }
