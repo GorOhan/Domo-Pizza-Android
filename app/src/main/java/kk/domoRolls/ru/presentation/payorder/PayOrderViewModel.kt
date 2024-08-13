@@ -16,7 +16,9 @@ import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.sliceJsonFromResponse
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -61,6 +63,9 @@ class PayOrderViewModel @Inject constructor(
     private val _comment: MutableStateFlow<String> = MutableStateFlow("")
     val comment = _comment.asStateFlow()
 
+    private val _navigateToOrderStatus: MutableSharedFlow<String?> = MutableSharedFlow()
+    val navigateToOrderStatus = _navigateToOrderStatus.asSharedFlow()
+
     var activeOrderStatus = ""
     private var user: User? = null
     private var currentCart: List<MenuItem>? = null
@@ -96,7 +101,7 @@ class PayOrderViewModel @Inject constructor(
                     val isSuccess = new?.let { it1 -> JSONObject(it1).getBoolean("Success") }
                     val errorCode = new?.let { it1 -> JSONObject(it1).getInt("ErrorCode") }
                     val status =
-                        new?.let { it1 -> JSONObject(it1).getBoolean("Status") } ?: "NOT STATUS"
+                        new?.let { it1 -> JSONObject(it1).getString("Status") } ?: "NOT STATUS"
 
 
 
@@ -207,7 +212,7 @@ class PayOrderViewModel @Inject constructor(
                 serviceRepository.getToken(ServiceTokenRequest())
                     .flatMapConcat { tokenResponse ->
 
-                        serviceRepository.getOrderCreationStatus(
+                        serviceRepository.getOrderById(
                             GetOrderByIdRequest(listOf(paymentId)),
                             token = tokenResponse.token
                         )
@@ -215,7 +220,8 @@ class PayOrderViewModel @Inject constructor(
                     .onEach { it ->
                         Log.i("ActiveOrderStatus", it.toString())
 
-                        if (it == "Success") {
+                        if (it?.creationStatus == "Success") {
+                            _navigateToOrderStatus.emit(it.id)
                             activeOrderStatus = "Success"
                         }
                     }

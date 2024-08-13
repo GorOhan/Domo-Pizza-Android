@@ -135,11 +135,6 @@ class ServiceRepositoryImpl(
             currentOrders.value
         }
     }
-
-    override fun getOrderById(id: String): Order? {
-        return currentOrders.value?.ordersByOrganizations?.first()?.orders?.find { it.id == id }
-    }
-
     override fun setPromoCode(promoCode: PromoCode) {
         usedPromoCode = promoCode
     }
@@ -152,8 +147,8 @@ class ServiceRepositoryImpl(
         serviceApi.sendOrder(sendOrderData,"Bearer $token")
     }
 
-    override fun getOrderCreationStatus(getOrderByIdRequest: GetOrderByIdRequest, token: String): Flow<String?> = emitFlow {
-            return@emitFlow serviceApi.getOrderById(getOrderByIdRequest,"Bearer $token").orders?.first()?.creationStatus
+    override fun getOrderById(getOrderByIdRequest: GetOrderByIdRequest, token: String): Flow<Order?> = emitFlow {
+            return@emitFlow serviceApi.getOrderById(getOrderByIdRequest,"Bearer $token").orders?.first()
         }
 
     override fun setDeviceCount(count: Int){

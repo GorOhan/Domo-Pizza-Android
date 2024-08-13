@@ -32,7 +32,6 @@ interface ServiceRepository {
 
     fun getOrders(getOrdersRequest: GetOrdersRequest, token: String): Flow<GetOrdersResponse?>
 
-    fun getOrderById(id: String): Order?
     fun setPromoCode(usedPromoCode: PromoCode)
 
     fun getUsedPromoCode(): PromoCode?
@@ -41,10 +40,10 @@ interface ServiceRepository {
 
     fun sendOrder(sendOrderData: SendOrderData, token: String): Flow<SendOrderResponse>
 
-    fun getOrderCreationStatus(
+    fun getOrderById(
         getOrderByIdRequest: GetOrderByIdRequest,
         token: String
-    ): Flow<String?>
+    ): Flow<Order?>
 
     fun setDeviceCount(count:Int)
     fun getDeviceCount():Flow<Int>

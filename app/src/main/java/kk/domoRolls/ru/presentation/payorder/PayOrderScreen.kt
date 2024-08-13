@@ -1,5 +1,6 @@
 package kk.domoRolls.ru.presentation.payorder
 
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,7 +25,9 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +60,11 @@ fun PayOrderScreen(
     payOrderViewModel: PayOrderViewModel = hiltViewModel()
 ) {
 
+    val navigateToOrder by payOrderViewModel.navigateToOrderStatus.collectAsState(null)
+    LaunchedEffect(navigateToOrder) {
+        navigateToOrder?.let { navController.navigate("${Screen.OrderStatusScreen.route}/${it}") }
+    }
+
     val enableToPay = payOrderViewModel.enableToPay.collectAsState()
 
     AcquiringSdk.isDebug = true
@@ -73,7 +81,8 @@ fun PayOrderScreen(
                 }
 
                 is MainFormLauncher.Error -> {
-                    //todo show error
+                    Log.i("TINKOFF BODY", result.error.localizedMessage)
+
                 }
 
                 MainFormLauncher.Canceled -> {
@@ -340,8 +349,7 @@ fun PayOrderScreen(
                     .padding(all = 22.dp),
                 onClick = {
                     if (enableToPay.value) {
-                       // byMainFormPayment.launch(payment)
-                        payOrderViewModel.sendOrderToIIKO()
+                        byMainFormPayment.launch(payment)
                     } else {
 
                     }

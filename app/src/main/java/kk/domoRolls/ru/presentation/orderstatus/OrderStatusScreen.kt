@@ -45,6 +45,7 @@ import kk.domoRolls.ru.data.model.order.OrderStepCount
 import kk.domoRolls.ru.data.model.order.orderStatusTitle
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.presentation.components.BaseButton
+import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
@@ -62,13 +63,26 @@ fun OrderStatusScreen(
         orderStatusViewModel.getOrderById(orderId)
     }
     OrderStatusScreenUI(
+        deliveryTime = orderStatusViewModel.deliveryTime.collectAsState(),
         order= orderStatusViewModel.order.collectAsState(),
-        user = orderStatusViewModel.user.collectAsState()
+        user = orderStatusViewModel.user.collectAsState(),
+        onEvent = {
+            when(it){
+                OrderStatusEvent.BackClick -> { navController.popBackStack() }
+                OrderStatusEvent.Nothing -> {}
+                OrderStatusEvent.ToMainPage -> { navController.navigate(Screen.MainScreen.route){
+                    popUpTo(navController.graph.id) {
+                        inclusive = false
+                    }
+                } }
+            }
+        }
     )
 }
 
 @Composable
 fun OrderStatusScreenUI(
+    deliveryTime: State<String> = mutableStateOf(""),
     order: State<Order> = mutableStateOf(Order()),
     user: State<User> = mutableStateOf(User()),
     onEvent: (OrderStatusEvent) -> Unit = {},
@@ -132,13 +146,13 @@ fun OrderStatusScreenUI(
             )
 
             Text(
-                text = "~65 мин",
+                text = deliveryTime.value,
                 fontSize = 20.sp,
                 fontFamily = InterFont
             )
         }
 
-        FourEqualPartsRow(OrderStatus.DELIVERED)
+        FourEqualPartsRow( OrderStatus.entries.find { it.value == order.value.orderItem?.status }?:OrderStatus.CANCELLED)
 
         Row(
             modifier = Modifier
@@ -211,7 +225,8 @@ fun OrderStatusScreenUI(
             backgroundColor = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
                 .padding(horizontal = 22.dp, vertical = 10.dp)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            onClick = { onEvent(OrderStatusEvent.ToMainPage)}
         )
     }
 
@@ -254,7 +269,7 @@ fun ReviewStars(
             .fillMaxWidth()
             .padding(22.dp)
     ) {
-        repeat(4) { index ->
+        repeat(5) { index ->
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -276,7 +291,7 @@ fun ReviewStars(
 
 
 sealed class OrderStatusEvent {
-    data class NavigateClick(val route: String) : OrderStatusEvent()
+    data object ToMainPage : OrderStatusEvent()
     data object BackClick : OrderStatusEvent()
     data object Nothing : OrderStatusEvent()
 }
