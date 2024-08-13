@@ -174,6 +174,7 @@ class MainViewModel @Inject constructor(
             serviceRepository.getToken(ServiceTokenRequest())
                 .flatMapConcat { token ->
                     serviceRepository.getOrders(
+                        updateData = true,
                         getOrdersRequest = GetOrdersRequest(
                             phone = "+7${_user.value.phone}"
                         ),

@@ -30,7 +30,7 @@ interface ServiceRepository {
     fun removeFromCart(menuItem: MenuItem)
     fun getCategories(): Flow<List<ItemCategory>>
 
-    fun getOrders(getOrdersRequest: GetOrdersRequest, token: String): Flow<GetOrdersResponse?>
+    fun getOrders(updateData:Boolean = false,getOrdersRequest: GetOrdersRequest, token: String): Flow<GetOrdersResponse?>
 
     fun setPromoCode(usedPromoCode: PromoCode)
 

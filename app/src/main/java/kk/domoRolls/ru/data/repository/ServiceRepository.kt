@@ -123,17 +123,26 @@ class ServiceRepositoryImpl(
     }
 
     override fun getOrders(
+        updateData:Boolean,
         getOrdersRequest: GetOrdersRequest,
         token: String
     ): Flow<GetOrdersResponse?> = emitFlow {
 
-        return@emitFlow currentOrders.value?.let {
+        return@emitFlow if (currentOrders.value!=null && updateData.not()){
             currentOrders.value
-        }?:run {
+
+        } else {
             val orders = serviceApi.getOrders(getOrdersRequest, token = "Bearer $token")
             currentOrders.value = orders
             currentOrders.value
         }
+//        return@emitFlow currentOrders.value?.let {
+//            currentOrders.value
+//        }?:run {
+//            val orders = serviceApi.getOrders(getOrdersRequest, token = "Bearer $token")
+//            currentOrders.value = orders
+//            currentOrders.value
+//        }
     }
     override fun setPromoCode(promoCode: PromoCode) {
         usedPromoCode = promoCode

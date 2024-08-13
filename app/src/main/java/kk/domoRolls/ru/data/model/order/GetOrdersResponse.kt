@@ -114,9 +114,9 @@ val OrderStatus.OrderStepCount: Int
 
 
 fun OrderStatus.OrderDeliveryTime(time:Int) = when(this){
-        OrderStatus.WAIT_COOKING, OrderStatus.READY_FOR_COOKING, OrderStatus.COOKING_STARTED -> "$time мин"
-        OrderStatus.COOKING_COMPLETED, OrderStatus.WAITING -> "${time*0.65} мин"
-        OrderStatus.ON_WAY -> "${time*0.35} мин"
+        OrderStatus.WAIT_COOKING, OrderStatus.READY_FOR_COOKING, OrderStatus.COOKING_STARTED -> "~$time мин"
+        OrderStatus.COOKING_COMPLETED, OrderStatus.WAITING -> "~${time*0.65} мин"
+        OrderStatus.ON_WAY -> "~${time*0.35} мин"
         OrderStatus.DELIVERED -> "~0 мин"
         OrderStatus.UNCONFIRMED, OrderStatus.CANCELLED, OrderStatus.CLOSED, OrderStatus.DELAYED -> "---"
     }
