@@ -3,6 +3,10 @@ package kk.domoRolls.ru.presentation.payorder
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetOrderByIdRequest
 import kk.domoRolls.ru.data.model.order.MenuItem
@@ -29,6 +33,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -51,7 +56,8 @@ class PayOrderViewModel @Inject constructor(
     private val _deliveryTime: MutableStateFlow<String> = MutableStateFlow("45")
     val deliveryTime = _deliveryTime.asStateFlow()
 
-    private val _defaultAddress: MutableStateFlow<Address> = MutableStateFlow(Address(privateHouse = false))
+    private val _defaultAddress: MutableStateFlow<Address> =
+        MutableStateFlow(Address(privateHouse = false))
     val defaultAddress = _defaultAddress.asStateFlow()
 
     private val _paymentResponseBody: MutableStateFlow<String> = MutableStateFlow("")
@@ -79,18 +85,17 @@ class PayOrderViewModel @Inject constructor(
     val pickedTime = _pickedTime.asStateFlow()
 
 
-
     init {
         user = dataStoreService.getUserData()
 
         serviceRepository.getDeviceCount()
-            .onEach {  deviceCount = it  }
+            .onEach { deviceCount = it }
             .launchIn(viewModelScope)
 
-        combine(cartPrice,defaultAddress) { cartPrice,defaultAddress ->
-          _enableToPay.value = cartPrice != 0.0 &&
-                  defaultAddress.minDeliveryPrice != 0 &&
-                  cartPrice > defaultAddress.minDeliveryPrice
+        combine(cartPrice, defaultAddress) { cartPrice, defaultAddress ->
+            _enableToPay.value = cartPrice != 0.0 &&
+                    defaultAddress.minDeliveryPrice != 0 &&
+                    cartPrice > defaultAddress.minDeliveryPrice
         }.launchIn(viewModelScope)
 
         paymentResponseBody.onEach {
@@ -166,14 +171,14 @@ class PayOrderViewModel @Inject constructor(
     fun sendOrderToIIKO() {
 
         val sendOrderData = createSendOrderData(
-            user = user?:User(),
-            currentCart = currentCart?: emptyList(),
+            user = user ?: User(),
+            currentCart = currentCart ?: emptyList(),
             defaultAddress = defaultAddress.value,
             additionalComment = _comment.value,
-            usedPromoCode = usedPromoCode?:PromoCode(),
+            usedPromoCode = usedPromoCode ?: PromoCode(),
             deviceCount = deviceCount,
             pickedTime = _pickedTime.value
-            )
+        )
         if (cartPrice.value != 0.0 &&
             defaultAddress.value.minDeliveryPrice != 0 &&
             cartPrice.value > defaultAddress.value.minDeliveryPrice
@@ -187,9 +192,14 @@ class PayOrderViewModel @Inject constructor(
                             token = tokenResponse.token
                         )
                     }
-                    .onEach { paymentId ->
-                        paymentId.orderInfo.id.let {
+                    .onEach { orderResponse ->
+                        orderResponse.orderInfo.id.let {
+                            addOrderIdInFirebase(orderId = it, userId = user?.id ?: "", {})
                             checkPaymentCreationStatus(it, Date())
+
+                            usedPromoCode?.let { code ->
+                                addPromoCodeInFirebase(code.value, {}, {})
+                            }
                         }
                     }
                     .catch {
@@ -223,6 +233,7 @@ class PayOrderViewModel @Inject constructor(
                         Log.i("ActiveOrderStatus", it.toString())
 
                         if (it?.creationStatus == "Success") {
+                            serviceRepository.resetCart()
                             _navigateToOrderStatus.emit(it.id)
                             activeOrderStatus = "Success"
                         }
@@ -236,11 +247,63 @@ class PayOrderViewModel @Inject constructor(
         }
     }
 
-    fun inputComment(comment:String){
+    fun inputComment(comment: String) {
         _comment.value = comment
     }
 
-    fun setPickedTime(time:String){
+    fun setPickedTime(time: String) {
         _pickedTime.value = time
+    }
+
+    private fun addOrderIdInFirebase(
+        orderId: String,
+        userId: String,
+        completion: () -> Unit
+    ) {
+
+
+        val ref = FirebaseDatabase.getInstance().reference
+
+
+        ref.child("orders").child(orderId).setValue(userId)
+        completion()
+    }
+
+    private fun addPromoCodeInFirebase(
+        usedPromoCode: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val database = FirebaseDatabase.getInstance()
+        val userRef = database.getReference(dataStoreService.getUserData().id)
+
+        userRef.child("usedPromocodes").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                try {
+                    val promoCodes =
+                        snapshot.children.mapNotNull { it.getValue(String::class.java) }
+                            .toMutableList()
+
+                    val new = promoCodes.add(usedPromoCode)
+
+                    userRef.child("usedPromocodes").setValue(new)
+                        .addOnSuccessListener {
+                            Log.i("FIREBASE UPDATE", "PRMOCODE $new")
+
+                            onSuccess()
+
+                        }
+                        .addOnFailureListener { exception ->
+                            onFailure(exception)
+                        }
+                } catch (e: Exception) {
+                    onFailure(e)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onFailure(error.toException())
+            }
+        })
     }
 }

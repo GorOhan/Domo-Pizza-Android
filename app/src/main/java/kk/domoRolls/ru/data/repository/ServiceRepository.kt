@@ -167,4 +167,10 @@ class ServiceRepositoryImpl(
     override fun getDeviceCount(): Flow<Int> {
         return deviceCount
     }
+
+    override fun resetCart() {
+        currentMenu.value = emptyList()
+        usedPromoCode = null
+        deviceCount.value = 0
+    }
 }

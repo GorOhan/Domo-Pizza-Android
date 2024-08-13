@@ -48,6 +48,8 @@ interface ServiceRepository {
     fun setDeviceCount(count:Int)
     fun getDeviceCount():Flow<Int>
 
+    fun resetCart()
+
 
 
 }
