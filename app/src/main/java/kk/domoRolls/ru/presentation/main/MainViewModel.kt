@@ -8,6 +8,7 @@ import kk.domoRolls.ru.data.model.order.GetOrdersRequest
 import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.Order
+import kk.domoRolls.ru.data.model.order.OrderDeliveryTime
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.model.order.StatusOfOrder
 import kk.domoRolls.ru.data.model.order.showInMainPage
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -70,6 +72,8 @@ class MainViewModel @Inject constructor(
     private val _myOrders: MutableStateFlow<List<Order>> = MutableStateFlow(emptyList())
     val myOrders = _myOrders.asStateFlow()
 
+
+
     init {
 
         viewModelScope.launch {
@@ -109,7 +113,6 @@ class MainViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
-        getOrders()
 
     }
 
@@ -166,7 +169,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun getOrders() {
+    fun getOrders() {
         viewModelScope.launch {
             serviceRepository.getToken(ServiceTokenRequest())
                 .flatMapConcat { token ->
@@ -179,8 +182,11 @@ class MainViewModel @Inject constructor(
                 }
                 .onEach {
                     it?.ordersByOrganizations?.first()?.orders?.let { orders ->
-                        _myOrders.value = orders.filter {
-                            it.orderItem?.status?.StatusOfOrder()?.showInMainPage ?: false
+                        _myOrders.value = orders.filter { order ->
+                            order.orderItem?.status?.StatusOfOrder()?.showInMainPage ?: false
+                        }.map { it.copy( orderDeliveryTime = it.orderItem?.status
+                            ?.StatusOfOrder()
+                            ?.OrderDeliveryTime(firebaseConfigRepository.getDeliveryTime().first().toInt())?:"")
                         }
                     }
                 }

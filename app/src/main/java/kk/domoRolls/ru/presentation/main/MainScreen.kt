@@ -48,6 +48,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.NavHostController
 import coil.ImageLoader
 import coil.compose.AsyncImage
@@ -91,6 +93,10 @@ fun MainScreen(
 
     LaunchedEffect(toAuth) {
         if (toAuth) navController.popBackStack()
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        mainViewModel.getOrders()
     }
 
     MainScreenUI(
@@ -276,7 +282,7 @@ fun MainScreenUI(
             }
 
             if (currentOrders.isNotEmpty()) {
-                currentOrders.forEach { it->
+                currentOrders.forEach {
                     item {
                         CurrentOrder(it){
                             onEvent(MainScreenEvent.NavigateClick("${Screen.OrderStatusScreen.route}/${it.id}"))

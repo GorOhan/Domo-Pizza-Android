@@ -63,7 +63,7 @@ fun CurrentOrder(
         }
         Text(
             modifier = Modifier.padding(end = 22.dp),
-            text = "~65 мин",
+            text = order.orderDeliveryTime,
             color = Color.White,
             style = MaterialTheme.typography.bodyMedium
         )

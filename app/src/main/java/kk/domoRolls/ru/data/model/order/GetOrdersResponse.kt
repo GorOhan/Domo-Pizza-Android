@@ -22,7 +22,8 @@ data class Order(
     @SerializedName("order")
     val orderItem: OrderItem? = null,
     @SerializedName("creationStatus")
-    val creationStatus: String? = null
+    val creationStatus: String? = null,
+    val orderDeliveryTime: String = ""
 )
 
 data class OrderItem(
