@@ -120,6 +120,17 @@ fun OrderStatus.OrderDeliveryTime(time:Int) = when(this){
         OrderStatus.UNCONFIRMED, OrderStatus.CANCELLED, OrderStatus.CLOSED, OrderStatus.DELAYED -> "---"
     }
 
+val OrderStatus.showInMainPage: Boolean
+    get() = when (this) {
+        OrderStatus.WAIT_COOKING, OrderStatus.READY_FOR_COOKING, OrderStatus.COOKING_STARTED -> true
+        OrderStatus.COOKING_COMPLETED, OrderStatus.WAITING -> true
+        OrderStatus.ON_WAY -> true
+        OrderStatus.UNCONFIRMED, OrderStatus.CANCELLED, OrderStatus.CLOSED -> false
+        OrderStatus.DELIVERED -> false
+        OrderStatus.DELAYED -> true
+    }
+
+fun String.StatusOfOrder() = OrderStatus.entries.find { it.value == this}
 
 
 fun iikoBody(additionalComment: String?): Map<String, Any> {

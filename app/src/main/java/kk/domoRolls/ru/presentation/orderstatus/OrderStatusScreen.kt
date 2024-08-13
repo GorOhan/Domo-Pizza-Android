@@ -69,12 +69,12 @@ fun OrderStatusScreen(
         onEvent = {
             when(it){
                 OrderStatusEvent.BackClick -> { navController.popBackStack() }
-                OrderStatusEvent.Nothing -> {}
                 OrderStatusEvent.ToMainPage -> { navController.navigate(Screen.MainScreen.route){
                     popUpTo(navController.graph.id) {
                         inclusive = false
                     }
                 } }
+                OrderStatusEvent.Nothing -> {}
             }
         }
     )

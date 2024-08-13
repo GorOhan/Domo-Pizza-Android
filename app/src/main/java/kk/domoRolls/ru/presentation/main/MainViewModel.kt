@@ -9,6 +9,8 @@ import kk.domoRolls.ru.data.model.order.ItemCategory
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
+import kk.domoRolls.ru.data.model.order.StatusOfOrder
+import kk.domoRolls.ru.data.model.order.showInMainPage
 import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.PromoStory
 import kk.domoRolls.ru.domain.model.User
@@ -170,15 +172,16 @@ class MainViewModel @Inject constructor(
                 .flatMapConcat { token ->
                     serviceRepository.getOrders(
                         getOrdersRequest = GetOrdersRequest(
-                            phone = "+79271266306"
-//                                    phone = "+7${_user.value.phone}"
+                            phone = "+7${_user.value.phone}"
                         ),
                         token = token.token
                     )
                 }
                 .onEach {
-                    it?.ordersByOrganizations?.first()?.orders?.let {
-                        _myOrders.value = it
+                    it?.ordersByOrganizations?.first()?.orders?.let { orders ->
+                        _myOrders.value = orders.filter {
+                            it.orderItem?.status?.StatusOfOrder()?.showInMainPage ?: false
+                        }
                     }
                 }
                 .catch { }
