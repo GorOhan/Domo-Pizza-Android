@@ -87,7 +87,7 @@ fun AddressMapScreen(
 
     val currentAddress by addressMapViewModel.currentAddressModel.collectAsState()
     val defaultAddress by addressMapViewModel.defaultAddress.collectAsState()
-    val deliveryTime by addressMapViewModel.deliveryTime.collectAsState()
+    val deliveryTime = addressMapViewModel.deliveryTime.collectAsState()
 
 
     LaunchedEffect(key1 = true) {
@@ -207,7 +207,6 @@ fun AddressMapScreen(
         mapView.onStart()
         mapView.mapWindow.map.addCameraListener(yandexCameraListener)
     }
-
     BottomSheetScaffold(
         scaffoldState = sheetState,
         containerColor = Color.White,
@@ -444,9 +443,9 @@ fun AddressMapScreen(
             ) {
                 it.mapWindow.map.addCameraListener(yandexCameraListener)
             }
-
+            
             DeliveryZonePointer(
-                deliveryTime = addressMapViewModel.deliveryTime.collectAsState(),
+                deliveryTime = deliveryTime,
                 modifier = Modifier.align(Alignment.Center),
                 inDeliveryZone = inDeliveryZone,
                 isDragFinished = isMoveFinished
