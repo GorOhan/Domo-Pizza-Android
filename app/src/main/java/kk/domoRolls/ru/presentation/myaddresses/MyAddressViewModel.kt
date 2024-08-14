@@ -1,6 +1,5 @@
 package kk.domoRolls.ru.presentation.myaddresses
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -11,6 +10,7 @@ import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
+import kk.domoRolls.ru.util.BaseViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -24,7 +24,7 @@ import javax.inject.Inject
 class MyAddressViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
     private val firebaseConfigRepository: FirebaseConfigRepository,
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _user: MutableStateFlow<User> = MutableStateFlow(dataStoreService.getUserData())
     val user = _user.asStateFlow()
@@ -86,6 +86,7 @@ class MyAddressViewModel @Inject constructor(
                             onFailure(exception)
                         }
                 } catch (e: Exception) {
+                    _showMainError.value = true
                     onFailure(e)
                 }
             }

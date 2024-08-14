@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kk.domoRolls.ru.presentation.components.BaseButton
+import kk.domoRolls.ru.presentation.components.BaseScreen
 import kk.domoRolls.ru.presentation.components.DomoToolbar
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
@@ -55,9 +56,9 @@ import kk.domoRolls.ru.util.formatToScreenType
 @Composable
 fun PersonalDataScreen(
     navController: NavHostController,
-    personalDataViewModel: PersonalDataViewModel = hiltViewModel()
+    viewModel: PersonalDataViewModel = hiltViewModel()
 ) {
-    val event = personalDataViewModel.onEvent.collectAsState()
+    val event = viewModel.onEvent.collectAsState()
     val dateState = rememberDatePickerState()
 
     LaunchedEffect(event.value) {
@@ -79,15 +80,22 @@ fun PersonalDataScreen(
 
 
     }
-    PersonalDataUI(
-        currentDate = personalDataViewModel.currentDate.collectAsState(),
-        dateState = dateState,
-        confirmButtonEnable = personalDataViewModel.confirmButtonEnable.collectAsState(initial = false),
-        userNameInput = personalDataViewModel.inputUserName.collectAsState(),
-        userEmailInput = personalDataViewModel.inputUserEmail.collectAsState(),
-        userPhoneInput = personalDataViewModel.inputUserPhone.collectAsState(),
-        onEvent = { personalDataViewModel.setEvent(it) }
-    )
+
+    BaseScreen(
+        onBackClick = { navController.popBackStack() },
+        baseViewModel = viewModel,
+    ) {
+        PersonalDataUI(
+            currentDate = viewModel.currentDate.collectAsState(),
+            dateState = dateState,
+            confirmButtonEnable = viewModel.confirmButtonEnable.collectAsState(initial = false),
+            userNameInput = viewModel.inputUserName.collectAsState(),
+            userEmailInput = viewModel.inputUserEmail.collectAsState(),
+            userPhoneInput = viewModel.inputUserPhone.collectAsState(),
+            onEvent = { viewModel.setEvent(it) }
+        )
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

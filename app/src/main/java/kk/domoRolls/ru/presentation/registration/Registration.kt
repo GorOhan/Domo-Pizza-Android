@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.presentation.components.BaseButton
+import kk.domoRolls.ru.presentation.components.BaseScreen
 import kk.domoRolls.ru.presentation.html.HTMLScreenType
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoBlue
@@ -58,23 +59,28 @@ fun RegistrationScreen(
         viewModel.getToken()
     }
 
-    RegistrationScreenUI(
-        onGetSmsClick = {
-            viewModel.sendOTP()
-            navController.navigate(Screen.OTPScreen.route)
-        },
-        getSmsEnableState = viewModel.isReadyToSendOtp,
-        userNameState = viewModel.userName,
-        userPhoneState = viewModel.phoneNumber,
-        onUserNameInput = { viewModel.onUserNameInput(it) },
-        onUserPhoneInput = { viewModel.onUserPhoneInput(it) },
-        onTermsNav = {
-            navController.navigate("${Screen.HTMLScreen.route}/${HTMLScreenType.TERMS.name}")
-        },
-        onMainNav = {
-            navController.navigate(Screen.MainScreen.route)
-        }
-    )
+    BaseScreen(
+        onBackClick = { navController.popBackStack() },
+        baseViewModel = viewModel,
+    ) {
+        RegistrationScreenUI(
+            onGetSmsClick = {
+                viewModel.sendOTP()
+                navController.navigate(Screen.OTPScreen.route)
+            },
+            getSmsEnableState = viewModel.isReadyToSendOtp,
+            userNameState = viewModel.userName,
+            userPhoneState = viewModel.phoneNumber,
+            onUserNameInput = { viewModel.onUserNameInput(it) },
+            onUserPhoneInput = { viewModel.onUserPhoneInput(it) },
+            onTermsNav = {
+                navController.navigate("${Screen.HTMLScreen.route}/${HTMLScreenType.TERMS.name}")
+            },
+            onMainNav = {
+                navController.navigate(Screen.MainScreen.route)
+            }
+        )
+    }
 }
 
 @Composable

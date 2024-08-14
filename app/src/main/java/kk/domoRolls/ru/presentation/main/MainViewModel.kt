@@ -1,6 +1,5 @@
 package kk.domoRolls.ru.presentation.main
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
@@ -18,6 +17,7 @@ import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
+import kk.domoRolls.ru.util.BaseViewModel
 import kk.domoRolls.ru.util.isWorkingTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -39,7 +39,7 @@ class MainViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
     private val serviceRepository: ServiceRepository,
     private val firebaseConfigRepository: FirebaseConfigRepository,
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _user: MutableStateFlow<User> = MutableStateFlow(dataStoreService.getUserData())
     val user = _user.asStateFlow()
@@ -161,7 +161,7 @@ class MainViewModel @Inject constructor(
                         token = token.token
                     )
                 }
-                .catch { }
+                .catch { _showMainError.value = true }
                 .collect { menuItems ->
                     _menu.value = menuItems
                     _showLoading.value = false
@@ -191,7 +191,7 @@ class MainViewModel @Inject constructor(
                         }
                     }
                 }
-                .catch { }
+                .catch { _showMainError.value = true }
                 .collect()
         }
     }

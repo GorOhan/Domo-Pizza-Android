@@ -52,6 +52,7 @@ import kk.domoRolls.ru.R
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.presentation.components.BaseButton
+import kk.domoRolls.ru.presentation.components.BaseScreen
 import kk.domoRolls.ru.presentation.components.DomoToolbar
 import kk.domoRolls.ru.presentation.html.HTMLScreenType
 import kk.domoRolls.ru.presentation.navigation.Screen
@@ -70,32 +71,37 @@ fun MyProfileScreen(
     viewModel: MyProfileViewModel = hiltViewModel(),
 ) {
 
-    MyProfileScreenUI(
-        ordersCount = viewModel.myOrdersCount.collectAsState(),
-        addressCount = viewModel.myAddressesCount.collectAsState(),
-        promoCode = viewModel.promoCodes.collectAsState(),
-        user = viewModel.user.collectAsState(),
-        onClick = { event ->
-            when (event) {
-                Event.BackClick -> {
-                    navController.navigateUp()
-                }
+    BaseScreen(
+        onBackClick = { navController.popBackStack() },
+        baseViewModel = viewModel,
+    ) {
+        MyProfileScreenUI(
+            ordersCount = viewModel.myOrdersCount.collectAsState(),
+            addressCount = viewModel.myAddressesCount.collectAsState(),
+            promoCode = viewModel.promoCodes.collectAsState(),
+            user = viewModel.user.collectAsState(),
+            onClick = { event ->
+                when (event) {
+                    Event.BackClick -> {
+                        navController.navigateUp()
+                    }
 
-                is Event.NavigateClick -> {
-                    navController.navigate(event.route)
-                }
+                    is Event.NavigateClick -> {
+                        navController.navigate(event.route)
+                    }
 
-                Event.LogOut -> {
-                    viewModel.logOut()
-                    navController.navigate(Screen.RegistrationScreen.route) {
-                        popUpTo(navController.graph.id) {
-                            inclusive = false
+                    Event.LogOut -> {
+                        viewModel.logOut()
+                        navController.navigate(Screen.RegistrationScreen.route) {
+                            popUpTo(navController.graph.id) {
+                                inclusive = false
+                            }
                         }
                     }
                 }
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable

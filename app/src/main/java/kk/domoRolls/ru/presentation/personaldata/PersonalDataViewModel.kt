@@ -1,7 +1,6 @@
 package kk.domoRolls.ru.presentation.personaldata
 
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -10,6 +9,7 @@ import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.User
+import kk.domoRolls.ru.util.BaseViewModel
 import kk.domoRolls.ru.util.convertMillisToDateFormat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PersonalDataViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
-) : ViewModel() {
+) : BaseViewModel() {
     private val databaseReference: DatabaseReference = FirebaseDatabase.getInstance().reference
 
     private val _user: MutableStateFlow<User> = MutableStateFlow(dataStoreService.getUserData())
@@ -81,6 +81,7 @@ class PersonalDataViewModel @Inject constructor(
                     Log.d("Firebase", "Username updated.")
                     observeUserData()
                 } else {
+                    _showMainError.value = true
                     // Handle the error
                     Log.e("Firebase", "Failed to update username.", task.exception)
                 }

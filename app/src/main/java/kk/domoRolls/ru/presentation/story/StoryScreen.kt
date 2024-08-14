@@ -34,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import kk.domoRolls.ru.domain.model.PromoStory
+import kk.domoRolls.ru.presentation.components.BaseScreen
 import kk.domoRolls.ru.presentation.theme.DomoTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -42,18 +43,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
 @Composable
 fun StoryScreen(
     navController: NavHostController,
     currentIndex: Int = 0,
-    storyViewModel: StoryViewModel = hiltViewModel()
+    viewModel: StoryViewModel = hiltViewModel()
 ) {
-    StoryScreenUI(
-        promoStoryState = storyViewModel.promoList,
-        currentIndex = currentIndex,
-        onBackClick = { navController.navigateUp() }
-    )
+    BaseScreen(
+        onBackClick = { navController.popBackStack() },
+        baseViewModel = viewModel,
+    ) {
+        StoryScreenUI(
+            promoStoryState = viewModel.promoList,
+            currentIndex = currentIndex,
+            onBackClick = { navController.navigateUp() }
+        )
+    }
 }
 
 @SuppressLint("CoroutineCreationDuringComposition")

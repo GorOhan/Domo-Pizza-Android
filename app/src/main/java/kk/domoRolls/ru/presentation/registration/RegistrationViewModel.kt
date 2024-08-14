@@ -1,6 +1,5 @@
 package kk.domoRolls.ru.presentation.registration
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -13,6 +12,7 @@ import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.AuthRepository
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
+import kk.domoRolls.ru.util.BaseViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,7 +33,7 @@ class RegistrationViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val dataStoreService: DataStoreService,
     private val firebaseConfigRepository: FirebaseConfigRepository
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _userName: MutableStateFlow<String> = MutableStateFlow("")
     val userName = _userName.asStateFlow()
@@ -120,7 +120,9 @@ class RegistrationViewModel @Inject constructor(
                 .onEach {
                     _token.value = it.token
                 }
-                .catch {}
+                .catch {
+                    _showMainError.value = true
+                }
                 .collect()
         }
     }
@@ -138,7 +140,9 @@ class RegistrationViewModel @Inject constructor(
                 token = _token.value
             )
                 .onEach {}
-                .catch {}
+                .catch {
+                    _showMainError.value = true
+                }
                 .collect()
         }
     }

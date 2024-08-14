@@ -1,11 +1,12 @@
 package kk.domoRolls.ru.presentation.html
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
+import kk.domoRolls.ru.util.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -14,7 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HTMLViewModel @Inject constructor(
     private val firebaseConfigRepository: FirebaseConfigRepository
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _content: MutableStateFlow<String> = MutableStateFlow("")
     val content = _content.asStateFlow()
@@ -23,6 +24,7 @@ class HTMLViewModel @Inject constructor(
         viewModelScope.launch {
             firebaseConfigRepository.getTermsMessage()
                 .onEach { _content.value = it }
+                .catch { _showMainError.value = true }
                 .collect()
         }
     }

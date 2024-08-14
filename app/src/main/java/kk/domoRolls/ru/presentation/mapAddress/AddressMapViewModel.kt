@@ -1,6 +1,5 @@
 package kk.domoRolls.ru.presentation.mapAddress
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -12,6 +11,7 @@ import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.domain.model.map.Polygon
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
+import kk.domoRolls.ru.util.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -23,7 +23,7 @@ import javax.inject.Inject
 class AddressMapViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
     private val firebaseConfigRepository: FirebaseConfigRepository,
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _user: MutableStateFlow<User> = MutableStateFlow(dataStoreService.getUserData())
     val user = _user.asStateFlow()
@@ -104,6 +104,7 @@ class AddressMapViewModel @Inject constructor(
                             onFailure(exception)
                         }
                 } catch (e: Exception) {
+                    _showMainError.value = true
                     onFailure(e)
                 }
             }

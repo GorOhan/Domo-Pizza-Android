@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.domain.model.address.Address
+import kk.domoRolls.ru.presentation.components.BaseScreen
 import kk.domoRolls.ru.presentation.components.DomoToolbar
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoBlue
@@ -43,10 +44,11 @@ import kk.domoRolls.ru.presentation.theme.DomoGray
 @Composable
 fun MyAddressesScreen(
     navController: NavHostController,
-    myAddressViewModel: MyAddressViewModel = hiltViewModel()
+    viewModel: MyAddressViewModel = hiltViewModel()
 ) {
 
-    val screenEvent = myAddressViewModel.event.collectAsState(MyAddressesEvent.Nothing)
+    val screenEvent = viewModel.event.collectAsState(MyAddressesEvent.Nothing)
+
     LaunchedEffect(screenEvent.value) {
         when (val event = screenEvent.value) {
             MyAddressesEvent.BackClick -> {
@@ -61,10 +63,16 @@ fun MyAddressesScreen(
             is MyAddressesEvent.UpdateAddress -> {}
         }
     }
-    MyAddressesScreenUI(
-        address = myAddressViewModel.myAddresses.collectAsState(),
-        onEvent = { myAddressViewModel.setEvent(it) }
-    )
+
+    BaseScreen(
+        onBackClick = { navController.popBackStack() },
+        baseViewModel = viewModel,
+    ) {
+        MyAddressesScreenUI(
+            address = viewModel.myAddresses.collectAsState(),
+            onEvent = { viewModel.setEvent(it) }
+        )
+    }
 }
 
 @Composable

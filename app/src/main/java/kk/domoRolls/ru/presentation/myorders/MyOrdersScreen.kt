@@ -33,6 +33,7 @@ import coil.compose.rememberAsyncImagePainter
 import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.presentation.components.BaseButton
+import kk.domoRolls.ru.presentation.components.BaseScreen
 import kk.domoRolls.ru.presentation.components.DomoToolbar
 import kk.domoRolls.ru.presentation.myorders.MyOrdersViewModel
 import kk.domoRolls.ru.presentation.theme.DomoBlue
@@ -44,31 +45,37 @@ import kk.domoRolls.ru.util.formatToOrderType
 @Composable
 fun MyOrdersScreen(
     navController: NavHostController,
-    myOrdersViewModel: MyOrdersViewModel = hiltViewModel()
+    viewModel: MyOrdersViewModel = hiltViewModel()
 ) {
-    val orders = myOrdersViewModel.myOrders.collectAsState()
+    val orders = viewModel.myOrders.collectAsState()
 
-    MyOrdersScreenUI(
-        orders = orders.value,
-        onEvent = {
-            when(it){
-                MyOrdersEvent.BackClick -> {
-                    navController.popBackStack()
+    BaseScreen(
+        onBackClick = { navController.popBackStack() },
+        baseViewModel = viewModel,
+    ) {
+        MyOrdersScreenUI(
+            orders = orders.value,
+            onEvent = {
+                when (it) {
+                    MyOrdersEvent.BackClick -> {
+                        navController.popBackStack()
+                    }
+
+                    else -> {}
                 }
-                else -> {}
+            },
+            findImages = { ids ->
+                viewModel.getImagesUrls(ids)
             }
-        },
-        findImages = { ids ->
-            myOrdersViewModel.getImagesUrls(ids)
-        }
-    )
+        )
+    }
 }
 
 @Composable
 fun MyOrdersScreenUI(
     orders: List<Order>,
-    onEvent:(MyOrdersEvent)->Unit = {},
-    findImages:(List<String?>)->List<String> = {_-> emptyList() }
+    onEvent: (MyOrdersEvent) -> Unit = {},
+    findImages: (List<String?>) -> List<String> = { _ -> emptyList() }
 ) {
 
     Scaffold(
@@ -99,7 +106,7 @@ fun MyOrdersScreenUI(
                 val ids = it.orderItem?.items?.map { it.product?.id }
                 OrderItem(
                     order = it,
-                    images = findImages(ids?: emptyList())
+                    images = findImages(ids ?: emptyList())
                 )
             }
         }
@@ -138,7 +145,7 @@ fun OrderItem(
                 )
 
                 Text(
-                    text = order.orderItem?.whenCreated?.formatToOrderType()?:"",
+                    text = order.orderItem?.whenCreated?.formatToOrderType() ?: "",
                     style = MaterialTheme.typography.titleSmall,
                     color = Color.Black
                 )

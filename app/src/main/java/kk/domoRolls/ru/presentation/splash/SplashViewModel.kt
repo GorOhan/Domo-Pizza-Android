@@ -1,6 +1,5 @@
 package kk.domoRolls.ru.presentation.splash
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
@@ -9,6 +8,7 @@ import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
+import kk.domoRolls.ru.util.BaseViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +26,7 @@ class SplashViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
     private val serviceRepository: ServiceRepository,
     private val firebaseConfigRepository: FirebaseConfigRepository,
-) : ViewModel() {
+) : BaseViewModel(){
 
     private val _userId: MutableStateFlow<String?> = MutableStateFlow("")
     val userId = _userId.asStateFlow()
@@ -54,14 +54,18 @@ class SplashViewModel @Inject constructor(
                                 token = token.token
                             )
                         }
-                    }.catch {}
+                    }.catch {
+                        _showMainError.value = true
+                    }
                     .collect()
             }
             val firebase = async {
                 firebaseConfigRepository.getAppAvailable().onEach {
                     _isAppAvailable.value = it
                 }
-                    .catch { }
+                    .catch {
+                        _showMainError.value = true
+                    }
                     .collect()
             }
 

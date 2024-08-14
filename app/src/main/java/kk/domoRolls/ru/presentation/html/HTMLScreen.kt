@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.HtmlCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import kk.domoRolls.ru.presentation.components.BaseScreen
 import kk.domoRolls.ru.presentation.theme.DomoTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,9 +33,14 @@ fun HtmlScreen(
         viewModel.setContent(htmlScreenType)
     }
 
-    HtmlScreenUI(
-        viewModel.content
-    )
+    BaseScreen(
+        onBackClick = {  },
+        baseViewModel = viewModel,
+    ) {
+        HtmlScreenUI(
+            viewModel.content
+        )
+    }
 }
 
 @Composable

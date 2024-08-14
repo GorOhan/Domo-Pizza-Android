@@ -1,8 +1,6 @@
 package kk.domoRolls.ru.presentation.cart
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetMenuRequest
 import kk.domoRolls.ru.data.model.order.ItemCategory
@@ -12,6 +10,7 @@ import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
+import kk.domoRolls.ru.util.BaseViewModel
 import kk.domoRolls.ru.util.isWorkingTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -33,7 +32,7 @@ import javax.inject.Inject
 class CartViewModel @Inject constructor(
     private val serviceRepository: ServiceRepository,
     firebaseConfigRepository: FirebaseConfigRepository
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _currentCart: MutableStateFlow<List<MenuItem>> = MutableStateFlow(emptyList())
     val currentCart = _currentCart.asStateFlow()
@@ -88,7 +87,9 @@ class CartViewModel @Inject constructor(
                         token = token.token
                     )
                 }
-                .catch { }
+                .catch {
+                    _showMainError.value = true
+                }
                 .collect { menuItems ->
                     _menu.value = menuItems
                     _currentCart.value = menuItems.filter { it.countInCart > 0 }
@@ -104,6 +105,9 @@ class CartViewModel @Inject constructor(
         }
 
         serviceRepository.getCategories()
+            .catch {
+                _showMainError.value = true
+            }
             .onEach {
                 _categories.value = it
             }.launchIn(viewModelScope)

@@ -1,6 +1,5 @@
 package kk.domoRolls.ru.presentation.orderstatus
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetOrderByIdRequest
@@ -13,6 +12,7 @@ import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.presentation.myaddresses.MyAddressesEvent
+import kk.domoRolls.ru.util.BaseViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -30,7 +30,7 @@ class OrderStatusViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
     private val serviceRepository: ServiceRepository,
     private val firebaseConfigRepository: FirebaseConfigRepository,
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _user: MutableStateFlow<User> = MutableStateFlow(dataStoreService.getUserData())
     val user = _user.asStateFlow()
@@ -68,6 +68,7 @@ class OrderStatusViewModel @Inject constructor(
                     }
                 }
                 .catch {
+                    _showMainError.value = true
                 }
                 .collect()
         }

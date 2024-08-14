@@ -1,7 +1,6 @@
 package kk.domoRolls.ru.presentation.payorder
 
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -18,6 +17,7 @@ import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.model.address.Address
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
+import kk.domoRolls.ru.util.BaseViewModel
 import kk.domoRolls.ru.util.sliceJsonFromResponse
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.util.Date
-import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -42,7 +41,7 @@ class PayOrderViewModel @Inject constructor(
     val serviceRepository: ServiceRepository,
     firebaseConfigRepository: FirebaseConfigRepository,
     val dataStoreService: DataStoreService,
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _cartCount: MutableStateFlow<Int> = MutableStateFlow(0)
     val cartCount = _cartCount.asStateFlow()
@@ -120,8 +119,8 @@ class PayOrderViewModel @Inject constructor(
                     }
 
                 } catch (e: Exception) {
+                    _showMainError.value = true
                     Log.i("TINKOFF BODY", "ERROR")
-
                 }
 
             }
@@ -203,6 +202,7 @@ class PayOrderViewModel @Inject constructor(
                         }
                     }
                     .catch {
+                        _showMainError.value = true
                         Log.d("SENDORDER", it.localizedMessage)
                     }
                     .collect()
@@ -239,6 +239,7 @@ class PayOrderViewModel @Inject constructor(
                         }
                     }
                     .catch {
+                        _showMainError.value = true
                     }
                     .collect()
 
@@ -297,6 +298,7 @@ class PayOrderViewModel @Inject constructor(
                             onFailure(exception)
                         }
                 } catch (e: Exception) {
+                    _showMainError.value = true
                     onFailure(e)
                 }
             }

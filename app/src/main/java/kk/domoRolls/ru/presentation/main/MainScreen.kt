@@ -60,6 +60,7 @@ import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.domain.model.PromoStory
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.model.address.Address
+import kk.domoRolls.ru.presentation.components.BaseScreen
 import kk.domoRolls.ru.presentation.components.CartButton
 import kk.domoRolls.ru.presentation.components.CurrentOrder
 import kk.domoRolls.ru.presentation.components.DomoLoading
@@ -99,43 +100,48 @@ fun MainScreen(
         mainViewModel.getOrders()
     }
 
-    MainScreenUI(
-        showLoading = showLoading,
-        currentOrders = currentOrders,
-        promoStoryList = promo,
-        menu = menu,
-        defaultAddress = defaultAddress,
-        categories = categories,
-        user = user,
-        onEvent = {
-            when (it) {
-                MainScreenEvent.BackClick -> {
-                    navController.popBackStack()
-                }
+    BaseScreen(
+        onBackClick = { navController.popBackStack() },
+        baseViewModel = mainViewModel,
+    ) {
+        MainScreenUI(
+            showLoading = showLoading,
+            currentOrders = currentOrders,
+            promoStoryList = promo,
+            menu = menu,
+            defaultAddress = defaultAddress,
+            categories = categories,
+            user = user,
+            onEvent = {
+                when (it) {
+                    MainScreenEvent.BackClick -> {
+                        navController.popBackStack()
+                    }
 
-                is MainScreenEvent.NavigateClick -> {
-                    navController.navigate(it.route)
-                }
+                    is MainScreenEvent.NavigateClick -> {
+                        navController.navigate(it.route)
+                    }
 
-                MainScreenEvent.Nothing -> {}
-                is MainScreenEvent.AddToCart -> {
-                    mainViewModel.addToCart(it.menuItem)
-                }
+                    MainScreenEvent.Nothing -> {}
+                    is MainScreenEvent.AddToCart -> {
+                        mainViewModel.addToCart(it.menuItem)
+                    }
 
-                is MainScreenEvent.RemoveFromCart -> {
-                    mainViewModel.removeFromCart(it.menuItem)
-                }
+                    is MainScreenEvent.RemoveFromCart -> {
+                        mainViewModel.removeFromCart(it.menuItem)
+                    }
 
-                is MainScreenEvent.CategoryCheck -> {
-                    mainViewModel.categoryCheck(it.category)
-                }
+                    is MainScreenEvent.CategoryCheck -> {
+                        mainViewModel.categoryCheck(it.category)
+                    }
 
-                MainScreenEvent.ProfileClick -> {
-                    mainViewModel.handleProfileClick()
+                    MainScreenEvent.ProfileClick -> {
+                        mainViewModel.handleProfileClick()
+                    }
                 }
             }
-        }
-    )
+        )
+    }
 }
 
 

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kk.domoRolls.ru.presentation.components.BaseButton
+import kk.domoRolls.ru.presentation.components.BaseScreen
 import kk.domoRolls.ru.presentation.components.RegistrationCodeInput
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoTheme
@@ -39,26 +40,31 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun OTPScreen(
     navController: NavController,
-    registrationViewModel: RegistrationViewModel,
+    viewModel: RegistrationViewModel,
 ) {
-    val loginUser by registrationViewModel.navigateToMain.collectAsState(false)
+    val loginUser by viewModel.navigateToMain.collectAsState(false)
 
     LaunchedEffect(loginUser) {
         if (loginUser) navController.navigate(Screen.NotifyPermissionScreen.route)
     }
 
-    OTPScreenUI(
-        onGetOtpClick = { registrationViewModel.sendOTP() },
-        onNavBackClick = { navController.popBackStack() },
-        verifyOtp = { registrationViewModel.verifyOtpCode() },
-        onOTPInput = { registrationViewModel.onOTPInput(it) },
-        codeState = registrationViewModel.codeInput,
-        phoneState = registrationViewModel.phoneNumber,
-        otpLengthState = registrationViewModel.otpLength,
-        loginButtonEnableState = registrationViewModel.isReadyToLogin,
-        isOtpErrorState = registrationViewModel.isOtpError,
-        setOtpError = { registrationViewModel.setOTPError(it) }
-    )
+    BaseScreen(
+        onBackClick = { navController.popBackStack() },
+        baseViewModel = viewModel,
+    ) {
+        OTPScreenUI(
+            onGetOtpClick = { viewModel.sendOTP() },
+            onNavBackClick = { navController.popBackStack() },
+            verifyOtp = { viewModel.verifyOtpCode() },
+            onOTPInput = { viewModel.onOTPInput(it) },
+            codeState = viewModel.codeInput,
+            phoneState = viewModel.phoneNumber,
+            otpLengthState = viewModel.otpLength,
+            loginButtonEnableState = viewModel.isReadyToLogin,
+            isOtpErrorState = viewModel.isOtpError,
+            setOtpError = { viewModel.setOTPError(it) }
+        )
+    }
 }
 
 @Composable

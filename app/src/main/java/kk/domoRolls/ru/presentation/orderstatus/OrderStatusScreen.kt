@@ -45,6 +45,7 @@ import kk.domoRolls.ru.data.model.order.OrderStepCount
 import kk.domoRolls.ru.data.model.order.orderStatusTitle
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.presentation.components.BaseButton
+import kk.domoRolls.ru.presentation.components.BaseScreen
 import kk.domoRolls.ru.presentation.navigation.Screen
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
@@ -57,27 +58,38 @@ import kk.domoRolls.ru.presentation.theme.InterFont
 fun OrderStatusScreen(
     orderId: String,
     navController: NavHostController,
-    orderStatusViewModel: OrderStatusViewModel = hiltViewModel(),
+    viewModel: OrderStatusViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(Unit) {
-        orderStatusViewModel.getOrderById(orderId)
+        viewModel.getOrderById(orderId)
     }
-    OrderStatusScreenUI(
-        deliveryTime = orderStatusViewModel.deliveryTime.collectAsState(),
-        order= orderStatusViewModel.order.collectAsState(),
-        user = orderStatusViewModel.user.collectAsState(),
-        onEvent = {
-            when(it){
-                OrderStatusEvent.BackClick -> { navController.popBackStack() }
-                OrderStatusEvent.ToMainPage -> { navController.navigate(Screen.MainScreen.route){
-                    popUpTo(navController.graph.id) {
-                        inclusive = false
+    BaseScreen(
+        onBackClick = { navController.popBackStack() },
+        baseViewModel = viewModel,
+    ) {
+        OrderStatusScreenUI(
+            deliveryTime = viewModel.deliveryTime.collectAsState(),
+            order = viewModel.order.collectAsState(),
+            user = viewModel.user.collectAsState(),
+            onEvent = {
+                when (it) {
+                    OrderStatusEvent.BackClick -> {
+                        navController.popBackStack()
                     }
-                } }
-                OrderStatusEvent.Nothing -> {}
+
+                    OrderStatusEvent.ToMainPage -> {
+                        navController.navigate(Screen.MainScreen.route) {
+                            popUpTo(navController.graph.id) {
+                                inclusive = false
+                            }
+                        }
+                    }
+
+                    OrderStatusEvent.Nothing -> {}
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable

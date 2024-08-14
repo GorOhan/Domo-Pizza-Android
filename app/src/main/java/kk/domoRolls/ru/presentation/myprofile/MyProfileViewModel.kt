@@ -1,6 +1,5 @@
 package kk.domoRolls.ru.presentation.myprofile
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetOrdersRequest
@@ -10,6 +9,7 @@ import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
+import kk.domoRolls.ru.util.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -25,7 +25,7 @@ class MyProfileViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
     private val firebaseConfigRepository: FirebaseConfigRepository,
     private val serviceRepository: ServiceRepository,
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _user: MutableStateFlow<User> = MutableStateFlow(dataStoreService.getUserData())
     val user = _user.asStateFlow()
@@ -79,7 +79,7 @@ class MyProfileViewModel @Inject constructor(
                     }
                 }
                 .catch {
-
+                    _showMainError.value = true
                 }
                 .collect()
         }

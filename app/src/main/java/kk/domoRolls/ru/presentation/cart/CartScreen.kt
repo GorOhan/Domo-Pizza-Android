@@ -36,6 +36,7 @@ import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.PromoCode
+import kk.domoRolls.ru.presentation.components.BaseScreen
 import kk.domoRolls.ru.presentation.components.CartMenuItem
 import kk.domoRolls.ru.presentation.components.Devices
 import kk.domoRolls.ru.presentation.components.DomoToolbar
@@ -74,18 +75,22 @@ fun CartScreen(
         }
     }
 
-    CartScreenUI(
-        deviceCount = viewModel.deviceCount.collectAsState(),
-        usedPromoCode = viewModel.usedPromoCode.collectAsState(),
-        isPromoSuccess = viewModel.isPromoSuccess.collectAsState(),
-        inputPromo = viewModel.inputPromo.collectAsState(),
-        gift = viewModel.gift.collectAsState(),
-        currentCart = viewModel.currentCart.collectAsState(),
-        giftProduct = viewModel.giftProduct.collectAsState(),
-        spices = viewModel.spices.collectAsState(),
-        onClick = { viewModel.setEvent(it) }
-    )
-
+    BaseScreen(
+        onBackClick = { navController.popBackStack() },
+        baseViewModel = viewModel,
+    ) {
+        CartScreenUI(
+            deviceCount = viewModel.deviceCount.collectAsState(),
+            usedPromoCode = viewModel.usedPromoCode.collectAsState(),
+            isPromoSuccess = viewModel.isPromoSuccess.collectAsState(),
+            inputPromo = viewModel.inputPromo.collectAsState(),
+            gift = viewModel.gift.collectAsState(),
+            currentCart = viewModel.currentCart.collectAsState(),
+            giftProduct = viewModel.giftProduct.collectAsState(),
+            spices = viewModel.spices.collectAsState(),
+            onClick = { viewModel.setEvent(it) }
+        )
+    }
     if (onEvent.value is Event.ConfirmOrder && isWorkingTime.value.not()) {
         SleepView(
             seeMenuClick = { viewModel.setEvent(Event.BackClick)}
