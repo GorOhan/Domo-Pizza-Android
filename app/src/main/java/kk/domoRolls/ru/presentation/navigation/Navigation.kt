@@ -2,6 +2,7 @@ package kk.domoRolls.ru.presentation.navigation
 
 import MyOrdersScreen
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -15,6 +16,7 @@ import kk.domoRolls.ru.presentation.main.MainScreen
 import kk.domoRolls.ru.presentation.mapAddress.AddressMapScreen
 import kk.domoRolls.ru.presentation.myaddresses.MyAddressesScreen
 import kk.domoRolls.ru.presentation.myprofile.MyProfileScreen
+import kk.domoRolls.ru.presentation.onboarding.NotifyPermissionScreen
 import kk.domoRolls.ru.presentation.orderstatus.OrderStatusScreen
 import kk.domoRolls.ru.presentation.payorder.PayOrderScreen
 import kk.domoRolls.ru.presentation.personaldata.PersonalDataScreen
@@ -23,6 +25,7 @@ import kk.domoRolls.ru.presentation.registration.RegistrationScreen
 import kk.domoRolls.ru.presentation.registration.RegistrationViewModel
 import kk.domoRolls.ru.presentation.splash.SplashScreen
 import kk.domoRolls.ru.presentation.story.StoryScreen
+import kk.domoRolls.ru.util.hasNotificationPermission
 
 sealed class Screen(val route: String) {
     data object SplashScreen : Screen("splashScreen")
@@ -46,6 +49,7 @@ sealed class Screen(val route: String) {
 @Composable
 internal fun NavMain(
 ) {
+    val context = LocalContext.current
     val navController = rememberNavController()
     val registrationViewModel: RegistrationViewModel = hiltViewModel()
 
@@ -63,9 +67,17 @@ internal fun NavMain(
         }
 
         composable(route = Screen.NotifyPermissionScreen.route) {
-            MainScreen(
-                navController = navController
-            )
+
+            if (context.hasNotificationPermission()) {
+                MainScreen(
+                    navController = navController
+                )
+            } else {
+                NotifyPermissionScreen(
+                    navController = navController
+                )
+            }
+
         }
 
         composable(

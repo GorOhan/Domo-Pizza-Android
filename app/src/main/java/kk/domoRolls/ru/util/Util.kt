@@ -1,9 +1,17 @@
 package kk.domoRolls.ru.util
 
+import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.startActivity
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.geometry.Polygon
 import com.yandex.mapkit.map.Map
@@ -53,7 +61,7 @@ fun isWorkingTimeForSlot(timeSlot: TimeSlot): Boolean {
 fun isWorkingTime(timeSlots: List<TimeSlot>) =
     timeSlots.map { isWorkingTimeForSlot(it) }.any { it }
 
-fun formatNumber(input: String,format: String): String {
+fun formatNumber(input: String, format: String): String {
     // Ensure the input contains only digits
     require(input.all { it.isDigit() }) { "Input must contain only digits" }
 
@@ -145,7 +153,7 @@ fun isPointInPolygon(point: Point, polygon: Polygon): Boolean {
 
 fun performGeocoding(search: String, map: Map, onResult: (Point?) -> Unit) {
     val searchManager = SearchFactory.getInstance().createSearchManager(SearchManagerType.ONLINE)
-     searchManager.submit(
+    searchManager.submit(
         search,
         VisibleRegionUtils.toPolygon(map.visibleRegion),
         SearchOptions(),
@@ -189,4 +197,21 @@ fun String.sliceJsonFromResponse(): String? {
     } else {
         null // Return null if the format is incorrect
     }
+}
+
+fun Context.hasNotificationPermission() =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+    } else {
+        true
+    }
+
+fun openAppSettings(context: Context) {
+    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+        data = Uri.fromParts("package", context.packageName, null)
+    }
+    startActivity(context, intent, null)
 }

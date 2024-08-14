@@ -1,5 +1,8 @@
 package kk.domoRolls.ru.presentation.myprofile
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,6 +44,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.content.PermissionChecker
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kk.domoRolls.ru.R
@@ -57,6 +62,7 @@ import kk.domoRolls.ru.presentation.theme.DomoRed
 import kk.domoRolls.ru.presentation.theme.DomoTheme
 import kk.domoRolls.ru.util.copyTextToClipboard
 import kk.domoRolls.ru.util.formatNumber
+import kk.domoRolls.ru.util.openAppSettings
 
 @Composable
 fun MyProfileScreen(
@@ -94,12 +100,27 @@ fun MyProfileScreen(
 
 @Composable
 fun MyProfileScreenUI(
-    ordersCount:State<Int> = mutableIntStateOf(0),
+    ordersCount: State<Int> = mutableIntStateOf(0),
     promoCode: State<List<PromoCode>> = mutableStateOf(emptyList()),
     user: State<User> = mutableStateOf(User()),
     addressCount: State<Int> = mutableStateOf(0),
     onClick: (type: Event) -> Unit = { _ -> }
 ) {
+    val context = LocalContext.current
+    var permissionGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) == PermissionChecker.PERMISSION_GRANTED
+        )
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        permissionGranted = isGranted
+    }
+
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -135,7 +156,10 @@ fun MyProfileScreenUI(
         ProfileInfoItem(
             title = "Пуш-уведомления",
             showArrowIcon = false,
-            showSwitch = true
+            showSwitch = true,
+            accessPermission = {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         )
         ProfileInfoItem(
             title = "Пользовательское соглашение",
@@ -373,8 +397,18 @@ fun ProfileInfoItem(
     titleColor: Color = Color.Black,
     showArrowIcon: Boolean = true,
     showSwitch: Boolean = false,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    accessPermission: () -> Unit = {},
 ) {
+    val context = LocalContext.current
+    var permissionGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) == PermissionChecker.PERMISSION_GRANTED
+        )
+    }
+
     Column(
         modifier = Modifier
             .clickable { onClick() }
@@ -402,11 +436,14 @@ fun ProfileInfoItem(
             }
 
             if (showSwitch) {
-                var checked by remember { mutableStateOf(true) }
+                var checked by remember { mutableStateOf(permissionGranted) }
 
                 Switch(
                     checked = checked,
-                    onCheckedChange = { checked = it },
+                    onCheckedChange = {
+                        checked = it
+                        if (checked) accessPermission() else openAppSettings(context)
+                    },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = DomoBlue,
