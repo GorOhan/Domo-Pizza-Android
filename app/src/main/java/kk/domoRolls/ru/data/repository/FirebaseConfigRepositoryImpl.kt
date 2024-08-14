@@ -42,6 +42,8 @@ class FirebaseConfigRepositoryImpl(
     private val _mapData: MutableStateFlow<List<Polygon>> = MutableStateFlow(emptyList())
     private val _addresses: MutableStateFlow<List<Address>> = MutableStateFlow(emptyList())
     private val _deliveryTime: MutableStateFlow<String> = MutableStateFlow("")
+    private val _usedPromocodes: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
+
 
 
     init {
@@ -118,6 +120,16 @@ class FirebaseConfigRepositoryImpl(
                 println("Error: ${exception.message}")
             }
         )
+
+        fetchUserPromocodes(dataStoreService.getUserData().id,
+            onSuccess = { codes ->
+                _usedPromocodes.value = codes
+            },
+            onFailure = { exception ->
+                // Handle the error here
+                println("Error: ${exception.message}")
+            }
+        )
     }
 
     override fun getAddressById(id: String): Address? {
@@ -126,6 +138,10 @@ class FirebaseConfigRepositoryImpl(
 
     override fun getDeliveryTime(): StateFlow<String> {
         return _deliveryTime
+    }
+
+    override fun getUsedPromoCodes(): StateFlow<List<String>> {
+        return _usedPromocodes
     }
 }
 
@@ -143,6 +159,31 @@ private fun fetchUserAddresses(
                 val user = snapshot.getValue(UserFirebase::class.java)
                 val addresses = user?.addresses ?: emptyList()
                 onSuccess(addresses)
+            } catch (e: Exception) {
+                onFailure(e)
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            onFailure(error.toException())
+        }
+    })
+}
+
+private fun fetchUserPromocodes(
+    userId: String,
+    onSuccess: (List<String>) -> Unit,
+    onFailure: (Exception) -> Unit
+) {
+    val database = FirebaseDatabase.getInstance()
+    val userRef = database.getReference(userId)
+
+    userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            try {
+                val user = snapshot.getValue(UserFirebase::class.java)
+                val usedPromocodes = user?.usedPromocodes ?: emptyList()
+                onSuccess(usedPromocodes)
             } catch (e: Exception) {
                 onFailure(e)
             }

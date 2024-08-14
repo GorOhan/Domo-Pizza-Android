@@ -177,6 +177,7 @@ class PayOrderViewModel @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun sendOrderToIIKO() {
 
         val sendOrderData = createSendOrderData(
@@ -195,7 +196,6 @@ class PayOrderViewModel @Inject constructor(
             viewModelScope.launch {
                 serviceRepository.getToken(ServiceTokenRequest())
                     .flatMapConcat { tokenResponse ->
-
                         serviceRepository.sendOrder(
                             sendOrderData,
                             token = tokenResponse.token
@@ -292,12 +292,10 @@ class PayOrderViewModel @Inject constructor(
                         snapshot.children.mapNotNull { it.getValue(String::class.java) }
                             .toMutableList()
 
-                    val new = promoCodes.add(usedPromoCode)
+                    promoCodes.add(usedPromoCode)
 
-                    userRef.child("usedPromocodes").setValue(new)
+                    userRef.child("usedPromocodes").setValue(promoCodes)
                         .addOnSuccessListener {
-                            Log.i("FIREBASE UPDATE", "PRMOCODE $new")
-
                             onSuccess()
 
                         }

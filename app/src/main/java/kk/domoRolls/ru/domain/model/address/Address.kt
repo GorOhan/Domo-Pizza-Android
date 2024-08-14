@@ -30,5 +30,6 @@ data class UserFirebase(
     val fcmToken: String = "",
     val gender: String = "",
     val phone: String = "",
-    val username: String = ""
+    val username: String = "",
+    val usedPromocodes: List<String> = emptyList()
 )

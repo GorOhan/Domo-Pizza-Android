@@ -25,4 +25,5 @@ interface FirebaseConfigRepository {
     fun fetchAddresses()
     fun getAddressById(id: String):Address?
     fun getDeliveryTime():StateFlow<String>
+    fun getUsedPromoCodes():StateFlow<List<String>>
 }
