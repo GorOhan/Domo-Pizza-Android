@@ -207,6 +207,7 @@ fun AddressMapScreen(
         mapView.onStart()
         mapView.mapWindow.map.addCameraListener(yandexCameraListener)
     }
+
     BottomSheetScaffold(
         scaffoldState = sheetState,
         containerColor = Color.White,
@@ -443,8 +444,6 @@ fun AddressMapScreen(
             ) {
                 it.mapWindow.map.addCameraListener(yandexCameraListener)
             }
-
-
 
             DeliveryZonePointer(
                 deliveryTime = addressMapViewModel.deliveryTime.collectAsState(),
