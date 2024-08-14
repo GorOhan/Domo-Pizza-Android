@@ -215,3 +215,12 @@ fun openAppSettings(context: Context) {
     }
     startActivity(context, intent, null)
 }
+
+fun Context.makeCall(phoneNumber: String) {
+    val intent = Intent(Intent.ACTION_DIAL).apply {
+        data = Uri.parse("tel:$phoneNumber")
+    }
+    if (intent.resolveActivity(packageManager) != null) {
+        startActivity(intent)
+    }
+}

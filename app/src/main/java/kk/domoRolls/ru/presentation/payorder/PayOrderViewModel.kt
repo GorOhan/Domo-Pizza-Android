@@ -126,8 +126,7 @@ class PayOrderViewModel @Inject constructor(
                     }
 
                 } catch (e: Exception) {
-                    _showMainError.value = true
-                    Log.i("TINKOFF BODY", "ERROR")
+                    _showContactToSupport.value = true
                 }
 
             }
@@ -212,14 +211,12 @@ class PayOrderViewModel @Inject constructor(
                         }
                     }
                     .catch {
-                        _showMainError.value = true
-                        Log.d("SENDORDER", it.localizedMessage)
+                        _showContactToSupport.value = true
                     }
                     .collect()
             }
         } else {
-            //todo show min price error
-            //   "Минимальная сумма заказа для доставки на ваш адрес составляет ${minDeliveryPrice ?: 800}₽
+            _showContactToSupport.value = true
         }
     }
 
@@ -246,7 +243,7 @@ class PayOrderViewModel @Inject constructor(
                         }
                     }
                     .catch {
-                        _showMainError.value = true
+                        _showContactToSupport.value = true
                     }
                     .collect()
 
@@ -268,10 +265,7 @@ class PayOrderViewModel @Inject constructor(
         userId: String,
         completion: () -> Unit
     ) {
-
-
         val ref = FirebaseDatabase.getInstance().reference
-
 
         ref.child("orders").child(orderId).setValue(userId)
         completion()
@@ -303,7 +297,6 @@ class PayOrderViewModel @Inject constructor(
                             onFailure(exception)
                         }
                 } catch (e: Exception) {
-                    _showMainError.value = true
                     onFailure(e)
                 }
             }

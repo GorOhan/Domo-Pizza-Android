@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.presentation.theme.DomoBlue
-import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
 
 
@@ -30,12 +28,13 @@ import kk.domoRolls.ru.presentation.theme.DomoGray
 fun BaseDialog(
     title: String,
     icon: Painter = painterResource(id = R.drawable.ic_error_alert),
+    hasNegativeButton:Boolean = false,
     positiveButtonText: String,
     negativeButtonText: String,
     onConfirmClick: () -> Unit,
     onNegativeClick: () -> Unit,
     onDismissRequest: () -> Unit,
-    positiveBackColor: Color  = DomoBlue
+
 ) {
     AlertDialog(
         icon = {
@@ -50,12 +49,33 @@ fun BaseDialog(
                 modifier = Modifier.fillMaxWidth(),
                 text = title,
                 textAlign = TextAlign.Center,
-                fontSize = 16.sp,
-                style = MaterialTheme.typography.titleSmall
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 16.sp
             )
         },
         dismissButton = {
-
+            if (hasNegativeButton) {
+                Button(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(0.4f)),
+                    enabled = true,
+                    onClick = {
+                            onNegativeClick()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = DomoBlue,
+                        contentColor = DomoGray,
+                        disabledContainerColor = DomoGray,
+                        disabledContentColor = DomoBlue
+                    )
+                ) {
+                    Text(
+                        text = negativeButtonText,
+                        color = Color.White,
+                        fontSize = 12.sp
+                    )
+                }
+            }
         },
         confirmButton = {
             Button(
