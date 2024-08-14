@@ -87,6 +87,7 @@ fun AddressMapScreen(
 
     val currentAddress by addressMapViewModel.currentAddressModel.collectAsState()
     val defaultAddress by addressMapViewModel.defaultAddress.collectAsState()
+    val deliveryTime by addressMapViewModel.deliveryTime.collectAsState()
 
 
     LaunchedEffect(key1 = true) {
@@ -446,6 +447,7 @@ fun AddressMapScreen(
 
 
             DeliveryZonePointer(
+                deliveryTime = addressMapViewModel.deliveryTime.collectAsState(),
                 modifier = Modifier.align(Alignment.Center),
                 inDeliveryZone = inDeliveryZone,
                 isDragFinished = isMoveFinished

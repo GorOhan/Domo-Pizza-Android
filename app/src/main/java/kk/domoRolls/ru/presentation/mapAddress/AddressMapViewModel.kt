@@ -15,6 +15,8 @@ import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -41,6 +43,9 @@ class AddressMapViewModel @Inject constructor(
     private val _defaultAddress: MutableStateFlow<Address?> = MutableStateFlow(null)
     val defaultAddress = _defaultAddress.asStateFlow()
 
+    private val _deliveryTime: MutableStateFlow<String> = MutableStateFlow("45")
+    val deliveryTime = _deliveryTime.asStateFlow()
+
     init {
         viewModelScope.launch {
             firebaseConfigRepository.getPolygons()
@@ -49,6 +54,12 @@ class AddressMapViewModel @Inject constructor(
                 }
                 .collect()
         }
+
+        firebaseConfigRepository.getDeliveryTime()
+            .onEach {
+                _deliveryTime.value = it
+            }
+            .launchIn(viewModelScope)
     }
 
     fun setOrderMode(inOrderMode: Boolean) {

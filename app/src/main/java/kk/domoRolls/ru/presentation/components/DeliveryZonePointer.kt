@@ -14,6 +14,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +25,7 @@ import kk.domoRolls.ru.presentation.theme.DomoBlue
 
 @Composable
 fun DeliveryZonePointer(
+    deliveryTime: State<String>,
     modifier: Modifier,
     inDeliveryZone: Boolean,
     isDragFinished: Boolean
@@ -39,7 +41,7 @@ fun DeliveryZonePointer(
         ) {
             Text(
                 modifier = Modifier.padding(6.dp),
-                text = if (inDeliveryZone) "~45 минут" else "Вне зоны доставки",
+                text = if (inDeliveryZone) "~${deliveryTime.value} минут" else "Вне зоны доставки",
                 style = MaterialTheme.typography.bodySmall,
                 fontSize = 8.sp,
                 color = Color.White
