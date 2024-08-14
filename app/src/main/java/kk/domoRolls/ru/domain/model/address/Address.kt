@@ -17,7 +17,7 @@ data class Address(
     val intercom: String = "",
     val default: Boolean = false,
     val privateHouse: Boolean = false,
-    val minDeliveryPrice: Int = 0,
+    val minDeliveryPrice: Int = 800,
     val street: String = "",
     val streetId: String = "",
     val type: String = ""

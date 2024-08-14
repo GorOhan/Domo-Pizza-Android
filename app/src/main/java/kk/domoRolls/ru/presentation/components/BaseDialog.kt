@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -28,6 +29,7 @@ import kk.domoRolls.ru.presentation.theme.DomoGray
 @Composable
 fun BaseDialog(
     title: String,
+    icon: Painter = painterResource(id = R.drawable.ic_error_alert),
     positiveButtonText: String,
     negativeButtonText: String,
     onConfirmClick: () -> Unit,
@@ -39,7 +41,7 @@ fun BaseDialog(
         icon = {
             Image(
                 modifier = Modifier.size(82.dp),
-                painter = painterResource(id = R.drawable.ic_error_alert),
+                painter = icon,
                 contentDescription = ""
             )
         },

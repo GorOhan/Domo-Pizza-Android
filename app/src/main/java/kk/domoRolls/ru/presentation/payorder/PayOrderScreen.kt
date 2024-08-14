@@ -43,6 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.presentation.components.BaseButton
+import kk.domoRolls.ru.presentation.components.BaseDialog
 import kk.domoRolls.ru.presentation.components.DomoToolbar
 import kk.domoRolls.ru.presentation.components.InfiniteCircularList
 import kk.domoRolls.ru.presentation.navigation.Screen
@@ -385,11 +386,30 @@ fun PayOrderScreen(
                     if (enableToPay.value) {
                         byMainFormPayment.launch(payment)
                     } else {
-
+                       payOrderViewModel.showMinPriceError(true)
                     }
                 }
             )
         }
 
+    }
+
+    val showMinPriceError by payOrderViewModel.showMinPriceError.collectAsState()
+
+    if (showMinPriceError) {
+        BaseDialog(
+            title = "Минимальная сумма заказа для доставки на ваш адрес составляет ${defaultAddress.value.minDeliveryPrice}₽",
+            icon = painterResource(id = R.drawable.ic_money),
+            positiveButtonText = "Понятно",
+            negativeButtonText = "",
+            onConfirmClick = {
+                payOrderViewModel.showMinPriceError(false)
+            },
+            onNegativeClick = {
+            },
+            onDismissRequest = {
+                payOrderViewModel.showMinPriceError(false)
+            }
+        )
     }
 }

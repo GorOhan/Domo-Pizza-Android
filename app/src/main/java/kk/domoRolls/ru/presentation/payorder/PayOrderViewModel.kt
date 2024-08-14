@@ -71,6 +71,9 @@ class PayOrderViewModel @Inject constructor(
     private val _navigateToOrderStatus: MutableSharedFlow<String?> = MutableSharedFlow()
     val navigateToOrderStatus = _navigateToOrderStatus.asSharedFlow()
 
+    private val _showMinPriceError: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val showMinPriceError = _showMinPriceError.asStateFlow()
+
     var activeOrderStatus = ""
     private var user: User? = null
     private var currentCart: List<MenuItem>? = null
@@ -307,5 +310,9 @@ class PayOrderViewModel @Inject constructor(
                 onFailure(error.toException())
             }
         })
+    }
+
+    fun showMinPriceError(show: Boolean){
+        _showMinPriceError.value = show
     }
 }
