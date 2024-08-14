@@ -443,7 +443,7 @@ fun AddressMapScreen(
             ) {
                 it.mapWindow.map.addCameraListener(yandexCameraListener)
             }
-            
+
             DeliveryZonePointer(
                 deliveryTime = deliveryTime,
                 modifier = Modifier.align(Alignment.Center),
