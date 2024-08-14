@@ -33,7 +33,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +56,7 @@ import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.presentation.cart.Event
+import kk.domoRolls.ru.presentation.cart.PromoCodeUseState
 import kk.domoRolls.ru.presentation.theme.DomoBlue
 import kk.domoRolls.ru.presentation.theme.DomoBorder
 import kk.domoRolls.ru.presentation.theme.DomoGray
@@ -574,7 +574,7 @@ fun PromoInput(
     modifier: Modifier,
     currentCart: List<MenuItem>,
     inputPromo: String,
-    isPromoSuccess: Boolean?,
+    isPromoSuccess: PromoCodeUseState,
     usedPromoCode: PromoCode?,
     onEvent:(Event) -> Unit = {}
 ) {
@@ -616,14 +616,14 @@ fun PromoInput(
                     .fillMaxWidth(.6f),
                 shape = RoundedCornerShape(24.dp),
                 value =  inputPromo,
-                isError = isPromoSuccess == false,
+                isError = (isPromoSuccess != PromoCodeUseState.SUCCESS && isPromoSuccess !=PromoCodeUseState.NOTHING),
                 singleLine = false,
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
                 onValueChange = { value -> onEvent(Event.InputPromo(value)) },
                 colors = OutlinedTextFieldDefaults.colors(
                     cursorColor = DomoBlue,
                     unfocusedBorderColor = DomoGray,
-                    focusedBorderColor = if (isPromoSuccess != true) DomoBlue else DomoGreen,
+                    focusedBorderColor = if (isPromoSuccess != PromoCodeUseState.SUCCESS ) DomoBlue else DomoGreen,
                     unfocusedTextColor = DomoGray,
                     focusedTextColor = Color.Black,
                     unfocusedPlaceholderColor = DomoGray,

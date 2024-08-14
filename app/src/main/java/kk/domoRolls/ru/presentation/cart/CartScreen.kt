@@ -82,7 +82,7 @@ fun CartScreen(
         CartScreenUI(
             deviceCount = viewModel.deviceCount.collectAsState(),
             usedPromoCode = viewModel.usedPromoCode.collectAsState(),
-            isPromoSuccess = viewModel.isPromoSuccess.collectAsState(),
+            isPromoSuccess = viewModel.promoCodeUseState.collectAsState(),
             inputPromo = viewModel.inputPromo.collectAsState(),
             gift = viewModel.gift.collectAsState(),
             currentCart = viewModel.currentCart.collectAsState(),
@@ -102,7 +102,7 @@ fun CartScreen(
 fun CartScreenUI(
     deviceCount: State<Int> = mutableStateOf(0),
     usedPromoCode: State<PromoCode?> = mutableStateOf(null),
-    isPromoSuccess: State<Boolean?> = mutableStateOf(null),
+    isPromoSuccess: State<PromoCodeUseState> = mutableStateOf(PromoCodeUseState.NOTHING),
     inputPromo: State<String> = mutableStateOf(""),
     gift: State<GiftProduct> = mutableStateOf(GiftProduct()),
     currentCart: State<List<MenuItem>> = mutableStateOf(emptyList()),
@@ -117,26 +117,29 @@ fun CartScreenUI(
         animationSpec = tween(durationMillis = 200), label = ""
     )
 
-    isPromoSuccess.value?.let {
-        Dialog(
-            onDismissRequest = { }) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    modifier = Modifier.fillMaxWidth(.5f),
-                    tint = if (it) DomoGreen else DomoRed,
-                    painter = painterResource(id = if (it) R.drawable.ic_success else R.drawable.ic_error),
-                    contentDescription = ""
-                )
-                Text(
-                    modifier = Modifier.padding(top = 16.dp),
-                    text = if (it) "Промокод успешно применен" else "ошибка неправильный промокод ",
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (it) DomoGreen else DomoRed,
-                )
+
+    if (isPromoSuccess.value != PromoCodeUseState.NOTHING){
+        isPromoSuccess.value.let {
+            Dialog(
+                onDismissRequest = { }) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        modifier = Modifier.fillMaxWidth(.5f),
+                        tint = if (it == PromoCodeUseState.SUCCESS) DomoGreen else DomoRed,
+                        painter = painterResource(id = if ((it == PromoCodeUseState.SUCCESS)) R.drawable.ic_success else R.drawable.ic_error),
+                        contentDescription = ""
+                    )
+                    Text(
+                        modifier = Modifier.padding(top = 16.dp),
+                        text = it.dialogMessage,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if ((it == PromoCodeUseState.SUCCESS)) DomoGreen else DomoRed,
+                    )
+                }
             }
         }
     }

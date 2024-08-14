@@ -56,8 +56,9 @@ class CartViewModel @Inject constructor(
     private val _inputPromo: MutableStateFlow<String> = MutableStateFlow("")
     val inputPromo = _inputPromo.asStateFlow()
 
-    private val _isPromoSuccess: MutableStateFlow<Boolean?> = MutableStateFlow(null)
-    val isPromoSuccess = _isPromoSuccess.asStateFlow()
+    private val _promoCodeUseState: MutableStateFlow<PromoCodeUseState> =
+        MutableStateFlow(PromoCodeUseState.NOTHING)
+    val promoCodeUseState = _promoCodeUseState.asStateFlow()
 
     private val _promoCodes: MutableStateFlow<List<PromoCode>> = MutableStateFlow(emptyList())
     private val promoCodes = _promoCodes.asStateFlow()
@@ -70,6 +71,10 @@ class CartViewModel @Inject constructor(
 
     private val _deviceCount: MutableStateFlow<Int> = MutableStateFlow(0)
     val deviceCount = _deviceCount.asStateFlow()
+
+    private val _alreadyUsedPromoCode: MutableStateFlow<List<String>> =
+        MutableStateFlow(emptyList())
+    val alreadyUsedPromoCode = _alreadyUsedPromoCode.asStateFlow()
 
     val usedPromoCode = MutableStateFlow<PromoCode?>(null)
 
@@ -133,6 +138,12 @@ class CartViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
+        firebaseConfigRepository.getUsedPromoCodes()
+            .onEach {
+                _alreadyUsedPromoCode.value = it
+            }
+            .launchIn(viewModelScope)
+
     }
 
     private fun addToCart(menuItem: MenuItem) {
@@ -146,25 +157,35 @@ class CartViewModel @Inject constructor(
     private fun inputPromo(code: String) {
         if (code.length > 8) return
         _inputPromo.value = code
-        _isPromoSuccess.value = null
+        _promoCodeUseState.value = PromoCodeUseState.NOTHING
     }
 
     private fun confirmPromo() {
+
         val cartPrice = currentCart.value.filter { menuItem -> menuItem.countInCart > 0 }
             .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
             .sumOf { it.second * it.first }
 
-        if (cartPrice > (promoCodes.value.find { it.value == _inputPromo.value }?.minPrice ?: 0)) {
-            usedPromoCode.value = promoCodes.value.find { it.value == _inputPromo.value }
-            _isPromoSuccess.value = promoCodes.value.any { it.value == _inputPromo.value }
-            serviceRepository.setPromoCode(usedPromoCode = usedPromoCode.value?:PromoCode())
-        } else {
+        if (_alreadyUsedPromoCode.value.any { it == usedPromoCode.value?.value } && usedPromoCode.value?.isOneTime == true) {
+            _promoCodeUseState.value = PromoCodeUseState.ALREADY_USED
 
+        } else if (cartPrice > (promoCodes.value.find { it.value == _inputPromo.value }?.minPrice ?: 0)) {
+            usedPromoCode.value = promoCodes.value.find { it.value == _inputPromo.value }
+
+            if (promoCodes.value.any { it.value == _inputPromo.value }) {
+                _promoCodeUseState.value = PromoCodeUseState.SUCCESS
+            } else {
+                _promoCodeUseState.value = PromoCodeUseState.WRONG
+
+            }
+            serviceRepository.setPromoCode(usedPromoCode = usedPromoCode.value ?: PromoCode())
+        } else {
+           _promoCodeUseState.value = PromoCodeUseState.HAS_MIN_PRICE
         }
 
         viewModelScope.launch {
-            delay(1000)
-            _isPromoSuccess.value = null
+            delay(2000)
+            _promoCodeUseState.value = PromoCodeUseState.NOTHING
         }
     }
 
