@@ -67,6 +67,8 @@ fun PayOrderScreen(
     payOrderViewModel: PayOrderViewModel = hiltViewModel()
 ) {
 
+    val user by payOrderViewModel.user.collectAsState(null)
+
     val navigateToOrder by payOrderViewModel.navigateToOrderStatus.collectAsState(null)
     LaunchedEffect(navigateToOrder) {
         navigateToOrder?.let { navController.navigate("${Screen.OrderStatusScreen.route}/${it}") }
@@ -88,7 +90,7 @@ fun PayOrderScreen(
                 }
 
                 is MainFormLauncher.Error -> {
-                    Log.i("TINKOFF BODY", result.error.localizedMessage)
+                    result.error.localizedMessage?.let { Log.i("TINKOFF BODY", it) }
 
                 }
 
@@ -106,19 +108,14 @@ fun PayOrderScreen(
                 "1713117993164",
                 "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv5yse9ka3ZQE0feuGtemYv3IqOlLck8zHUM7lTr0za6lXTszRSXfUO7jMb+L5C7e2QNFs+7sIX2OQJ6a+HG8kr+jwJ4tS3cVsWtd9NXpsU40PE4MeNr5RqiNXjcDxA+L4OsEm/BlyFOEOh2epGyYUd5/iO3OiQFRNicomT2saQYAeqIwuELPs1XpLk9HLx5qPbm8fRrQhjeUD5TLO8b+4yCnObe8vy/BMUwBfq+ieWADIjwWCMp2KTpMGLz48qnaD9kdrYJ0iyHqzb2mkDhdIzkim24A3lWoYitJCBrrB2xM05sm9+OdCI1f7nPNJbl5URHobSwR94IRGT7CJcUjvwIDAQAB"
             )
-
-            orderOptions {                          // данные заказа
-                orderId = UUID.randomUUID().toString()              // ID заказа в вашей системе
-                amount = Money.ofRubles(1)       // сумма для оплаты
-                // URL, куда будет переведен покупатель в случае неуспешной оплаты (см. полную документацию)
+            orderOptions {
+                orderId = UUID.randomUUID().toString()
+                amount = Money.ofRubles(1)
             }
-            customerOptions {                       // данные покупателя
-                checkType = CheckType.NO.toString() // тип привязки карты
-                customerKey =
-                    UUID.randomUUID()
-                        .toString()      // уникальный ID пользователя для сохранения данных его карты
-                email =
-                    "ohangor@gmal.com"          // E-mail клиента для отправки уведомления об оплате
+            customerOptions {
+                checkType = CheckType.NO.toString()
+                customerKey = user?.id
+                email = user?.email
             }
 
         }

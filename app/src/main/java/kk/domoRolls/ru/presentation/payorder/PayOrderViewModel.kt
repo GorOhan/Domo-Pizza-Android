@@ -19,6 +19,7 @@ import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.BaseViewModel
 import kk.domoRolls.ru.util.sliceJsonFromResponse
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,8 +75,11 @@ class PayOrderViewModel @Inject constructor(
     private val _showMinPriceError: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val showMinPriceError = _showMinPriceError.asStateFlow()
 
-    var activeOrderStatus = ""
-    private var user: User? = null
+    private var activeOrderStatus = ""
+
+    private val _user: MutableStateFlow<User?> = MutableStateFlow(null)
+    val user = _user.asStateFlow()
+
     private var currentCart: List<MenuItem>? = null
     private var usedPromoCode: PromoCode? = null
     private var deviceCount: Int = 0
@@ -88,7 +92,7 @@ class PayOrderViewModel @Inject constructor(
 
 
     init {
-        user = dataStoreService.getUserData()
+        _user.value = dataStoreService.getUserData()
 
         serviceRepository.getDeviceCount()
             .onEach { deviceCount = it }
@@ -167,13 +171,16 @@ class PayOrderViewModel @Inject constructor(
     }
 
     fun setPaymentAlreadyConfirmed() {
-        _paymentAlreadyConfirmed.value = true
+        if (_paymentAlreadyConfirmed.value.not()){
+            sendOrderToIIKO()
+            _paymentAlreadyConfirmed.value = true
+        }
     }
 
-    fun sendOrderToIIKO() {
+    private fun sendOrderToIIKO() {
 
         val sendOrderData = createSendOrderData(
-            user = user ?: User(),
+            user = _user.value ?: User(),
             currentCart = currentCart ?: emptyList(),
             defaultAddress = defaultAddress.value,
             additionalComment = _comment.value,
@@ -196,7 +203,7 @@ class PayOrderViewModel @Inject constructor(
                     }
                     .onEach { orderResponse ->
                         orderResponse.orderInfo.id.let {
-                            addOrderIdInFirebase(orderId = it, userId = user?.id ?: "", {})
+                            addOrderIdInFirebase(orderId = it, userId = _user.value?.id ?: "", {})
                             checkPaymentCreationStatus(it, Date())
 
                             usedPromoCode?.let { code ->
@@ -216,10 +223,7 @@ class PayOrderViewModel @Inject constructor(
         }
     }
 
-    fun paymentDone() {
-        //todo add orderid to orders firebase
-    }
-
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun checkPaymentCreationStatus(paymentId: String, startDate: Date) {
         viewModelScope.launch {
             while (Date().time - startDate.time < 5000) {
