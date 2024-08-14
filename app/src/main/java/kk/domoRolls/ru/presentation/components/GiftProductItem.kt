@@ -64,12 +64,20 @@ fun GiftProductItem(
                     .height(120.dp)
             ) {
 
-                Image(
-                    contentScale = ContentScale.Crop,
-                    painter = rememberAsyncImagePainter(menuItem.itemSizes?.first()?.buttonImageUrl),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (menuItem.itemId?.isNotBlank() == true) {
+                    Image(
+                        contentScale = ContentScale.Crop,
+                        painter = rememberAsyncImagePainter(menuItem.itemSizes?.first()?.buttonImageUrl),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_gift),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
                     Row(
                         modifier = Modifier
                             .padding(10.dp)
@@ -103,12 +111,14 @@ fun GiftProductItem(
                     text = menuItem.name ?: ""
                 )
 
-                Text(
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 16.dp),
-                    text = "${menuItem.itemSizes?.first()?.portionWeightGrams.toString()} гр",
-                    color = DomoSub
-                )
+                if (menuItem.itemId?.isNotBlank() == true) {
+                    Text(
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 16.dp),
+                        text = "${menuItem.itemSizes?.first()?.portionWeightGrams.toString()} гр",
+                        color = DomoSub
+                    )
+                }
 
                 Row(
                     modifier = Modifier

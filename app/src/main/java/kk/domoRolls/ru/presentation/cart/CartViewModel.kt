@@ -144,6 +144,19 @@ class CartViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
+        _currentCart
+            .onEach {
+                val cartPrice = currentCart.value.filter { menuItem -> menuItem.countInCart > 0 }
+                    .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
+                    .sumOf { it.second * it.first }
+                if (cartPrice> gift.value.sum){
+                    //todo add gift in repo
+                } else {
+                    //todo remove gift
+                }
+            }
+            .launchIn(viewModelScope)
+
     }
 
     private fun addToCart(menuItem: MenuItem) {

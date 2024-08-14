@@ -197,7 +197,7 @@ fun CartScreenUI(
                     )
                 }
             }
-            AnimatedVisibility(giftProduct.value.itemId?.isNotBlank() == true && (cartPrice > gift.value.sum)) {
+            AnimatedVisibility((cartPrice > gift.value.sum)) {
                 GiftProductItem(menuItem = giftProduct.value)
             }
 
