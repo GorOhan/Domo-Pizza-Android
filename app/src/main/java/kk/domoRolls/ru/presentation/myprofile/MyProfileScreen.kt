@@ -64,6 +64,7 @@ import kk.domoRolls.ru.presentation.theme.DomoRed
 import kk.domoRolls.ru.presentation.theme.DomoTheme
 import kk.domoRolls.ru.util.copyTextToClipboard
 import kk.domoRolls.ru.util.formatNumber
+import kk.domoRolls.ru.util.makeCall
 import kk.domoRolls.ru.util.openAppSettings
 
 @Composable
@@ -210,7 +211,10 @@ fun MyProfileScreenUI(
             backgroundColor = DomoBorder,
             modifier = Modifier
                 .padding(horizontal = 22.dp, vertical = 20.dp)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            onClick = {
+                context.makeCall("+7452688668")
+            }
         )
     }
 }
