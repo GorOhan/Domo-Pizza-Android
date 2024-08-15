@@ -56,8 +56,10 @@ class PayOrderViewModel @Inject constructor(
     private val _deliveryTime: MutableStateFlow<String> = MutableStateFlow("45")
     val deliveryTime = _deliveryTime.asStateFlow()
 
-    private val _defaultAddress: MutableStateFlow<Address> =
-        MutableStateFlow(Address(privateHouse = false))
+    private val _defaultAddress: MutableStateFlow<Address> = MutableStateFlow(Address(
+        street = "Артиллерийская улица, 10А, Саратов.",
+        type = "самовывоз"
+    ))
     val defaultAddress = _defaultAddress.asStateFlow()
 
     private val _paymentResponseBody: MutableStateFlow<String> = MutableStateFlow("")
@@ -303,5 +305,12 @@ class PayOrderViewModel @Inject constructor(
 
     fun showMinPriceError(show: Boolean){
         _showMinPriceError.value = show
+    }
+
+    fun setPickUpAddress(){
+        _defaultAddress.value = Address(
+            street = "Артиллерийская улица, 10А, Саратов.",
+            type = "самовывоз"
+        )
     }
 }

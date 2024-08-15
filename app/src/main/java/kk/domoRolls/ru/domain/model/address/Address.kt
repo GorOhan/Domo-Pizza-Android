@@ -9,7 +9,7 @@ data class Address(
     val building: String = "",
     val city: String = "",
     val comment: String = "",
-    val coordinate: Coordinate = Coordinate(),
+    val coordinate: Coordinate = Coordinate(51.568985,46.008870),
     val entrance: String = "",
     val flat: String = "",
     val floor: String = "",
