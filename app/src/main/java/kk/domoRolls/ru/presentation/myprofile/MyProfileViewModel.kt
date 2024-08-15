@@ -1,6 +1,11 @@
 package kk.domoRolls.ru.presentation.myprofile
 
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kk.domoRolls.ru.data.model.order.GetOrdersRequest
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
@@ -84,4 +89,46 @@ class MyProfileViewModel @Inject constructor(
                 .collect()
         }
     }
+
+
+    fun addToken(add:Boolean){
+        if (add) {
+            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val token = task.result
+                    addFcmTokenToFireBase(token)
+                }
+            }
+        } else {
+            addFcmTokenToFireBase("")
+        }
+
+    }
+
+    private fun addFcmTokenToFireBase(
+        token: String,
+    ) {
+        val database = FirebaseDatabase.getInstance()
+        val userRef = database.getReference(dataStoreService.getUserData().id)
+
+
+        userRef.child("fcmToken").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                try {
+
+                    userRef.child("fcmToken").setValue(token)
+                        .addOnSuccessListener {
+
+                        }
+                        .addOnFailureListener { exception ->
+                        }
+                } catch (_: Exception) {
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+        })
+    }
+
 }

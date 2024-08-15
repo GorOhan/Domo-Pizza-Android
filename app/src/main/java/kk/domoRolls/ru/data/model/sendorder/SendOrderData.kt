@@ -5,8 +5,6 @@ import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.model.address.Address
-import kk.domoRolls.ru.presentation.cart.Event
-
 
 data class SendOrderData(
     val terminalGroupId: String,

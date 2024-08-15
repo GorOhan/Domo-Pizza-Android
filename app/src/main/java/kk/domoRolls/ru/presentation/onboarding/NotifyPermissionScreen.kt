@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.presentation.components.BaseButton
@@ -44,25 +45,32 @@ import kk.domoRolls.ru.presentation.theme.InterFont
 
 @Composable
 fun NotifyPermissionScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    notifyPermissionViewModel: NotifyPermissionViewModel = hiltViewModel()
 ) {
     NotifyPermissionScreenUI(
+        addToken = { notifyPermissionViewModel.addToken() },
         navigateToMain = { navController.navigate(Screen.MainScreen.route) }
     )
 }
 
 @Composable
 fun NotifyPermissionScreenUI(
+    addToken: () -> Unit = {},
     navigateToMain: () -> Unit = {},
 ) {
     val context = LocalContext.current
 
     var permissionGranted by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context, Manifest.permission.POST_NOTIFICATIONS
-            ) == PermissionChecker.PERMISSION_GRANTED
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            mutableStateOf(
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.POST_NOTIFICATIONS
+                ) == PermissionChecker.PERMISSION_GRANTED
+            )
+        } else {
+            mutableStateOf(true)
+        }
     }
 
 
@@ -70,7 +78,7 @@ fun NotifyPermissionScreenUI(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         permissionGranted = isGranted
-        if (permissionGranted){
+        if (permissionGranted) {
             navigateToMain()
         }
     }
@@ -159,6 +167,7 @@ fun NotifyPermissionScreenUI(
                 .padding(horizontal = 22.dp, vertical = 10.dp)
                 .fillMaxWidth(),
             onClick = {
+                addToken()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {

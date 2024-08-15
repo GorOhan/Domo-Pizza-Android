@@ -1,6 +1,7 @@
 package kk.domoRolls.ru.presentation.myprofile
 
 import android.Manifest
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -98,6 +99,10 @@ fun MyProfileScreen(
                             }
                         }
                     }
+
+                    is Event.HasAccess -> {
+                        viewModel.addToken(event.addToken)
+                    }
                 }
             }
         )
@@ -114,11 +119,15 @@ fun MyProfileScreenUI(
 ) {
     val context = LocalContext.current
     var permissionGranted by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context, Manifest.permission.POST_NOTIFICATIONS
-            ) == PermissionChecker.PERMISSION_GRANTED
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            mutableStateOf(
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.POST_NOTIFICATIONS
+                ) == PermissionChecker.PERMISSION_GRANTED
+            )
+        } else {
+            mutableStateOf(true)
+        }
     }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -164,7 +173,10 @@ fun MyProfileScreenUI(
             showArrowIcon = false,
             showSwitch = true,
             accessPermission = {
-                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                onClick(Event.HasAccess(it))
+                if (it) if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
             }
         )
         ProfileInfoItem(
@@ -235,7 +247,7 @@ fun MyGiftsView(
                         )
                         Text(
                             style = MaterialTheme.typography.bodyMedium,
-                            text = "при заказе от ${promoCode.minPrice.toInt()} ₽"
+                            text = "при заказе от ${promoCode.minPrice} ₽"
                         )
                         Text(
                             modifier = Modifier.padding(top = 10.dp),
@@ -404,15 +416,19 @@ fun ProfileInfoItem(
     showArrowIcon: Boolean = true,
     showSwitch: Boolean = false,
     onClick: () -> Unit = {},
-    accessPermission: () -> Unit = {},
+    accessPermission: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
-    var permissionGranted by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context, Manifest.permission.POST_NOTIFICATIONS
-            ) == PermissionChecker.PERMISSION_GRANTED
-        )
+    val permissionGranted by remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            mutableStateOf(
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.POST_NOTIFICATIONS
+                ) == PermissionChecker.PERMISSION_GRANTED
+            )
+        } else {
+            mutableStateOf(true)
+        }
     }
 
     Column(
@@ -448,7 +464,7 @@ fun ProfileInfoItem(
                     checked = checked,
                     onCheckedChange = {
                         checked = it
-                        if (checked) accessPermission() else openAppSettings(context)
+                        if (checked) accessPermission(checked) else openAppSettings(context)
                     },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
@@ -480,5 +496,5 @@ sealed class Event {
     data object BackClick : Event()
     data class NavigateClick(val route: String) : Event()
     data object LogOut : Event()
-
+    data class HasAccess(val addToken:Boolean): Event()
 }

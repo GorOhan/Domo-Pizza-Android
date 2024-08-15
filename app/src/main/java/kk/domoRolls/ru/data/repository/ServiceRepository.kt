@@ -138,13 +138,6 @@ class ServiceRepositoryImpl(
             currentOrders.value = orders
             currentOrders.value
         }
-//        return@emitFlow currentOrders.value?.let {
-//            currentOrders.value
-//        }?:run {
-//            val orders = serviceApi.getOrders(getOrdersRequest, token = "Bearer $token")
-//            currentOrders.value = orders
-//            currentOrders.value
-//        }
     }
 
     override fun setPromoCode(promoCode: PromoCode) {

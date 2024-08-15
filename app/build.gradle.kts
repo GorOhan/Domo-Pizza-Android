@@ -92,6 +92,8 @@ dependencies {
     implementation("ru.tinkoff.acquiring:threeds-sdk:3.0.0")
     implementation("ru.tinkoff.acquiring:threeds-wrapper:3.0.0")
 
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-messaging:23.4.0")
 }
 
 kapt {
