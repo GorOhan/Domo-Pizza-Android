@@ -150,9 +150,9 @@ class CartViewModel @Inject constructor(
                     .map { Pair(it.countInCart, it.itemSizes?.first()?.prices?.first()?.price ?: 0.0) }
                     .sumOf { it.second * it.first }
                 if (cartPrice> gift.value.sum){
-                    //todo add gift in repo
+                    serviceRepository.setGiftProduct(gift.value)
                 } else {
-                    //todo remove gift
+                    serviceRepository.setGiftProduct(null)
                 }
             }
             .launchIn(viewModelScope)

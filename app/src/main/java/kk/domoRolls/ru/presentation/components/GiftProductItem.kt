@@ -108,7 +108,7 @@ fun GiftProductItem(
                     minLines = 2,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp),
-                    text = menuItem.name ?: ""
+                    text = menuItem.name.ifEmpty { "Ролл в подарок!" }
                 )
 
                 if (menuItem.itemId?.isNotBlank() == true) {

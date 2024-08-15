@@ -35,7 +35,7 @@ data class MenuItem(
     @SerializedName("itemId")
     val itemId: String? = "",
     @SerializedName("name")
-    val name: String? = "",
+    val name: String = "",
     @SerializedName("description")
     val description: String? = "",
     val isEnable:Boolean = true,

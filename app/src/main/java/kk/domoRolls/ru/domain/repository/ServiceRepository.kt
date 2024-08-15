@@ -12,6 +12,7 @@ import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.model.order.ServiceTokenResponse
 import kk.domoRolls.ru.data.model.sendorder.SendOrderData
 import kk.domoRolls.ru.data.model.sendorder.SendOrderResponse
+import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.PromoCode
 import kotlinx.coroutines.flow.Flow
 
@@ -30,7 +31,11 @@ interface ServiceRepository {
     fun removeFromCart(menuItem: MenuItem)
     fun getCategories(): Flow<List<ItemCategory>>
 
-    fun getOrders(updateData:Boolean = false,getOrdersRequest: GetOrdersRequest, token: String): Flow<GetOrdersResponse?>
+    fun getOrders(
+        updateData: Boolean = false,
+        getOrdersRequest: GetOrdersRequest,
+        token: String
+    ): Flow<GetOrdersResponse?>
 
     fun setPromoCode(usedPromoCode: PromoCode)
 
@@ -45,11 +50,14 @@ interface ServiceRepository {
         token: String
     ): Flow<Order?>
 
-    fun setDeviceCount(count:Int)
-    fun getDeviceCount():Flow<Int>
+    fun setDeviceCount(count: Int)
+    fun getDeviceCount(): Flow<Int>
+
+    fun setGiftProduct(gift: GiftProduct?)
+    fun getGiftProduct(): GiftProduct?
+
 
     fun resetCart()
-
 
 
 }

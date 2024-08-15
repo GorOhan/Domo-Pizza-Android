@@ -108,17 +108,10 @@ class PayOrderViewModel @Inject constructor(
             if (it.contains("Got server response:")) {
 
                 try {
-                    Log.i("TINKOFF BODY", it)
                     val new = it.sliceJsonFromResponse()
-                    val isSuccess = new?.let { it1 -> JSONObject(it1).getBoolean("Success") }
                     val errorCode = new?.let { it1 -> JSONObject(it1).getInt("ErrorCode") }
                     val status =
                         new?.let { it1 -> JSONObject(it1).getString("Status") } ?: "NOT STATUS"
-
-
-
-                    Log.i("TINKOFF BODY", new ?: "ERROR")
-                    Log.i("TINKOFF BODY", isSuccess.toString())
                     Log.i("TINKOFF BODY", errorCode.toString())
                     if (status == "CONFIRMED") {
                         _paymentAlreadyConfirmed.value = true
@@ -186,7 +179,8 @@ class PayOrderViewModel @Inject constructor(
             additionalComment = _comment.value,
             usedPromoCode = usedPromoCode ?: PromoCode(),
             deviceCount = deviceCount,
-            pickedTime = _pickedTime.value
+            pickedTime = _pickedTime.value,
+            giftProduct = serviceRepository.getGiftProduct()
         )
         if (cartPrice.value != 0.0 &&
             defaultAddress.value.minDeliveryPrice != 0 &&

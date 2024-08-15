@@ -12,6 +12,7 @@ import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.model.sendorder.SendOrderData
+import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.parseToListString
@@ -29,9 +30,10 @@ class ServiceRepositoryImpl(
 
     private val hotItems: MutableList<String> = mutableListOf()
     private val newItems: MutableList<String> = mutableListOf()
-    private val currentOrders:MutableStateFlow<GetOrdersResponse?> = MutableStateFlow(null)
-    private var usedPromoCode:PromoCode? = null
+    private val currentOrders: MutableStateFlow<GetOrdersResponse?> = MutableStateFlow(null)
+    private var usedPromoCode: PromoCode? = null
     private var deviceCount: MutableStateFlow<Int> = MutableStateFlow(0)
+    private var giftProduct: GiftProduct? = null
 
 
     init {
@@ -123,12 +125,12 @@ class ServiceRepositoryImpl(
     }
 
     override fun getOrders(
-        updateData:Boolean,
+        updateData: Boolean,
         getOrdersRequest: GetOrdersRequest,
         token: String
     ): Flow<GetOrdersResponse?> = emitFlow {
 
-        return@emitFlow if (currentOrders.value!=null && updateData.not()){
+        return@emitFlow if (currentOrders.value != null && updateData.not()) {
             currentOrders.value
 
         } else {
@@ -144,33 +146,47 @@ class ServiceRepositoryImpl(
 //            currentOrders.value
 //        }
     }
+
     override fun setPromoCode(promoCode: PromoCode) {
         usedPromoCode = promoCode
     }
 
     override fun getUsedPromoCode() = usedPromoCode
 
-    override fun getCart(): List<MenuItem> = currentMenu.value.filter { it.countInCart>0 }
+    override fun getCart(): List<MenuItem> = currentMenu.value.filter { it.countInCart > 0 }
 
-    override fun sendOrder(sendOrderData: SendOrderData, token: String)  = emitFlow {
-        serviceApi.sendOrder(sendOrderData,"Bearer $token")
+    override fun sendOrder(sendOrderData: SendOrderData, token: String) = emitFlow {
+        serviceApi.sendOrder(sendOrderData, "Bearer $token")
     }
 
-    override fun getOrderById(getOrderByIdRequest: GetOrderByIdRequest, token: String): Flow<Order?> = emitFlow {
-            return@emitFlow serviceApi.getOrderById(getOrderByIdRequest,"Bearer $token").orders?.first()
-        }
+    override fun getOrderById(
+        getOrderByIdRequest: GetOrderByIdRequest,
+        token: String
+    ): Flow<Order?> = emitFlow {
+        return@emitFlow serviceApi.getOrderById(
+            getOrderByIdRequest,
+            "Bearer $token"
+        ).orders?.first()
+    }
 
-    override fun setDeviceCount(count: Int){
-        deviceCount.value= count
+    override fun setDeviceCount(count: Int) {
+        deviceCount.value = count
     }
 
     override fun getDeviceCount(): Flow<Int> {
         return deviceCount
     }
 
+    override fun setGiftProduct(gift: GiftProduct?) {
+        giftProduct = gift
+    }
+
+    override fun getGiftProduct() = giftProduct
+
     override fun resetCart() {
         currentMenu.value = emptyList()
         usedPromoCode = null
         deviceCount.value = 0
+        giftProduct = null
     }
 }

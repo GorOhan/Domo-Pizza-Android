@@ -1,6 +1,7 @@
 package kk.domoRolls.ru.data.model.sendorder
 
 import kk.domoRolls.ru.data.model.order.MenuItem
+import kk.domoRolls.ru.domain.model.GiftProduct
 import kk.domoRolls.ru.domain.model.PromoCode
 import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.model.address.Address
@@ -64,6 +65,7 @@ fun createSendOrderData(
     usedPromoCode: PromoCode,
     deviceCount: Int,
     pickedTime:String,
+    giftProduct: GiftProduct?,
 
 )= SendOrderData(
     terminalGroupId = "dbd89055-96a1-4223-81ba-40afe53bbd04",
@@ -84,7 +86,11 @@ fun createSendOrderData(
             name = "ТЕСТ! НЕ ГОТОВИТЬ"
         ),
         deliveryPoint = SendDeliveryPoint(
-            comment = "${defaultAddress.street}\n  $additionalComment\n ${usedPromoCode.value}\n $pickedTime",
+            comment = "${defaultAddress.street}\n " +
+                    " $additionalComment\n" +
+                    " ${usedPromoCode.value}\n " +
+                    "$pickedTime\n" +
+                    "${giftProduct?.let { "Ролл в подарок!" }}",
             address = SendAddress(
                 flat = defaultAddress.flat,
                 house = defaultAddress.privateHouse.toString(),
