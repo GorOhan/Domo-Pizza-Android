@@ -73,8 +73,7 @@ class MyProfileViewModel @Inject constructor(
                 .flatMapConcat { token ->
                     serviceRepository.getOrders(
                         getOrdersRequest = GetOrdersRequest(
-                            phone = "+79271266306"
-                            //  phone = "+7${_user.value.phone}"
+                           phone = _user.value.phone
                         ),
                         token = token.token
                     )

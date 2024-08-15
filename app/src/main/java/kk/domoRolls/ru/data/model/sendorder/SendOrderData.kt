@@ -69,7 +69,7 @@ fun createSendOrderData(
     terminalGroupId = "dbd89055-96a1-4223-81ba-40afe53bbd04",
     organizationId = "03a1584e-1c80-4071-829d-997688b68cba",
     order = SendOrder(
-        phone = "+7${user.phone}",
+        phone = user.phone,
         orderTypeId = "76067ea3-356f-eb93-9d14-1fa00d082c4e",
         items = currentCart.map {
             SendItem(

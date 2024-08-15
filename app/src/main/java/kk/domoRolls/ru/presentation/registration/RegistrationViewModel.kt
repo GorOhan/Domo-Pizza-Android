@@ -13,6 +13,7 @@ import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.AuthRepository
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.util.BaseViewModel
+import kk.domoRolls.ru.util.formatNumber
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -167,7 +168,7 @@ class RegistrationViewModel @Inject constructor(
             if (_generatedOtp.value == _codeInput.value ||
                 phoneNumber.value == "9378852905"
             ) {
-                isExistUser(phone = _phoneNumber.value) { id ->
+                isExistUser(phone =  formatNumber(phoneNumber.value, "+7 ### ###-##-##")) { id ->
                     if (id == null) {
                         saveUser {
                             viewModelScope.launch {
@@ -216,7 +217,7 @@ class RegistrationViewModel @Inject constructor(
         val user = User(
             id = userID,
             name = userName.value,
-            phone = phoneNumber.value
+            phone = formatNumber(phoneNumber.value, "+7 ### ###-##-##")
         )
 
         ref.child("users").child(userID).setValue(

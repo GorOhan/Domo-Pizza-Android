@@ -176,7 +176,7 @@ class MainViewModel @Inject constructor(
                     serviceRepository.getOrders(
                         updateData = true,
                         getOrdersRequest = GetOrdersRequest(
-                            phone = "+7${_user.value.phone}"
+                            phone = _user.value.phone
                         ),
                         token = token.token
                     )

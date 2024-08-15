@@ -54,7 +54,7 @@ class MyOrdersViewModel @Inject constructor(
                 .flatMapConcat { token ->
                     serviceRepository.getOrders(
                         getOrdersRequest = GetOrdersRequest(
-                            phone = "+7${_user.value.phone}"
+                            phone = _user.value.phone
                         ),
                         token = token.token
                     )

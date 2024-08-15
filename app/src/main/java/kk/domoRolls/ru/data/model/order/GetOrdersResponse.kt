@@ -132,28 +132,3 @@ val OrderStatus.showInMainPage: Boolean
     }
 
 fun String.StatusOfOrder() = OrderStatus.entries.find { it.value == this}
-
-
-fun iikoBody(additionalComment: String?): Map<String, Any> {
-    val body = mutableMapOf<String, Any>(
-        "organizationId" to ("03a1584e-1c80-4071-829d-997688b68cba"),
-        "terminalGroupId" to ("terminalGroupId" ?: ""),
-        "order" to mutableMapOf(
-            "phone" to ("+79378852905"),
-            "orderTypeId" to ("DOSTAVKA" ?: ""),
-            "deliveryPoint" to (DeliveryPoint(null,null)),
-            "customer" to mapOf(
-                "name" to (" ТЕСТ! НЕ ГОТОВИТЬ!")
-            ),
-            "items" to emptyList<MenuItem>(),
-            "guests" to mapOf("count" to 4),
-
-        )
-    )
-
-    additionalComment?.let {
-        (body["order"] as MutableMap<String, Any>)["comment"] = it
-    }
-    return body
-
-}

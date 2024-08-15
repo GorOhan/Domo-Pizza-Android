@@ -333,7 +333,7 @@ fun MyInfo(
                 modifier = Modifier.padding(top = 4.dp),
                 color = Color.Black,
                 style = MaterialTheme.typography.bodySmall,
-                text = "${user.value.name} | ${formatNumber(user.value.phone, "+7 ### ### ## ##")}",
+                text = "${user.value.name} | ${user.value.phone}",
             )
         }
     }
