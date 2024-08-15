@@ -171,6 +171,7 @@ class MainViewModel @Inject constructor(
 
     fun getOrders() {
         viewModelScope.launch {
+            if (_user.value.phone.isEmpty()) return@launch
             serviceRepository.getToken(ServiceTokenRequest())
                 .flatMapConcat { token ->
                     serviceRepository.getOrders(

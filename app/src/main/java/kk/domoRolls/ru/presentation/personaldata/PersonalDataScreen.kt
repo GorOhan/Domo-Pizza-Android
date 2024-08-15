@@ -315,7 +315,6 @@ fun PersonalDataPhoneItem(
                 style = MaterialTheme.typography.titleSmall,
             )
         },
-        visualTransformation = MaskVisualTransformation("+7 ### ### ## ##")
     )
 }
 

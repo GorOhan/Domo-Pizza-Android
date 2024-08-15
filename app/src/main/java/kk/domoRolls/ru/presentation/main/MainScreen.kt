@@ -245,11 +245,15 @@ fun MainScreenUI(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text(text = "Привет ${user.name}")
+                        Text(
+                            text = "Привет ${user.name}",
+                            style = MaterialTheme.typography.titleSmall,
+                        )
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
+                            if (user.id.isNotEmpty()) {
+                                Text(
                                 modifier = Modifier
                                     .clickable {
                                         onEvent(MainScreenEvent.NavigateClick("${Screen.AddressMapScreen.route}/${defaultAddress.id.ifEmpty { null }}"))
@@ -258,7 +262,6 @@ fun MainScreenUI(
                                 overflow = TextOverflow.Ellipsis,
 
                                 )
-                            if (user.id.isNotEmpty()) {
                                 Icon(
                                     modifier = Modifier
                                         .padding(start = 4.dp)
