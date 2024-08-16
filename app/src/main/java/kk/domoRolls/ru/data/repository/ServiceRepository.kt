@@ -18,6 +18,7 @@ import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.parseToListString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Singleton
 
 class ServiceRepositoryImpl(
     private val serviceApi: ServiceApi,
@@ -182,4 +183,8 @@ class ServiceRepositoryImpl(
         deviceCount.value = 0
         giftProduct = null
     }
+
 }
+
+
+

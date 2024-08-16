@@ -315,7 +315,8 @@ fun MyInfo(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 22.dp, end = 22.dp, top = 25.dp)
-            .background(DomoBorder, RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(20.dp))
+            .background(DomoBorder)
             .clickable { onPersonalDataClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -371,7 +372,8 @@ fun MyOrdersAndAddresses(
                 }
                 .padding(end = 8.dp)
                 .fillMaxWidth(0.5f)
-                .background(DomoBorder, RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(20.dp))
+                .background(DomoBorder)
                 .clickable {
                     onMyOrdersClick()
                 },
@@ -393,7 +395,8 @@ fun MyOrdersAndAddresses(
             modifier = Modifier
                 .padding(start = 8.dp)
                 .fillMaxWidth()
-                .background(DomoBorder, RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(20.dp))
+                .background(DomoBorder)
                 .clickable {
                     onMyAddressClick()
                 },
