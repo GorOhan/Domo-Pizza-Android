@@ -33,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.ColorUtils
@@ -68,6 +70,7 @@ fun AddressMapScreen(
     addressId: String? = null,
     addressMapViewModel: AddressMapViewModel = hiltViewModel()
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
     val keyboardVisible = isKeyboardVisible()
 
@@ -245,6 +248,7 @@ fun AddressMapScreen(
                     placeHolder = "user name",
                     readOnly = !inOrderMode,
                     onDone = {
+                        keyboardController?.hide()
                         performGeocoding(
                             currentAddress.street,
                             mapView.mapWindow.map
@@ -290,8 +294,10 @@ fun AddressMapScreen(
                     ) {
                         Text(
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
-                            text = "Доставка 0 ₽"
-                        )
+                            text = "Доставка 0 ₽",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            )
                     }
                     Box(
                         modifier = Modifier
@@ -301,7 +307,9 @@ fun AddressMapScreen(
                     ) {
                         Text(
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
-                            text = "Заказ от $currentPrice ₽"
+                            text = "Заказ от $currentPrice ₽",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
@@ -347,7 +355,11 @@ fun AddressMapScreen(
                                             addressMapViewModel.setCurrentAddressModel(
                                                 currentAddress.copy(flat = it)
                                             )
-                                        })
+                                        },
+                                        onDone = {
+                                            keyboardController?.hide()
+                                        }
+                                    )
                                     PersonalDataItem(
                                         label = "Подъезд",
                                         value = currentAddress.entrance,
@@ -356,6 +368,9 @@ fun AddressMapScreen(
                                             addressMapViewModel.setCurrentAddressModel(
                                                 currentAddress.copy(entrance = it)
                                             )
+                                        },
+                                        onDone = {
+                                            keyboardController?.hide()
                                         })
 
                                 }
@@ -370,6 +385,9 @@ fun AddressMapScreen(
                                             addressMapViewModel.setCurrentAddressModel(
                                                 currentAddress.copy(floor = it)
                                             )
+                                        },
+                                        onDone = {
+                                            keyboardController?.hide()
                                         })
                                     PersonalDataItem(
                                         label = "Домофон",
@@ -379,6 +397,9 @@ fun AddressMapScreen(
                                             addressMapViewModel.setCurrentAddressModel(
                                                 currentAddress.copy(intercom = it)
                                             )
+                                        },
+                                        onDone = {
+                                            keyboardController?.hide()
                                         })
                                 }
                             }
