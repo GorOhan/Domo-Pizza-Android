@@ -11,12 +11,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = DomoBlue,
-    tertiary = Pink80,
-    onSecondary = DomoGray,
-)
 
 private val LightColorScheme = lightColorScheme(
     primary = Purple40,
@@ -36,16 +30,9 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun DomoTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
+fun DomoTheme(content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = LightColorScheme
 
     val typography = Typography(
         titleMedium = TextStyle(
