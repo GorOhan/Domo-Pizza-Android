@@ -9,10 +9,10 @@ import kk.domoRolls.ru.data.model.order.Order
 import kk.domoRolls.ru.data.model.order.ServiceTokenRequest
 import kk.domoRolls.ru.data.prefs.DataStoreService
 import kk.domoRolls.ru.domain.model.User
-import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.presentation.myaddresses.MyAddressesEvent
 import kk.domoRolls.ru.util.BaseViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -24,10 +24,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class MyOrdersViewModel @Inject constructor(
-    private val dataStoreService: DataStoreService,
-    private val firebaseConfigRepository: FirebaseConfigRepository,
+    dataStoreService: DataStoreService,
     private val serviceRepository: ServiceRepository
 ) : BaseViewModel() {
 

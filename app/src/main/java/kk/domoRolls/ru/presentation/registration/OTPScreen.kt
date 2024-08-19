@@ -45,7 +45,11 @@ fun OTPScreen(
     val loginUser by viewModel.navigateToMain.collectAsState(false)
 
     LaunchedEffect(loginUser) {
-        if (loginUser) navController.navigate(Screen.NotifyPermissionScreen.route)
+        if (loginUser) navController.navigate(Screen.NotifyPermissionScreen.route) {
+            popUpTo(navController.graph.id) {
+                inclusive = false
+            }
+        }
     }
 
     BaseScreen(
@@ -78,9 +82,9 @@ fun OTPScreenUI(
     otpLengthState: StateFlow<Int> = MutableStateFlow(6),
     loginButtonEnableState: StateFlow<Boolean> = MutableStateFlow(false),
     isOtpErrorState: StateFlow<Boolean> = MutableStateFlow(false),
-    setOtpError: (Boolean) ->Unit = {},
+    setOtpError: (Boolean) -> Unit = {},
 
-) {
+    ) {
     val haptic = LocalHapticFeedback.current
     val code by codeState.collectAsState()
     val phone by phoneState.collectAsState()
@@ -149,7 +153,7 @@ fun OTPScreenUI(
             text = formatNumber(phone, "+7 ### ### ## ##"),
             textAlign = TextAlign.Left,
             style = MaterialTheme.typography.bodyMedium,
-            )
+        )
 
 
         RegistrationCodeInput(

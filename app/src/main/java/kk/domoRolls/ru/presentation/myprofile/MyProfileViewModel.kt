@@ -15,6 +15,7 @@ import kk.domoRolls.ru.domain.model.User
 import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.BaseViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -46,18 +47,15 @@ class MyProfileViewModel @Inject constructor(
 
     init {
         getOrders()
-        viewModelScope.launch {
-            firebaseConfigRepository.getPromoCodes()
-                .onEach { _promoCodes.value = it }
-                .collect()
-        }
-
         firebaseConfigRepository.fetchAddresses()
 
-        firebaseConfigRepository.getAddresses()
-            .onEach { _myAddressesCount.value = it.size  }
+        firebaseConfigRepository.getPromoCodes()
+            .onEach { _promoCodes.value = it }
             .launchIn(viewModelScope)
 
+        firebaseConfigRepository.getAddresses()
+            .onEach { _myAddressesCount.value = it.size }
+            .launchIn(viewModelScope)
     }
 
 
@@ -67,13 +65,14 @@ class MyProfileViewModel @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun getOrders() {
         viewModelScope.launch {
             serviceRepository.getToken(ServiceTokenRequest())
                 .flatMapConcat { token ->
                     serviceRepository.getOrders(
                         getOrdersRequest = GetOrdersRequest(
-                           phone = _user.value.phone
+                            phone = _user.value.phone
                         ),
                         token = token.token
                     )
@@ -90,7 +89,7 @@ class MyProfileViewModel @Inject constructor(
     }
 
 
-    fun addToken(add:Boolean){
+    fun addToken(add: Boolean) {
         if (add) {
             FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
                 if (task.isSuccessful) {

@@ -50,7 +50,13 @@ fun NotifyPermissionScreen(
 ) {
     NotifyPermissionScreenUI(
         addToken = { notifyPermissionViewModel.addToken() },
-        navigateToMain = { navController.navigate(Screen.MainScreen.route) }
+        navigateToMain = {
+            navController.navigate(Screen.MainScreen.route) {
+                popUpTo(navController.graph.id) {
+                    inclusive = false
+                }
+            }
+        }
     )
 }
 

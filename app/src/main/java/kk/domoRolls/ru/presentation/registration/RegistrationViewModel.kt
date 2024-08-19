@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -61,21 +62,14 @@ class RegistrationViewModel @Inject constructor(
 
 
     init {
-        viewModelScope.launch {
-            firebaseConfigRepository.getOtpLength()
-                .onEach {
-                    _otpLength.value = it
-                }
-                .collect()
-        }
+        firebaseConfigRepository.getOtpLength()
+            .onEach { _otpLength.value = it }
+            .launchIn(viewModelScope)
 
-        viewModelScope.launch {
-            firebaseConfigRepository.getOtpMessage()
-                .onEach {
-                    _otpMessage.value = it
-                }
-                .collect()
-        }
+
+        firebaseConfigRepository.getOtpMessage()
+            .onEach { _otpMessage.value = it }
+            .launchIn(viewModelScope)
     }
 
     val isReadyToSendOtp =
@@ -168,7 +162,7 @@ class RegistrationViewModel @Inject constructor(
             if (_generatedOtp.value == _codeInput.value ||
                 phoneNumber.value == "9378852905"
             ) {
-                isExistUser(phone =  formatNumber(phoneNumber.value, "+7 ### ###-##-##")) { id ->
+                isExistUser(phone = formatNumber(phoneNumber.value, "+7 ### ###-##-##")) { id ->
                     if (id == null) {
                         saveUser {
                             viewModelScope.launch {

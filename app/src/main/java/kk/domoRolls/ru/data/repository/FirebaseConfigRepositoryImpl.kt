@@ -95,6 +95,8 @@ class FirebaseConfigRepositoryImpl(
                     }
                 }
             }
+
+        fetchAddresses()
     }
 
     override fun getAppAvailable() = _isAppAvailable.asStateFlow()

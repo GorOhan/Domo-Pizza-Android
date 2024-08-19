@@ -43,7 +43,6 @@ sealed class Screen(val route: String) {
     data object MyOrdersScreen : Screen("myOrdersScreen")
     data object OrderStatusScreen : Screen("orderStatusScreen")
     data object PayOrderScreen : Screen("payOrderScreen")
-
 }
 
 @Composable

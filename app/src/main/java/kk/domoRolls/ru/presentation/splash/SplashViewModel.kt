@@ -60,12 +60,9 @@ class SplashViewModel @Inject constructor(
                     .collect()
             }
             val firebase = async {
-                firebaseConfigRepository.getAppAvailable().onEach {
-                    _isAppAvailable.value = it
-                }
-                    .catch {
-                        _showMainError.value = true
-                    }
+                firebaseConfigRepository.getAppAvailable()
+                    .onEach { _isAppAvailable.value = it }
+                    .catch { _showMainError.value = true }
                     .collect()
             }
 

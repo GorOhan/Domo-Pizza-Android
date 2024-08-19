@@ -146,7 +146,7 @@ fun StoryScreenUI(
 
 @Preview(showBackground = true)
 @Composable
-fun OTPScreenPreview() {
+fun StoryScreenPreview() {
     DomoTheme {
         StoryScreenUI()
     }
