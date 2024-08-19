@@ -1,5 +1,6 @@
 package kk.domoRolls.ru.presentation.main
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,6 +32,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -145,6 +147,7 @@ fun MainScreen(
 }
 
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreenUI(
@@ -161,6 +164,8 @@ fun MainScreenUI(
     val statusBarHeight = insets.asPaddingValues().calculateTopPadding()
 
     val menuState = rememberLazyListState()
+    val menuFirstVisibleIndex by derivedStateOf { menuState.firstVisibleItemIndex }
+
     val coroutineScope = rememberCoroutineScope()
     val isCategoryClicked = remember {
         mutableStateOf(false)
@@ -190,7 +195,7 @@ fun MainScreenUI(
     }
 
 
-    LaunchedEffect(key1 =   menuState.firstVisibleItemIndex) {
+    LaunchedEffect(key1 = menuFirstVisibleIndex) {
         var accumulatedSize = 0
 
         categories.forEachIndexed { index, category ->
@@ -299,6 +304,7 @@ fun MainScreenUI(
                     }
                 }
             }
+
             stickyHeader {
                 val rowState = rememberLazyListState()
 

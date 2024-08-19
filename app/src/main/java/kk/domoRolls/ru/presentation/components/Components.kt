@@ -1,6 +1,7 @@
 package kk.domoRolls.ru.presentation.components
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -45,13 +46,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import coil.size.Scale
+import coil.size.Size
+import coil.transform.Transformation
 import kk.domoRolls.ru.R
 import kk.domoRolls.ru.data.model.order.MenuItem
 import kk.domoRolls.ru.presentation.theme.DomoBorder
@@ -107,6 +114,7 @@ fun MenuItemComponent(
     onPlusClick: () -> Unit = {},
     onProductClick: () -> Unit = {}
 ) {
+
     Column(
         modifier = Modifier
             .padding(4.dp)
@@ -133,24 +141,29 @@ fun MenuItemComponent(
 
             Image(
                 contentScale = ContentScale.Crop,
-                painter = rememberAsyncImagePainter(menuItem.itemSizes?.first()?.buttonImageUrl),
+                painter = rememberAsyncImagePainter(
+                    menuItem.itemSizes?.first()?.buttonImageUrl,
+                    filterQuality = FilterQuality.Low,
+                ),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize()
             )
-            if (menuItem.isHot){
-                Row(modifier = Modifier
-                    .padding(10.dp)
-                    .width(48.dp)
-                    .height(16.dp)
-                    .background(DomoRed, RoundedCornerShape(10.dp)),
+            if (menuItem.isHot) {
+                Row(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .width(48.dp)
+                        .height(16.dp)
+                        .background(DomoRed, RoundedCornerShape(10.dp)),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     Icon(
                         modifier = Modifier.size(8.dp),
                         tint = Color.White,
                         painter = painterResource(id = R.drawable.ic_hot),
-                        contentDescription ="" )
+                        contentDescription = ""
+                    )
                     Text(
                         fontSize = 6.sp,
                         style = MaterialTheme.typography.bodySmall,
@@ -160,20 +173,22 @@ fun MenuItemComponent(
                 }
             }
 
-            if (menuItem.isNew){
-                Row(modifier = Modifier
-                    .padding(10.dp)
-                    .width(48.dp)
-                    .height(16.dp)
-                    .background(DomoGreen, RoundedCornerShape(10.dp)),
+            if (menuItem.isNew) {
+                Row(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .width(48.dp)
+                        .height(16.dp)
+                        .background(DomoGreen, RoundedCornerShape(10.dp)),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     Icon(
                         modifier = Modifier.size(8.dp),
                         tint = Color.White,
                         painter = painterResource(id = R.drawable.ic_new),
-                        contentDescription ="" )
+                        contentDescription = ""
+                    )
                     Text(
                         fontSize = 6.sp,
                         style = MaterialTheme.typography.bodySmall,
@@ -189,7 +204,7 @@ fun MenuItemComponent(
             minLines = 2,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(start = 16.dp),
-            text = menuItem.name ?: ""
+            text = menuItem.name,
         )
 
         Text(
@@ -416,7 +431,7 @@ fun ProductBottomSheet(
             modifier = Modifier.padding(top = 12.dp),
             style = MaterialTheme.typography.titleMedium,
             color = Color.Black,
-            text = menuItem.name ?: ""
+            text = menuItem.name,
         )
 
         Text(
