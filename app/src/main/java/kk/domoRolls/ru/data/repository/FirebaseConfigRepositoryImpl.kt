@@ -152,10 +152,9 @@ private fun fetchUserAddresses(
     onSuccess: (List<Address>) -> Unit,
     onFailure: (Exception) -> Unit
 ) {
-    val database = FirebaseDatabase.getInstance()
-    val userRef = database.getReference(userId)
+    val database = FirebaseDatabase.getInstance().reference.child("users").child(userId)
 
-    userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+    database.addListenerForSingleValueEvent(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
             try {
                 val user = snapshot.getValue(UserFirebase::class.java)
@@ -177,14 +176,14 @@ private fun fetchUserPromocodes(
     onSuccess: (List<String>) -> Unit,
     onFailure: (Exception) -> Unit
 ) {
-    val database = FirebaseDatabase.getInstance()
-    val userRef = database.getReference(userId)
+    val database = FirebaseDatabase.getInstance().reference.child("users").child(userId)
 
-    userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+    database.addListenerForSingleValueEvent(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
             try {
                 val user = snapshot.getValue(UserFirebase::class.java)
                 val usedPromocodes = user?.usedPromocodes ?: emptyList()
+                println("OHANYAN ${user.toString()}")
                 onSuccess(usedPromocodes)
             } catch (e: Exception) {
                 onFailure(e)

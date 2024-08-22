@@ -72,10 +72,9 @@ class AddressMapViewModel @Inject constructor(
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val database = FirebaseDatabase.getInstance()
-        val userRef = database.getReference(dataStoreService.getUserData().id)
+        val database = FirebaseDatabase.getInstance().reference.child("users").child(dataStoreService.getUserData().id)
 
-        userRef.child("addresses").addListenerForSingleValueEvent(object : ValueEventListener {
+        database.child("addresses").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 try {
                     // Get the current list of addresses
@@ -95,7 +94,7 @@ class AddressMapViewModel @Inject constructor(
                     }
 
 
-                    userRef.child("addresses").setValue(currentAddresses)
+                    database.child("addresses").setValue(currentAddresses)
                         .addOnSuccessListener {
                             firebaseConfigRepository.fetchAddresses()
                             onSuccess()

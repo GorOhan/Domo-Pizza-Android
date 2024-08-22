@@ -64,8 +64,8 @@ class MyAddressViewModel @Inject constructor(
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val database = FirebaseDatabase.getInstance()
-        val userRef = database.getReference(dataStoreService.getUserData().id)
+
+        val userRef = FirebaseDatabase.getInstance().reference.child("users").child(dataStoreService.getUserData().id)
 
         userRef.child("addresses").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {

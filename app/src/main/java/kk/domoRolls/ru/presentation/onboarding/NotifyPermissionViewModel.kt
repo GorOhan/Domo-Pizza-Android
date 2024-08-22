@@ -28,9 +28,7 @@ class NotifyPermissionViewModel @Inject constructor(
     private fun addFcmTokenToFireBase(
         token: String,
     ) {
-        val database = FirebaseDatabase.getInstance()
-        val userRef = database.getReference(dataStoreService.getUserData().id)
-
+        val userRef = FirebaseDatabase.getInstance().reference.child("users").child(dataStoreService.getUserData().id)
 
         userRef.child("fcmToken").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
