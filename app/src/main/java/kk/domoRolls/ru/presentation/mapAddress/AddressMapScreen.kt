@@ -425,7 +425,7 @@ fun AddressMapScreen(
         },
     ) {
         val animateBottomPadding by animateDpAsState(
-            targetValue = if (sheetState.bottomSheetState.currentValue == SheetValue.Expanded) 250.dp else 50.dp,
+            targetValue = if (sheetState.bottomSheetState.currentValue == SheetValue.Expanded) 350.dp else 50.dp,
             animationSpec = tween(durationMillis = 250), label = ""
         )
 
