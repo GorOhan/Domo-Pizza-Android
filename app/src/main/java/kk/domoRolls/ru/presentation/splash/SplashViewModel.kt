@@ -10,7 +10,6 @@ import kk.domoRolls.ru.domain.repository.FirebaseConfigRepository
 import kk.domoRolls.ru.domain.repository.ServiceRepository
 import kk.domoRolls.ru.util.BaseViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -26,48 +25,48 @@ class SplashViewModel @Inject constructor(
     private val dataStoreService: DataStoreService,
     private val serviceRepository: ServiceRepository,
     private val firebaseConfigRepository: FirebaseConfigRepository,
-) : BaseViewModel(){
+) : BaseViewModel() {
 
     private val _userId: MutableStateFlow<String?> = MutableStateFlow("")
     val userId = _userId.asStateFlow()
 
-    private val _isAppAvailable: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    private val _isAppAvailable: MutableStateFlow<Boolean?> = MutableStateFlow(null)
     val isAppAvailable = _isAppAvailable.asStateFlow()
 
     init {
+        fetchFirebaseData()
         initApp()
     }
 
-    fun initApp() {
+    private fun initApp() {
+        viewModelScope.launch {
+            _userId.value = dataStoreService.getUserData().id
+            serviceRepository.getToken(ServiceTokenRequest())
+                .flatMapConcat { token ->
+                    serviceRepository.getStopListsIds(
+                        GetStopListRequest(), token.token
+                    ).flatMapConcat { stopList ->
+                        serviceRepository.getMenuById(
+                            disableIds = stopList,
+                            getMenuRequest = GetMenuRequest(),
+                            token = token.token
+                        )
+                    }
+                }.catch {
+                    _showMainError.value = true
+                }
+                .collect()
+        }
 
         viewModelScope.launch {
-            val userCall = async {
-                _userId.value = dataStoreService.getUserData().id
-                serviceRepository.getToken(ServiceTokenRequest())
-                    .flatMapConcat { token ->
-                        serviceRepository.getStopListsIds(
-                            GetStopListRequest(), token.token
-                        ).flatMapConcat { stopList ->
-                            serviceRepository.getMenuById(
-                                disableIds = stopList,
-                                getMenuRequest = GetMenuRequest(),
-                                token = token.token
-                            )
-                        }
-                    }.catch {
-                        _showMainError.value = true
-                    }
-                    .collect()
-            }
-            val firebase = async {
-                firebaseConfigRepository.getAppAvailable()
-                    .onEach { _isAppAvailable.value = it }
-                    .catch { _showMainError.value = true }
-                    .collect()
-            }
-
-            firebase.await()
-            userCall.await()
+            firebaseConfigRepository.getAppAvailable()
+                .onEach { _isAppAvailable.value = it }
+                .catch { _showMainError.value = true }
+                .collect()
         }
+    }
+
+    fun fetchFirebaseData() {
+        firebaseConfigRepository.fetchAllData()
     }
 }

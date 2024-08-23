@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface FirebaseConfigRepository {
 
-    fun getAppAvailable():StateFlow<Boolean>
+    fun getAppAvailable():StateFlow<Boolean?>
     fun getPromoStories():StateFlow<List<PromoStory>>
     fun getWorkingHours():StateFlow<List<TimeSlot>>
     fun getPromoCodes():StateFlow<List<PromoCode>>
@@ -26,4 +26,6 @@ interface FirebaseConfigRepository {
     fun getAddressById(id: String):Address?
     fun getDeliveryTime():StateFlow<String>
     fun getUsedPromoCodes():StateFlow<List<String>>
+
+    fun fetchAllData()
 }

@@ -53,7 +53,7 @@ fun SplashScreen(
             userId?.let {
                 val screen = if (it.isNotBlank()) Screen.NotifyPermissionScreen.route
                 else Screen.RegistrationScreen.route
-                if (isAppAvailable) {
+                if (isAppAvailable == true) {
                     navController.navigate(screen) {
                         popUpTo(navController.graph.id) {
                             inclusive = false
@@ -78,7 +78,7 @@ fun SplashScreen(
             progress = preloaderProgress,
         )
 
-        if (isAppAvailable.not()) {
+        if (isAppAvailable == false) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -93,7 +93,7 @@ fun SplashScreen(
                     textAlign = TextAlign.Center,
                 )
                 BaseButton(
-                    onClick = { viewModel.initApp() },
+                    onClick = { viewModel.fetchFirebaseData() },
                     buttonTitle = "Повторить",
                     backgroundColor = DomoBlue,
                     modifier = Modifier.padding(top = 16.dp, bottom = 64.dp)

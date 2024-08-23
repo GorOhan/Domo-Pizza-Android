@@ -30,7 +30,7 @@ class FirebaseConfigRepositoryImpl(
     private val dataStoreService: DataStoreService,
 ) : FirebaseConfigRepository {
 
-    private val _isAppAvailable: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    private val _isAppAvailable: MutableStateFlow<Boolean?> = MutableStateFlow(null)
     private val _promoStoryList: MutableStateFlow<List<PromoStory>> = MutableStateFlow(emptyList())
     private val _workingTimeSlots: MutableStateFlow<List<TimeSlot>> = MutableStateFlow(emptyList())
     private val _promoCodes: MutableStateFlow<List<PromoCode>> = MutableStateFlow(emptyList())
@@ -45,14 +45,12 @@ class FirebaseConfigRepositoryImpl(
     private val _usedPromocodes: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
 
 
-
-    init {
-        firebaseRemoteConfig.fetch(1)
+   override fun fetchAllData() {
+        firebaseRemoteConfig.fetchAndActivate()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+
                     _deliveryTime.value = firebaseRemoteConfig.getString("delivery_time")
-                    _isAppAvailable.value =
-                        firebaseRemoteConfig.getBoolean("isAppAvailable")
 
                     val promoList: String = firebaseRemoteConfig.getString("promo_list")
 
@@ -93,7 +91,11 @@ class FirebaseConfigRepositoryImpl(
                     mapData.parseToMapData()?.let {
                         _mapData.value = it
                     }
+
+                    _isAppAvailable.value =
+                        firebaseRemoteConfig.getBoolean("isAppAvailable")
                 }
+
             }
 
         fetchAddresses()
